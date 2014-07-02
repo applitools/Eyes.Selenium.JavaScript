@@ -41,6 +41,7 @@
         var data = GeneralUtils.toJson({startInfo: sessionStartInfo});
         console.log("Starting session: %s", data);
 
+
         /*
          data = '{"startInfo": %s}' % (general_utils.to_json(session_start_info))
          logger.debug("Starting session: %s " % data)
