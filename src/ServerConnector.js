@@ -15,18 +15,14 @@
     "use strict";
 
     var GeneralUtils = require('./GeneralUtils'),
-        Promise = require("bluebird"),
-        restler = require("restler");
+        Promise = require('bluebird'),
+        restler = require('restler');
 
 
     // Constants
     var CONNECTION_TIMEOUT_MS = 5 * 60 * 1000,
         DEFAULT_HEADERS = {'Accept': 'application/json', 'Content-Type': 'application/json', 'User-Agent': 'Eyes JS SDK'},
         SERVER_SUFFIX = '/api/sessions/running';
-
-    // private members
-    var _serverUri,
-        _httpOptions;
 
     /**
      *
@@ -43,7 +39,7 @@
         return new Promise(function (resolve, reject) {
             var data = GeneralUtils.toJson({startInfo: sessionStartInfo});
             console.log("Starting session: %s", data);
-            restler.postJson(_serverUri, data, _httpOptions)
+            restler.postJson(this._serverUri, data, this._httpOptions)
                 .on('complete', function(data, response) {
                     console.log('start session result ', response,' status code ', data.statusCode);
                     if (response.statusCode == 200 || response.statusCode == 201) {
@@ -57,7 +53,7 @@
     }
 
     function _setHttpOptions(userName, password) {
-        _httpOptions = {
+        this._httpOptions = {
             username: userName,
             password: password,
             headers: DEFAULT_HEADERS,
@@ -75,12 +71,12 @@
      *
      **/
     function ServerConnector(serverUri, userName, password) {
-        _serverUri = GeneralUtils.urlConcat(serverUri, SERVER_SUFFIX);
-        _setHttpOptions(userName, password);
-    };
+        this._serverUri = GeneralUtils.urlConcat(serverUri, SERVER_SUFFIX);
+        _setHttpOptions(userName, password).bind(this);
+    }
 
     ServerConnector.prototype.startSession = function (sessionStartInfo) {
-        return _startSession(sessionStartInfo);
+        return _startSession(sessionStartInfo).bind(this);
     };
 
     module.exports = ServerConnector;

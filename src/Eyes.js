@@ -6,7 +6,7 @@
  description: The main type - to be used by the users of the library to access all functionality.
 
  provides: [Eyes]
- requires: [GeneralUtils, ServerConnector, EyesCore]
+ requires: [GeneralUtils, ServerConnector, EyesBase]
 
  ---
  */
@@ -14,18 +14,9 @@
 ;(function() {
     "use strict";
 
-    var EyesCore = require('./EyesCore'),
-        GeneralUtils = require('./GeneralUtils'),
-        Promise = require("bluebird");
-
-    var _driver,
-        _core;
-
-
-    function _open(driver, appName, testName, viewPortSize, matchLevel, failureReports) {
-        _driver = driver;
-        _core.open(appName, testName, viewPortSize, matchLevel, failureReports);
-    }
+    var EyesBase = require('./EyesBase'),
+        Promise = require('bluebird'),
+        EyesWebDriver = require('./EyesWebDriver');
 
     /**
      *
@@ -35,17 +26,30 @@
      *
      **/
     function Eyes(serverUrl) {
-        _core = new EyesCore(serverUrl);
+        EyesBase.call(this, serverUrl);
     }
 
-    EyesCore.agentId = 'javascript/0.0';
+    Eyes.prototype = new EyesBase();
+    Eyes.prototype.constructor = Eyes;
 
-    Eyes.setApiKey = function(apiKey) {
-        EyesCore.apiKey = apiKey;
+    EyesBase.agentId = 'javascript/0.0';
+
+    Eyes.setApiKey = function (apiKey) {
+        EyesBase.apiKey = apiKey;
     };
 
-    Eyes.prototype.open = function(driver, appName, testName, viewPortSize, matchLevel, failureReports) {
-        return _open(driver, appName, testName, viewPortSize, matchLevel, failureReports);
+    Eyes.prototype.open = function (driver, appName, testName, viewPortSize, matchLevel, failureReports) {
+        return new Promise(function (resolve) {
+            this._driver = new EyesWebDriver(driver, this);
+            this._driver.init().then(function () {
+                EyesBase.prototype.open.call(this, appName, testName, viewPortSize, matchLevel, failureReports);
+                resolve(this._driver);
+            }.bind(this));
+        }.bind(this));
+    };
+
+    Eyes.prototype.checkWindow = function (tag) {
+        EyesBase.prototype.checkWindow.call(this, tag);
     };
 
     module.exports = Eyes;
