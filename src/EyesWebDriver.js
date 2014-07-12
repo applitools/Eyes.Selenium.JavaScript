@@ -12,6 +12,7 @@
     "use strict";
 
     var ScreenshotTaker = require('./ScreenshotTaker'),
+        GeneralUtils = require('./GeneralUtils'),
         Promise = require('bluebird'),
         webdriver = require('selenium-webdriver');
 
@@ -26,6 +27,8 @@
      **/
     function EyesWebDriver(remoteWebDriver, eyes) {
         this._eyes = eyes;
+        // TODO - leave out click, sendKeys and takeScreenshot - we need to handle them first
+        GeneralUtils.extend(this, remoteWebDriver);
         this._driver = remoteWebDriver;
         this._screenshotTaker = undefined;
     }
@@ -34,8 +37,7 @@
         return new Promise(function (resolve) {
             this._driver.getCapabilities().then(function (capabilities) {
                 if (!capabilities.has(webdriver.Capability.TAKES_SCREENSHOT)) {
-                    this._screenshotTaker = new ScreenshotTaker(remoteWebDriver.commandExecutor.url,
-                        remoteWebDriver.sessionId);
+                    this._screenshotTaker = new ScreenshotTaker();
                 }
                 resolve();
             }.bind(this));
