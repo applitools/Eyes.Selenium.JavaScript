@@ -15,9 +15,9 @@
     "use strict";
 
     var EyesBase = require('./EyesBase'),
-        Promise = require('bluebird'),
         EyesWebDriver = require('./EyesWebDriver'),
-        ViewportSize = require('./ViewportSize');
+        ViewportSize = require('./ViewportSize'),
+        webdriver = require('selenium-webdriver');
 
     /**
      *
@@ -37,30 +37,80 @@
 
     EyesBase.agentId = 'javascript/0.0';
 
+    // TODO: instance method
     Eyes.setApiKey = function (apiKey) {
         EyesBase.apiKey = apiKey;
     };
 
     Eyes.prototype.open = function (driver, appName, testName, viewportSize, matchLevel, failureReports) {
-        // TODO: assign the control flow here for later use
-        return new Promise(function (resolve, reject) {
+        var flow = webdriver.promise.controlFlow();
+        return flow.execute(function () {
+            var deferred = webdriver.promise.defer();
+            console.log('execution began for eyes open');
             try {
                 EyesBase.prototype.open.call(this, appName, testName, viewportSize, matchLevel, failureReports)
                     .then(function () {
+                        console.log('inner eyes open returned - fulfilling');
                         this._driver = driver; //TODO: new EyesWebDriver(driver, this);
-                        //this._driver.init().then(function () {
-                        resolve(this._driver);
+                        // this._driver.init().then(function () {
+                        deferred.fulfill(this._driver);
                         //}.bind(this));
                     }.bind(this));
             } catch (err) {
                 console.log(err);
-                reject(err);
+                deferred.reject(err);
             }
+
+            return deferred.promise;
+        }.bind(this));
+    };
+
+    Eyes.prototype.close = function (throwEx) {
+        var flow = webdriver.promise.controlFlow();
+        return flow.execute(function () {
+            var deferred = webdriver.promise.defer();
+            console.log('execution began for eyes close');
+            try {
+                EyesBase.prototype.close.call(this, throwEx)
+                    .then(function () {
+                        console.log('inner eyes close returned - fulfilling');
+                        deferred.fulfill(this._driver);
+                    }.bind(this));
+            } catch (err) {
+                console.log(err);
+                deferred.reject(err);
+            }
+
+            return deferred.promise;
         }.bind(this));
     };
 
     Eyes.prototype.checkWindow = function (tag) {
-        return EyesBase.prototype.checkWindow.call(this, tag, false);
+        var flow = webdriver.promise.controlFlow();
+        return flow.execute(function () {
+            var deferred = webdriver.promise.defer();
+            console.log('execution began for eyes check window');
+            try {
+                EyesBase.prototype.checkWindow.call(this, tag, false).then(function () {
+                        console.log('inner eyes check window returned - fulfilling');
+                        deferred.fulfill();
+                    }.bind(this),
+                    function (err) {
+                        console.log(err);
+                        deferred.reject(err);
+                    });
+            } catch (err) {
+                console.log(err);
+                deferred.reject(err);
+            }
+
+            console.log('returning check window promise');
+            return deferred.promise;
+        }.bind(this));
+    };
+
+    Eyes.prototype._waitTimeout = function (ms) {
+        return webdriver.promise.controlFlow().timeout(ms);
     };
 
     Eyes.prototype.getScreenshot = function () {
