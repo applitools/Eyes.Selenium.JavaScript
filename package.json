@@ -10,14 +10,20 @@
         "tests",
         "SDK",
         "Applitools",
-        "Eyes"
+        "Eyes",
+        "automation",
+        "selenium",
+        "testing",
+        "webdriver",
+        "webdriverjs"
     ],
+    "homepage": "http://www.applitools.com/",
     "repository": {
         "type": "git",
         "url": "git://github.com/applitools/eyes-selenium.git"
     },
     "license": "Apache-2.0",
-    "main": "./dist/eyes-selenium.js",
+    "main": "./src/Eyes.js",
     "bin": {
         "eyes-selenium": "./dist/eyes-selenium"
     },
@@ -25,15 +31,14 @@
         "test": "./tests"
     },
     "dependencies": {
-        "restler": "*",
-        "bluebird": "*"
+        "restler": "~3.2.2",
+        "selenium-webdriver": "~2.42.1"
     },
     "devDependencies": {
         "mocha": "*",
         "chai": "*"
     },
     "engines": {
-        "node": ">=0.10.17",
-        "npm": ">=1.3.8"
+        "node": ">=0.10.x"
     }
 }

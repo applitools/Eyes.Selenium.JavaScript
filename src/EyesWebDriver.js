@@ -13,7 +13,6 @@
 
     var ScreenshotTaker = require('./ScreenshotTaker'),
         GeneralUtils = require('./GeneralUtils'),
-        Promise = require('bluebird'),
         webdriver = require('selenium-webdriver');
 
     /**
