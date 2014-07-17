@@ -24,9 +24,6 @@
     },
     "license": "Apache-2.0",
     "main": "./src/Eyes",
-    "bin": {
-        "eyes-selenium": "./dist/eyes-selenium"
-    },
     "scripts": {
         "test": "./tests"
     },
