@@ -5,7 +5,7 @@ var driver = new webdriver.Builder().
     build();
 
 var Eyes = require('./../src/Eyes');
-Eyes.setApiKey("fy11O5GelVm856YF4q5vlF50AnuRiY5301y1Kj0LjTk110");
+Eyes.setApiKey("");
 var eyes = new Eyes();
 
 console.log('Starting test');
