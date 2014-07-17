@@ -24,9 +24,6 @@
     },
     "license": "Apache-2.0",
     "main": "./src/Eyes",
-    "scripts": {
-        "test": "./tests"
-    },
     "dependencies": {
         "restler": "~3.2.2",
         "selenium-webdriver": "~2.42.1"
