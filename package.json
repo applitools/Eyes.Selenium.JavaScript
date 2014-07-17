@@ -1,6 +1,6 @@
 {
     "name": "eyes-selenium",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Applitools Eyes SDK For Selenium JavaScript WebDriver",
     "author": "Applitools Team <team@applitools.com> (http://www.applitools.com/)",
     "keywords": [
@@ -23,7 +23,7 @@
         "url": "git://github.com/applitools/eyes-selenium.git"
     },
     "license": "Apache-2.0",
-    "main": "./src/Eyes.js",
+    "main": "./src/Eyes",
     "bin": {
         "eyes-selenium": "./dist/eyes-selenium"
     },
