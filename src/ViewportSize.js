@@ -13,7 +13,8 @@
 ;(function() {
     "use strict";
 
-    var PromiseFactory = require('./EyesPromiseFactory'),
+    var EyesSDK = require('eyes.sdk');
+    var PromiseFactory = EyesSDK.EyesPromiseFactory,
         webdriver = require('selenium-webdriver');
     var Window = webdriver.WebDriver.Window;
 

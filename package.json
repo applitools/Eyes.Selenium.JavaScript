@@ -1,10 +1,10 @@
 {
-    "name": "eyes-selenium",
-    "version": "0.0.3",
+    "name": "eyes.selenium",
+    "version": "0.0.1",
     "description": "Applitools Eyes SDK For Selenium JavaScript WebDriver",
     "author": "Applitools Team <team@applitools.com> (http://www.applitools.com/)",
     "keywords": [
-        "eyes-selenium",
+        "eyes.selenium",
         "Test Automation",
         "Visual Regression",
         "tests",
@@ -20,12 +20,12 @@
     "homepage": "http://www.applitools.com/",
     "repository": {
         "type": "git",
-        "url": "git://github.com/applitools/eyes-selenium.git"
+        "url": "git://github.com/applitools/Eyes.Selenium.JavaScript.git"
     },
     "license": "Apache-2.0",
     "main": "./src/Eyes",
     "dependencies": {
-        "restler": "~3.2.2",
+        "eyes.sdk": "0.0.1",
         "selenium-webdriver": "~2.42.1"
     },
     "devDependencies": {

@@ -11,8 +11,8 @@
 ;(function() {
     "use strict";
 
-    var ScreenshotTaker = require('./ScreenshotTaker'),
-        GeneralUtils = require('./GeneralUtils'),
+    var EyesSDK = require('eyes.sdk');
+    var ScreenshotTaker = EyesSDK.ScreenshotTaker,
         webdriver = require('selenium-webdriver');
 
     /**
@@ -27,7 +27,7 @@
     function EyesWebDriver(remoteWebDriver, eyes) {
         this._eyes = eyes;
         // TODO - leave out click, sendKeys and takeScreenshot - we need to handle them first
-        GeneralUtils.extend(this, remoteWebDriver);
+        //GeneralUtils.extend(this, remoteWebDriver);
         this._driver = remoteWebDriver;
         this._screenshotTaker = undefined;
     }

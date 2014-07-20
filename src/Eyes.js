@@ -6,7 +6,7 @@
  description: The main type - to be used by the users of the library to access all functionality.
 
  provides: [Eyes]
- requires: [GeneralUtils, ServerConnector, EyesBase]
+ requires: [ServerConnector, EyesBase]
 
  ---
  */
@@ -14,9 +14,11 @@
 ;(function() {
     "use strict";
 
-    var EyesBase = require('./EyesBase'),
+    var EyesSDK = require('eyes.sdk');
+    var EyesBase = EyesSDK.EyesBase,
         EyesWebDriver = require('./EyesWebDriver'),
         ViewportSize = require('./ViewportSize'),
+        PromiseFactory = EyesSDK.EyesPromiseFactory,
         webdriver = require('selenium-webdriver');
 
     /**
@@ -29,6 +31,13 @@
      *
      **/
     function Eyes(serverUrl, matchTimeout, isDisabled) {
+        PromiseFactory.setPromiseHandler(function (asyncAction) {
+            return webdriver.promise.controlFlow().execute(function () {
+                var deferred = webdriver.promise.defer();
+                asyncAction(deferred);
+                return deferred.promise;
+            });
+        });
         EyesBase.call(this, serverUrl || EyesBase.DEFAULT_EYES_SERVER, matchTimeout || 2000, isDisabled);
     }
 
