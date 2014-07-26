@@ -78,16 +78,13 @@
         return this._flow.execute(function () {
             var deferred = webdriver.promise.defer();
             console.log('execution began for eyes close');
-            try {
-                EyesBase.prototype.close.call(this, throwEx)
-                    .then(function () {
-                        console.log('inner eyes close returned - fulfilling');
-                        deferred.fulfill(this._driver);
-                    }.bind(this));
-            } catch (err) {
-                console.log(err);
-                deferred.reject(err);
-            }
+            EyesBase.prototype.close.call(this, throwEx)
+                .then(function (results) {
+                    console.log('inner eyes close returned - fulfilling');
+                    deferred.fulfill(results);
+                }.bind(this), function (err) {
+                    deferred.reject(err);
+                });
 
             return deferred.promise;
         }.bind(this));
