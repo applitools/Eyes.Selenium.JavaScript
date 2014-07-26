@@ -6,7 +6,7 @@
  description: The main type - to be used by the users of the library to access all functionality.
 
  provides: [Eyes]
- requires: [ServerConnector, EyesBase]
+ requires: [eyes.sdk, EyesWebDriver, ViewportSize, selenium-webdriver]
 
  ---
  */
@@ -31,20 +31,13 @@
      *
      **/
     function Eyes(serverUrl, matchTimeout, isDisabled) {
-        PromiseFactory.setPromiseHandler(function (asyncAction) {
-            return webdriver.promise.controlFlow().execute(function () {
-                var deferred = webdriver.promise.defer();
-                asyncAction(deferred);
-                return deferred.promise;
-            });
-        });
         EyesBase.call(this, serverUrl || EyesBase.DEFAULT_EYES_SERVER, matchTimeout || 2000, isDisabled);
     }
 
     Eyes.prototype = new EyesBase();
     Eyes.prototype.constructor = Eyes;
 
-    EyesBase.agentId = 'javascript/0.0';
+    EyesBase.agentId = 'selenium-js/0.0';
 
     // TODO: instance method
     Eyes.setApiKey = function (apiKey) {
@@ -52,8 +45,15 @@
     };
 
     Eyes.prototype.open = function (driver, appName, testName, viewportSize, matchLevel, failureReports) {
-        var flow = webdriver.promise.controlFlow();
-        return flow.execute(function () {
+        var flow = this._flow = driver.controlFlow();
+        PromiseFactory.setPromiseHandler(function (asyncAction) {
+            return flow.execute(function () {
+                var deferred = webdriver.promise.defer();
+                asyncAction(deferred);
+                return deferred.promise;
+            });
+        });
+        return this._flow.execute(function () {
             var deferred = webdriver.promise.defer();
             console.log('execution began for eyes open');
             try {
@@ -75,8 +75,7 @@
     };
 
     Eyes.prototype.close = function (throwEx) {
-        var flow = webdriver.promise.controlFlow();
-        return flow.execute(function () {
+        return this._flow.execute(function () {
             var deferred = webdriver.promise.defer();
             console.log('execution began for eyes close');
             try {
@@ -95,8 +94,7 @@
     };
 
     Eyes.prototype.checkWindow = function (tag) {
-        var flow = webdriver.promise.controlFlow();
-        return flow.execute(function () {
+        return this._flow.execute(function () {
             var deferred = webdriver.promise.defer();
             console.log('execution began for eyes check window');
             try {
@@ -119,7 +117,7 @@
     };
 
     Eyes.prototype._waitTimeout = function (ms) {
-        return webdriver.promise.controlFlow().timeout(ms);
+        return this._flow.timeout(ms);
     };
 
     Eyes.prototype.getScreenshot = function () {
