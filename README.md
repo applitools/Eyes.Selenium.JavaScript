@@ -1,4 +1,4 @@
-eyes-selenium
+eyes.selenium
 =============
 
 Applitools Eyes SDK For Selenium JavaScript WebDriver
@@ -6,9 +6,9 @@ Applitools Eyes SDK For Selenium JavaScript WebDriver
 
 Getting Started
 ---------------
-Install eyes-selenium as a local dev dependency in your tested project:
+Install eyes.selenium as a local dev dependency in your tested project:
 
-    npm install eyes-selenium --save-dev
+    npm install eyes.selenium --save-dev
 
 Add Eyes to your tests, for example - when directly using selenium-webdriver:
 ```javascript
@@ -18,7 +18,7 @@ var driver = new webdriver.Builder().
     withCapabilities(webdriver.Capabilities.chrome()).
     build();
 
-var Eyes = require('./../src/Eyes');
+var Eyes = require('eyes.selenium');
 Eyes.setApiKey("<YOUR_API_KEY>");
 var eyes = new Eyes();
 
