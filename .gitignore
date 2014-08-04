@@ -1,8 +1,9 @@
-.idea/*
-
 # Logs
 logs
 *.log
+
+# JetBrains
+.idea
 
 # Runtime data
 pids
@@ -25,4 +26,4 @@ build/Release
 # Deployed apps should consider commenting this line out:
 # see https://npmjs.org/doc/faq.html#Should-I-check-my-node_modules-folder-into-git
 node_modules
-tests/simplerun.js
+tests

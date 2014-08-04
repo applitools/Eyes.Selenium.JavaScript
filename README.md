@@ -8,7 +8,7 @@ Getting Started
 ---------------
 Install eyes.selenium as a local dev dependency in your tested project:
 
-    npm install eyes.selenium --save-dev
+    npm install eyes.selenium
 
 Add Eyes to your tests, for example - when directly using selenium-webdriver:
 ```javascript

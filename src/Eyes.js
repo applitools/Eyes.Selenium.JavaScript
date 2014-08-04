@@ -26,12 +26,11 @@
      * C'tor = initializes the module settings
      *
      * @param {String} serverUrl
-     * @param {Number} matchTimeout
      * @param {Boolean} isDisabled - set to true to disable Applitools Eyes and use the webdriver directly.
      *
      **/
-    function Eyes(serverUrl, matchTimeout, isDisabled) {
-        EyesBase.call(this, serverUrl || EyesBase.DEFAULT_EYES_SERVER, matchTimeout || 2000, isDisabled);
+    function Eyes(serverUrl, isDisabled) {
+        EyesBase.call(this, serverUrl || EyesBase.DEFAULT_EYES_SERVER, isDisabled);
     }
 
     Eyes.prototype = new EyesBase();
@@ -44,7 +43,7 @@
         EyesBase.apiKey = apiKey;
     };
 
-    Eyes.prototype.open = function (driver, appName, testName, viewportSize, matchLevel, failureReports) {
+    Eyes.prototype.open = function (driver, appName, testName, viewportSize) {
         var flow = this._flow = driver.controlFlow();
         PromiseFactory.setPromiseHandler(function (asyncAction) {
             return flow.execute(function () {
@@ -57,7 +56,7 @@
             var deferred = webdriver.promise.defer();
             console.log('execution began for eyes open');
             try {
-                EyesBase.prototype.open.call(this, appName, testName, viewportSize, matchLevel, failureReports)
+                EyesBase.prototype.open.call(this, appName, testName, viewportSize)
                     .then(function () {
                         console.log('inner eyes open returned - fulfilling');
                         this._driver = driver; //TODO: new EyesWebDriver(driver, this);
@@ -90,12 +89,12 @@
         }.bind(this));
     };
 
-    Eyes.prototype.checkWindow = function (tag) {
+    Eyes.prototype.checkWindow = function (tag, matchTimeout) {
         return this._flow.execute(function () {
             var deferred = webdriver.promise.defer();
             console.log('execution began for eyes check window');
             try {
-                EyesBase.prototype.checkWindow.call(this, tag, false).then(function () {
+                EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout).then(function () {
                         console.log('inner eyes check window returned - fulfilling');
                         deferred.fulfill();
                     }.bind(this),
@@ -103,6 +102,87 @@
                         console.log(err);
                         deferred.reject(err);
                     });
+            } catch (err) {
+                console.log(err);
+                deferred.reject(err);
+            }
+
+            console.log('returning check window promise');
+            return deferred.promise;
+        }.bind(this));
+    };
+
+    Eyes.prototype.checkRegion = function (region, tag, matchTimeout) {
+        return this._flow.execute(function () {
+            var deferred = webdriver.promise.defer();
+            console.log('execution began for eyes check region');
+            try {
+                EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout, region).then(function () {
+                        console.log('inner eyes check region returned - fulfilling');
+                        deferred.fulfill();
+                    }.bind(this),
+                    function (err) {
+                        console.log(err);
+                        deferred.reject(err);
+                    });
+            } catch (err) {
+                console.log(err);
+                deferred.reject(err);
+            }
+
+            console.log('returning check window promise');
+            return deferred.promise;
+        }.bind(this));
+    };
+
+    Eyes.prototype.checkRegionByElement = function (element, tag, matchTimeout) {
+        return this._flow.execute(function () {
+            var deferred = webdriver.promise.defer();
+            console.log('execution began for eyes check region');
+            try {
+                element.getSize().then(function(size) {
+                    element.getLocation().then(function(point) {
+                        var region = {height: size.height, width: size.width, left: point.x, top: point.y};
+                        EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout, region).then(function () {
+                                console.log('inner eyes check region returned - fulfilling');
+                                deferred.fulfill();
+                            }.bind(this),
+                            function (err) {
+                                console.log(err);
+                                deferred.reject(err);
+                            });
+                    }.bind(this));
+                }.bind(this));
+            } catch (err) {
+                console.log(err);
+                deferred.reject(err);
+            }
+
+            console.log('returning check window promise');
+            return deferred.promise;
+        }.bind(this));
+    };
+
+    Eyes.prototype.checkRegionBy = function (by, tag, matchTimeout) {
+        return this._flow.execute(function () {
+            var deferred = webdriver.promise.defer();
+            console.log('execution began for eyes check region');
+            try {
+                this._driver.findElement(by).then(function(element) {
+                    element.getSize().then(function(size) {
+                        element.getLocation().then(function(point) {
+                            var region = {height: size.height, width: size.width, left: point.x, top: point.y};
+                            EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout, region).then(function () {
+                                    console.log('inner eyes check region returned - fulfilling');
+                                    deferred.fulfill();
+                                }.bind(this),
+                                function (err) {
+                                    console.log(err);
+                                    deferred.reject(err);
+                                });
+                        }.bind(this));
+                    }.bind(this));
+                }.bind(this));
             } catch (err) {
                 console.log(err);
                 deferred.reject(err);
