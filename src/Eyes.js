@@ -48,7 +48,7 @@
         PromiseFactory.setPromiseHandler(function (asyncAction) {
             return flow.execute(function () {
                 var deferred = webdriver.promise.defer();
-                asyncAction(deferred);
+                asyncAction(deferred.fulfill, deferred.reject);
                 return deferred.promise;
             });
         });

@@ -38,14 +38,14 @@
      **/
     ViewportSize.getViewportSize = function (driver) {
         console.log('ViewportSize.getViewportSize called');
-        return PromiseFactory.makePromise(function (deferred) {
+        return PromiseFactory.makePromise(function (resolve, reject) {
             try {
                 console.log('ViewportSize.getViewportSize - executing scripts');
                 driver.executeScript(_GET_VIEWPORT_SIZE_JAVASCRIPT_FOR_NORMAL_BROWSER).then(function(size) {
                         if (size.width > 0 && size.height > 0) {
                             console.log('ViewportSize.getViewportSize - normal script returned size: w', size.width,
                                 ' h', size.height);
-                            deferred.fulfill(size);
+                            resolve(size);
                             return;
                         }
 
@@ -54,7 +54,7 @@
                         driver.executeScript(_GET_VIEWPORT_SIZE_JAVASCRIPT_FOR_BAD_BROWSERS).then(function(size) {
                             console.log('ViewportSize.getViewportSize - old script returned size: w', size.width,
                                 ' h', size.height);
-                            deferred.fulfill(size);
+                            resolve(size);
                         });
                     },
                     function(err){
@@ -63,7 +63,7 @@
                         driver.executeScript(_GET_VIEWPORT_SIZE_JAVASCRIPT_FOR_BAD_BROWSERS).then(function(size) {
                             console.log('ViewportSize.getViewportSize - old script returned size: w', size.width,
                                 ' h', size.height);
-                            deferred.fulfill(size);
+                            resolve(size);
                         });
                     });
             } catch (err) {
@@ -71,7 +71,7 @@
                 new Window(driver).getSize().then(function(size){
                     console.log('ViewportSize.getViewportSize - window returned size: w', size.width,
                         ' h', size.height);
-                    deferred.fulfill(size);
+                    resolve(size);
                 });
             }
         }.bind(this));
@@ -82,7 +82,7 @@
         console.log('ViewportSize.setViewportSize called for size', size);
         // first we will set the window size to the required size. Then we'll check the viewport size and increase the
         // window size accordingly.
-        return PromiseFactory.makePromise(function (deferred) {
+        return PromiseFactory.makePromise(function (resolve, reject) {
             try {
                 driver.manage().window().setSize(size.width, size.height)
                     .then(function () {
@@ -97,47 +97,47 @@
                                         .then(function () {
                                             _retryCheckViewportSize(driver, size, retriesLeft)
                                                 .then(function () {
-                                                    deferred.fulfill();
+                                                    resolve();
                                                 }, function (err) {
                                                     console.error('Failed to set browser size!');
-                                                    deferred.reject(err);
+                                                    reject(Error(err));
                                                 });
                                         });
                                 });
                         }, function (err) {
                             console.error('Failed to set browser size!');
-                            deferred.reject(err);
+                            reject(Error(err));
                         });
                     });
             } catch (err) {
                 console.log('ViewportSize.setViewportSize - exception:', err);
-                deferred.reject(err);
+                reject(Error(err));
             }
         }.bind(this));
     };
 
     function _retryCheckWindowSize(driver, size, retries) {
-        return PromiseFactory.makePromise(function (deferred) {
+        return PromiseFactory.makePromise(function (resolve, reject) {
 
             driver.manage().window().getSize().then(function(winSize) {
                 if (winSize.width == size.width && winSize.height == size.height) {
                     console.log('window size successfully set');
-                    deferred.fulfill(retries);
+                    resolve(retries);
                     return;
                 }
 
                 if (retries == 0) {
                     console.error('no more retries to set window size');
-                    deferred.reject('no more retries to set window size');
+                    reject(Error('no more retries to set window size'));
                     return;
                 }
 
                 console.log('window size still not set - timeout and rechecking');
                 driver.controlFlow().timeout(1000).then(function() {
                     _retryCheckWindowSize(driver, size, retries - 1).then(function (retriesLeft){
-                        deferred.fulfill(retriesLeft);
+                        resolve(retriesLeft);
                     }, function(err) {
-                        deferred.reject(err);
+                        reject(Error(err));
                     });
                 });
             });
@@ -145,27 +145,27 @@
     }
 
     function _retryCheckViewportSize(driver, size, retries) {
-        return PromiseFactory.makePromise(function (deferred) {
+        return PromiseFactory.makePromise(function (resolve, reject) {
 
             ViewportSize.getViewportSize(driver).then(function(viewportSize) {
                 if (viewportSize.width == size.width && viewportSize.height == size.height) {
                     console.log('viewport size successfully set');
-                    deferred.fulfill(retries);
+                    resolve(retries);
                     return;
                 }
 
                 if (retries == 0) {
                     console.error('no more retries to set viewport size');
-                    deferred.reject('no more retries to set viewport size');
+                    reject(Error('no more retries to set viewport size'));
                     return;
                 }
 
                 console.log('viewport size still not set - timeout and rechecking');
                 driver.controlFlow().timeout(1000).then(function() {
                     _retryCheckViewportSize(driver, size, retries - 1).then(function (retriesLeft){
-                        deferred.fulfill(retriesLeft);
+                        resolve(retriesLeft);
                     }, function(err) {
-                        deferred.reject(err);
+                        reject(Error(err));
                     });
                 });
             });
