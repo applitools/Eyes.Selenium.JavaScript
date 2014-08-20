@@ -36,11 +36,9 @@
     Eyes.prototype = new EyesBase();
     Eyes.prototype.constructor = Eyes;
 
-    EyesBase.agentId = 'selenium-js/0.0';
-
-    // TODO: instance method
-    Eyes.setApiKey = function (apiKey) {
-        EyesBase.apiKey = apiKey;
+    //noinspection JSUnusedGlobalSymbols
+    Eyes.prototype._getBaseAgentId = function () {
+        return 'selenium-js/0.0.7';
     };
 
     Eyes.prototype.open = function (driver, appName, testName, viewportSize) {
