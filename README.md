@@ -19,10 +19,9 @@ var driver = new webdriver.Builder().
     build();
 
 var Eyes = require('eyes.selenium');
-Eyes.setApiKey("<YOUR_API_KEY>");
 var eyes = new Eyes();
+eyes.setApiKey("<YOUR_API_KEY>");
 
-console.log('Starting test');
 eyes.open(driver, "JavaScript SDK", "Simple JS SDK Test").then(function(driver) {
     driver.get('http://www.google.com');
     eyes.checkWindow("Google");
