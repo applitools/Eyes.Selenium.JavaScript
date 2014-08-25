@@ -191,12 +191,18 @@
         }.bind(this));
     };
 
+    //noinspection JSUnusedGlobalSymbols
     Eyes.prototype._waitTimeout = function (ms) {
         return this._flow.timeout(ms);
     };
 
+    //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.getScreenshot = function () {
-        return this._driver.takeScreenshot();
+        return this._driver.takeScreenshot().then(function (screenshot64) {
+            // Notice that returning a value from inside "then" automatically wraps the return value with a promise,
+            // so we don't have to do it explicitly.
+            return new Buffer(screenshot64, 'base64');
+        });
     };
 
     Eyes.prototype.getTitle = function () {

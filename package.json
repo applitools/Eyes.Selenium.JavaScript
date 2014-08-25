@@ -25,7 +25,7 @@
     "license": "Apache-2.0",
     "main": "./src/Eyes",
     "dependencies": {
-        "eyes.sdk": "0.0.5",
+        "eyes.sdk": "0.0.6",
         "selenium-webdriver": "~2.42.1"
     },
     "devDependencies": {
