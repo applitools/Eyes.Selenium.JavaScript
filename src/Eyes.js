@@ -211,6 +211,15 @@
         return this._driver.getTitle();
     };
 
+    Eyes.prototype.getInferredEnvironment = function () {
+        var res = "useragent:";
+        return this._driver.executeScript('return navigator.userAgent').then(function (userAgent) {
+            return res + userAgent;
+        }, function() {
+            return res;
+        });
+    };
+
     Eyes.prototype.getViewportSize = function () {
         return ViewportSize.getViewportSize(this._driver);
     };
