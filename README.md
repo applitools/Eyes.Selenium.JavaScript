@@ -18,7 +18,7 @@ var driver = new webdriver.Builder().
     withCapabilities(webdriver.Capabilities.chrome()).
     build();
 
-var Eyes = require('eyes.selenium');
+var Eyes = require('eyes.selenium').Eyes;
 var eyes = new Eyes();
 eyes.setApiKey("<YOUR_API_KEY>");
 
@@ -27,7 +27,7 @@ eyes.open(driver, "JavaScript SDK", "Simple JS SDK Test").then(function(driver) 
     eyes.checkWindow("Google");
     driver.get('http://www.nba.com');
     eyes.checkWindow("NBA");
-    eyes.close(true);
+    eyes.close();
     driver.quit();
 });
 ```
