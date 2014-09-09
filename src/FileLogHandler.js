@@ -11,7 +11,7 @@
  ---
  */
 
-;(function() {
+(function () {
     "use strict";
 
     var winston = require('winston'),
@@ -103,7 +103,7 @@
         return this._fileDirectory;
     };
 
-    FileLogHandler.prototype.open = function() {
+    FileLogHandler.prototype.open = function () {
         this.close();
         this._logger = new (winston.Logger)({
             exitOnError: false,
@@ -118,7 +118,7 @@
         });
     };
 
-    FileLogHandler.prototype.close = function() {
+    FileLogHandler.prototype.close = function () {
         if (this._logger) {
             this._logger.close();
             this._logger = undefined;
@@ -130,7 +130,7 @@
      * @param {Boolean} verbose - is the message verbose
      * @param {String} message
      */
-    FileLogHandler.prototype.onMessage = function(verbose, message){
+    FileLogHandler.prototype.onMessage = function (verbose, message) {
         if (!verbose || this._isVerbose) {
             this._logger.info("Eyes: " + message);
         }

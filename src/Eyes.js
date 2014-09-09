@@ -11,11 +11,11 @@
  ---
  */
 
-;(function() {
+(function () {
     "use strict";
 
-    var EyesSDK = require('eyes.sdk');
-    var EyesBase = EyesSDK.EyesBase,
+    var EyesSDK = require('eyes.sdk'),
+        EyesBase = EyesSDK.EyesBase,
         EyesWebDriver = require('./EyesWebDriver'),
         ViewportSize = require('./ViewportSize'),
         PromiseFactory = EyesSDK.EyesPromiseFactory,
@@ -57,10 +57,8 @@
             try {
                 EyesBase.prototype.open.call(this, appName, testName, viewportSize)
                     .then(function () {
-                        this._driver = driver; //TODO: new EyesWebDriver(driver, this);
-                        // this._driver.init().then(function () {
+                        this._driver = new EyesWebDriver(driver, this, this._logger);
                         deferred.fulfill(this._driver);
-                        //}.bind(this));
                     }.bind(this));
             } catch (err) {
                 this._logger.log(err.toString());
@@ -72,7 +70,7 @@
     };
 
     Eyes.prototype.close = function (throwEx) {
-        if (typeof throwEx === 'undefined') {
+        if (throwEx === undefined) {
             throwEx = true;
         }
 
@@ -101,10 +99,10 @@
         return this._flow.execute(function () {
             var deferred = webdriver.promise.defer();
             try {
-                EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout).then(function () {
+                EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout)
+                    .then(function () {
                         deferred.fulfill();
-                    }.bind(this),
-                    function (err) {
+                    }.bind(this), function (err) {
                         this._logger.log(err.toString());
                         deferred.reject(err);
                     }.bind(this));
@@ -121,10 +119,10 @@
         return this._flow.execute(function () {
             var deferred = webdriver.promise.defer();
             try {
-                EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout, region).then(function () {
+                EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout, region)
+                    .then(function () {
                         deferred.fulfill();
-                    }.bind(this),
-                    function (err) {
+                    }.bind(this), function (err) {
                         this._logger.log(err.toString());
                         deferred.reject(err);
                     }.bind(this));
@@ -141,13 +139,13 @@
         return this._flow.execute(function () {
             var deferred = webdriver.promise.defer();
             try {
-                element.getSize().then(function(size) {
-                    element.getLocation().then(function(point) {
+                element.getSize().then(function (size) {
+                    element.getLocation().then(function (point) {
                         var region = {height: size.height, width: size.width, left: point.x, top: point.y};
-                        EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout, region).then(function () {
+                        EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout, region)
+                            .then(function () {
                                 deferred.fulfill();
-                            }.bind(this),
-                            function (err) {
+                            }.bind(this), function (err) {
                                 this._logger.log(err.toString());
                                 deferred.reject(err);
                             }.bind(this));
@@ -166,14 +164,14 @@
         return this._flow.execute(function () {
             var deferred = webdriver.promise.defer();
             try {
-                this._driver.findElement(by).then(function(element) {
-                    element.getSize().then(function(size) {
-                        element.getLocation().then(function(point) {
+                this._driver.findElement(by).then(function (element) {
+                    element.getSize().then(function (size) {
+                        element.getLocation().then(function (point) {
                             var region = {height: size.height, width: size.width, left: point.x, top: point.y};
-                            EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout, region).then(function () {
+                            EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout, region)
+                                .then(function () {
                                     deferred.fulfill();
-                                }.bind(this),
-                                function (err) {
+                                }.bind(this), function (err) {
                                     this._logger.log(err.toString());
                                     deferred.reject(err);
                                 }.bind(this));
@@ -195,11 +193,11 @@
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getScreenshot = function () {
-        return this._driver.takeScreenshot().then(function (screenshot64) {
+    Eyes.prototype.getScreenShot = function () {
+        return this._driver.takeScreenshot().then(function (screenShot64) {
             // Notice that returning a value from inside "then" automatically wraps the return value with a promise,
             // so we don't have to do it explicitly.
-            return new Buffer(screenshot64, 'base64');
+            return new Buffer(screenShot64, 'base64');
         });
     };
 
@@ -209,9 +207,9 @@
 
     Eyes.prototype.getInferredEnvironment = function () {
         var res = "useragent:";
-        return this._driver.executeScript('return navigator.userAgent').then(function (userAgent) {
+        return this._driver.getUserAgent().then(function (userAgent) {
             return res + userAgent;
-        }, function() {
+        }, function () {
             return res;
         });
     };
