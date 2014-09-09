@@ -61,7 +61,7 @@
                         deferred.fulfill(this._driver);
                     }.bind(this));
             } catch (err) {
-                this._logger.log(err.toString());
+                this._logger.log(err);
                 deferred.reject(err);
             }
 
@@ -103,11 +103,11 @@
                     .then(function () {
                         deferred.fulfill();
                     }.bind(this), function (err) {
-                        this._logger.log(err.toString());
+                        this._logger.log(err);
                         deferred.reject(err);
                     }.bind(this));
             } catch (err) {
-                this._logger.log(err.toString());
+                this._logger.log(err);
                 deferred.reject(err);
             }
 
@@ -123,11 +123,11 @@
                     .then(function () {
                         deferred.fulfill();
                     }.bind(this), function (err) {
-                        this._logger.log(err.toString());
+                        this._logger.log(err);
                         deferred.reject(err);
                     }.bind(this));
             } catch (err) {
-                this._logger.log(err.toString());
+                this._logger.log(err);
                 deferred.reject(err);
             }
 
@@ -146,13 +146,13 @@
                             .then(function () {
                                 deferred.fulfill();
                             }.bind(this), function (err) {
-                                this._logger.log(err.toString());
+                                this._logger.log(err);
                                 deferred.reject(err);
                             }.bind(this));
                     }.bind(this));
                 }.bind(this));
             } catch (err) {
-                this._logger.log(err.toString());
+                this._logger.log(err);
                 deferred.reject(err);
             }
 
@@ -172,14 +172,14 @@
                                 .then(function () {
                                     deferred.fulfill();
                                 }.bind(this), function (err) {
-                                    this._logger.log(err.toString());
+                                    this._logger.log(err);
                                     deferred.reject(err);
                                 }.bind(this));
                         }.bind(this));
                     }.bind(this));
                 }.bind(this));
             } catch (err) {
-                this._logger.log(err.toString());
+                this._logger.log(err);
                 deferred.reject(err);
             }
 

@@ -75,10 +75,10 @@
         var that = this,
             args = Array.prototype.slice.call(arguments, 0),
             text = args.join('');
-        that._logger.verbose("sendKeys: text is " + text);
+        that._logger.verbose("sendKeys: text is", text);
         return that.getBounds().then(function (rect) {
             that._eyes.addKeyboardTrigger(rect, text);
-            that._logger.verbose("calling element sendKeys: text is " + text);
+            that._logger.verbose("calling element sendKeys: text is", text);
             return that._element.sendKeys.call(that._element, args);
         });
     };
