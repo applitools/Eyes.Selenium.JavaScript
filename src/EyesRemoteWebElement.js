@@ -75,9 +75,11 @@
         var that = this,
             args = Array.prototype.slice.call(arguments, 0),
             text = args.join('');
+        that._logger.verbose("sendKeys: text is " + text);
         return that.getBounds().then(function (rect) {
             that._eyes.addKeyboardTrigger(rect, text);
-            return that._element.sendKeys(arguments);
+            that._logger.verbose("calling element sendKeys: text is " + text);
+            return that._element.sendKeys.call(that._element, args);
         });
     };
 
@@ -92,16 +94,16 @@
         });
     };
 
-    EyesRemoteWebElement.prototype.findElement = function () {
+    EyesRemoteWebElement.prototype.findElement = function (locator) {
         var that = this;
-        return this._element.findElement(arguments).then(function (element) {
+        return this._element.findElement(locator).then(function (element) {
             return new EyesRemoteWebElement(element, that._eyes, that._logger);
         });
     };
 
-    EyesRemoteWebElement.prototype.findElements = function () {
+    EyesRemoteWebElement.prototype.findElements = function (locator) {
         var that = this;
-        return this._element.findElements(arguments).then(function (elements) {
+        return this._element.findElements(locator).then(function (elements) {
             return elements.map(function (element) {
                 return new EyesRemoteWebElement(element, that._eyes, that._logger);
             });
