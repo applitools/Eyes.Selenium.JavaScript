@@ -38,7 +38,7 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype._getBaseAgentId = function () {
-        return 'selenium-js/0.0.12';
+        return 'selenium-js/0.0.13';
     };
 
     Eyes.prototype.open = function (driver, appName, testName, viewportSize) {

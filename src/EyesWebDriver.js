@@ -16,7 +16,6 @@
         EyesRemoteWebElement = require('./EyesRemoteWebElement'),
         webdriver = require('selenium-webdriver');
 
-    //var webdriver = require('selenium-webdriver');
         //ScreenShotTaker = EyesSDK.ScreenShotTaker;
 
     /**

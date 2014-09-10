@@ -85,8 +85,8 @@
 
     EyesRemoteWebElement.prototype.click = function () {
         var that = this;
+        that._logger.verbose("click on element");
         return that.getBounds().then(function (rect) {
-
             var offset = { x: rect.width / 2, y: rect.height / 2 };
             that._eyes.addMouseTrigger(MouseAction.Click, rect, offset);
 
