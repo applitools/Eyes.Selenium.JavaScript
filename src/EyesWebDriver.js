@@ -13,8 +13,7 @@
 
     var EyesSDK = require('eyes.sdk'),
         GeneralUtils = EyesSDK.GeneralUtils,
-        EyesRemoteWebElement = require('./EyesRemoteWebElement'),
-        webdriver = require('selenium-webdriver');
+        EyesRemoteWebElement = require('./EyesRemoteWebElement');
 
         //ScreenShotTaker = EyesSDK.ScreenShotTaker;
 
