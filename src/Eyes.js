@@ -38,7 +38,7 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype._getBaseAgentId = function () {
-        return 'selenium-js/0.0.15';
+        return 'selenium-js/0.0.17';
     };
 
     Eyes.prototype.open = function (driver, appName, testName, viewportSize) {
@@ -115,6 +115,7 @@
         }.bind(this));
     };
 
+    //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.checkRegion = function (region, tag, matchTimeout) {
         return this._flow.execute(function () {
             var deferred = webdriver.promise.defer();
@@ -205,6 +206,7 @@
         return this._driver.getTitle();
     };
 
+    //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.getInferredEnvironment = function () {
         var res = "useragent:";
         return this._driver.getUserAgent().then(function (userAgent) {
