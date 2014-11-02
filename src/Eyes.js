@@ -18,19 +18,21 @@
         EyesBase = EyesSDK.EyesBase,
         EyesWebDriver = require('./EyesWebDriver'),
         ViewportSize = require('./ViewportSize'),
-        PromiseFactory = EyesSDK.EyesPromiseFactory,
         webdriver = require('selenium-webdriver');
+
+    var EyesUtils = require('eyes.utils'),
+    PromiseFactory = EyesUtils.PromiseFactory;
+    EyesUtils.setPromiseFactory(PromiseFactory);
+    ViewportSize.setPromiseFactory(PromiseFactory);
 
     /**
      *
-     * C'tor = initializes the module settings
-     *
      * @param {String} serverUrl
      * @param {Boolean} isDisabled - set to true to disable Applitools Eyes and use the webdriver directly.
-     *
+     * @constructor
      **/
     function Eyes(serverUrl, isDisabled) {
-        EyesBase.call(this, serverUrl || EyesBase.DEFAULT_EYES_SERVER, isDisabled);
+        EyesBase.call(this, PromiseFactory, serverUrl || EyesBase.DEFAULT_EYES_SERVER, isDisabled);
     }
 
     Eyes.prototype = new EyesBase();
@@ -38,7 +40,7 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype._getBaseAgentId = function () {
-        return 'selenium-js/0.0.18';
+        return 'selenium-js/0.0.19';
     };
 
     Eyes.prototype.open = function (driver, appName, testName, viewportSize) {

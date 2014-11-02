@@ -11,10 +11,10 @@
 (function () {
     "use strict";
 
-    var EyesSDK = require('eyes.sdk'),
-        GeneralUtils = EyesSDK.GeneralUtils,
-        EyesRemoteWebElement = require('./EyesRemoteWebElement');
+    var EyesRemoteWebElement = require('./EyesRemoteWebElement'),
+        GeneralUtils = require('eyes.utils').GeneralUtils;
 
+    //var EyesSDK = require('eyes.sdk'),
         //ScreenShotTaker = EyesSDK.ScreenShotTaker;
 
     /**
@@ -32,14 +32,17 @@
         this.setRemoteWebDriver(remoteWebDriver);
     }
 
+    //noinspection JSUnusedGlobalSymbols
     EyesWebDriver.prototype.getEyes = function () {
         return this._eyes;
     };
 
+    //noinspection JSUnusedGlobalSymbols
     EyesWebDriver.prototype.setEyes = function (eyes) {
         this._eyes = eyes;
     };
 
+    //noinspection JSUnusedGlobalSymbols
     EyesWebDriver.prototype.getRemoteWebDriver = function () {
         return this._driver;
     };

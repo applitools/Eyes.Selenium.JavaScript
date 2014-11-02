@@ -12,8 +12,8 @@
     "use strict";
 
     var EyesSDK = require('eyes.sdk'),
-        GeneralUtils = EyesSDK.GeneralUtils,
-        MouseAction = EyesSDK.Triggers.MouseAction;
+        MouseAction = EyesSDK.Triggers.MouseAction,
+        GeneralUtils = require('eyes.utils').GeneralUtils;
 
     /**
      *

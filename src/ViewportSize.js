@@ -13,9 +13,7 @@
 (function () {
     "use strict";
 
-    var EyesSDK = require('eyes.sdk'),
-        PromiseFactory = EyesSDK.EyesPromiseFactory,
-        webdriver = require('selenium-webdriver'),
+    var webdriver = require('selenium-webdriver'),
         Window = webdriver.WebDriver.Window,
         // consts
         _GET_VIEWPORT_SIZE_JAVASCRIPT_FOR_NORMAL_BROWSER =
@@ -24,8 +22,17 @@
             'return {width: document.documentElement.clientWidth, height: document.documentElement.clientHeight}',
         ViewportSize = {};
 
+    /**
+     * Set the promise factory which will be used for created deferreds/promises. You MUST call this function
+     * BEFORE any other function in the module.
+     * @param promiseFactory The promise factory to set.
+     */
+    ViewportSize.setPromiseFactory = function (promiseFactory) {
+        ViewportSize._promiseFactory = promiseFactory;
+    };
+
     function _retryCheckViewportSize(driver, size, retries) {
-        return PromiseFactory.makePromise(function (resolve, reject) {
+        return ViewportSize._promiseFactory.makePromise(function (resolve, reject) {
 
             ViewportSize.getViewportSize(driver).then(function (viewportSize) {
                 if (viewportSize.width === size.width && viewportSize.height === size.height) {
@@ -50,7 +57,7 @@
     }
 
     function _retryCheckWindowSize(driver, size, retries) {
-        return PromiseFactory.makePromise(function (resolve, reject) {
+        return ViewportSize._promiseFactory.makePromise(function (resolve, reject) {
 
             driver.manage().window().getSize().then(function (winSize) {
                 if (winSize.width === size.width && winSize.height === size.height) {
@@ -85,7 +92,7 @@
      *
      **/
     ViewportSize.getViewportSize = function (driver) {
-        return PromiseFactory.makePromise(function (resolve) {
+        return ViewportSize._promiseFactory.makePromise(function (resolve) {
             try {
                 return driver.executeScript(_GET_VIEWPORT_SIZE_JAVASCRIPT_FOR_NORMAL_BROWSER)
                     .then(function (size) {
@@ -116,7 +123,7 @@
     ViewportSize.setViewportSize = function (driver, size) {
         // first we will set the window size to the required size. Then we'll check the viewport size and increase the
         // window size accordingly.
-        return PromiseFactory.makePromise(function (resolve, reject) {
+        return ViewportSize._promiseFactory.makePromise(function (resolve, reject) {
             try {
                 driver.manage().window().setSize(size.width, size.height)
                     .then(function () {
