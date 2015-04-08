@@ -16,12 +16,15 @@
 
     var EyesSDK = require('eyes.sdk'),
         EyesBase = EyesSDK.EyesBase,
+        MutableImage = EyesSDK.MutableImage,
         EyesWebDriver = require('./EyesWebDriver'),
         ViewportSize = require('./ViewportSize'),
         webdriver = require('selenium-webdriver');
 
     var EyesUtils = require('eyes.utils'),
-    PromiseFactory = EyesUtils.PromiseFactory;
+        PromiseFactory = EyesUtils.PromiseFactory,
+        BrowserUtils = EyesUtils.BrowserUtils;
+
     EyesUtils.setPromiseFactory(PromiseFactory);
     ViewportSize.setPromiseFactory(PromiseFactory);
 
@@ -40,7 +43,7 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype._getBaseAgentId = function () {
-        return 'selenium-js/0.0.25';
+        return 'selenium-js/0.0.27';
     };
 
     Eyes.prototype.open = function (driver, appName, testName, viewportSize) {
@@ -197,13 +200,29 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.getScreenShot = function () {
-        return this._driver.takeScreenshot().then(function (screenShot64) {
-            // Notice that returning a value from inside "then" automatically wraps the return value with a promise,
-            // so we don't have to do it explicitly.
-            return new Buffer(screenShot64, 'base64');
-        });
+        var that = this;
+        var parsedImage;
+        return that._driver.takeScreenshot()
+            .then(function(screenshot64) {
+                parsedImage = new MutableImage(new Buffer(screenshot64, 'base64'), that._promiseFactory);
+                return parsedImage.getSize();
+            })
+            .then(function(imageSize) {
+                return BrowserUtils.findImageNormalizationFactor(that._driver, imageSize, that._viewportSize);
+            })
+            .then(function(factor) {
+                if (factor === 1) {
+                    return parsedImage;
+                }
+
+                return parsedImage.scaleImage(factor)
+                    .then(function () {
+                        return parsedImage;
+                    });
+            });
     };
 
+    //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.getTitle = function () {
         return this._driver.getTitle();
     };
@@ -218,10 +237,12 @@
         });
     };
 
+    //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.getViewportSize = function () {
         return ViewportSize.getViewportSize(this._driver);
     };
 
+    //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.setViewportSize = function (size) {
         return ViewportSize.setViewportSize(this._driver, size);
     };
