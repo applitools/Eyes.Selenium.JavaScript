@@ -43,7 +43,7 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype._getBaseAgentId = function () {
-        return 'selenium-js/0.0.28';
+        return 'selenium-js/0.0.30';
     };
 
     Eyes.prototype.open = function (driver, appName, testName, viewportSize) {
@@ -121,6 +121,15 @@
     };
 
     //noinspection JSUnusedGlobalSymbols
+    /**
+     * Visually validates a region in the screenshot.
+     *
+     * @param {Object} region The region to validate (in screenshot coordinates).
+     *                          Object is {width: *, height: *, top: *, left: *}
+     * @param {string} tag An optional tag to be associated with the screenshot.
+     * @param {int} matchTimeout The amount of time to retry matching.
+     * @return {Promise} A promise which is resolved when the validation is finished.
+     */
     Eyes.prototype.checkRegion = function (region, tag, matchTimeout) {
         return this._flow.execute(function () {
             var deferred = webdriver.promise.defer();
@@ -141,13 +150,22 @@
         }.bind(this));
     };
 
+    /**
+     * Visually validates a region in the screenshot.
+     *
+     * @param {WebElement} element The element defining the region to validate.
+     * @param {string} tag An optional tag to be associated with the screenshot.
+     * @param {int} matchTimeout The amount of time to retry matching.
+     * @return {Promise} A promise which is resolved when the validation is finished.
+     */
     Eyes.prototype.checkRegionByElement = function (element, tag, matchTimeout) {
         return this._flow.execute(function () {
             var deferred = webdriver.promise.defer();
             try {
                 element.getSize().then(function (size) {
                     element.getLocation().then(function (point) {
-                        var region = {height: size.height, width: size.width, left: point.x, top: point.y};
+                        var region = {height: size.height, width: size.width, left: point.x, top: point.y,
+                            relative: true};
                         EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout, region)
                             .then(function () {
                                 deferred.fulfill();
@@ -166,6 +184,14 @@
         }.bind(this));
     };
 
+    /**
+     * Visually validates a region in the screenshot.
+     *
+     * @param {By} by The WebDriver selector used for finding the region to validate.
+     * @param {string} tag An optional tag to be associated with the screenshot.
+     * @param {int} matchTimeout The amount of time to retry matching.
+     * @return {Promise} A promise which is resolved when the validation is finished.
+     */
     Eyes.prototype.checkRegionBy = function (by, tag, matchTimeout) {
         return this._flow.execute(function () {
             var deferred = webdriver.promise.defer();
@@ -173,7 +199,8 @@
                 this._driver.findElement(by).then(function (element) {
                     element.getSize().then(function (size) {
                         element.getLocation().then(function (point) {
-                            var region = {height: size.height, width: size.width, left: point.x, top: point.y};
+                            var region = {height: size.height, width: size.width, left: point.x, top: point.y,
+                                relative: true};
                             EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout, region)
                                 .then(function () {
                                     deferred.fulfill();
@@ -209,16 +236,27 @@
             })
             .then(function(imageSize) {
                 return BrowserUtils.findImageNormalizationFactor(that._driver, imageSize, that._viewportSize);
-            })
-            .then(function(factor) {
+            }).then(function(factor) {
                 if (factor === 1) {
                     return parsedImage;
                 }
-
-                return parsedImage.scaleImage(factor)
-                    .then(function () {
-                        return parsedImage;
+                return parsedImage.scaleImage(factor);
+            }).then(function () {
+                return parsedImage.getSize();
+            }).then(function (imageSize) {
+                // If the image is a viewport screenshot, we want to save the current scroll position (we'll need it
+                // for check region).
+                var isViewportScreenshot = imageSize.width <= that._viewportSize.width
+                    && imageSize.height <= that._viewportSize.height;
+                if (isViewportScreenshot) {
+                    that._logger.verbose('Eyes.getScreenshot() - viewport screenshot found!');
+                    return BrowserUtils.getCurrentScrollPosition(that._driver).then(function (scrollPosition) {
+                        that._logger.verbose('Eyes.getScreenshot() - scroll position: ', scrollPosition);
+                        return parsedImage.setCoordinates(scrollPosition);
                     });
+                }
+            }).then(function () {
+                return parsedImage;
             });
     };
 
