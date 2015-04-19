@@ -25,9 +25,6 @@
         PromiseFactory = EyesUtils.PromiseFactory,
         BrowserUtils = EyesUtils.BrowserUtils;
 
-    EyesUtils.setPromiseFactory(PromiseFactory);
-    ViewportSize.setPromiseFactory(PromiseFactory);
-
     /**
      *
      * @param {String} serverUrl
@@ -35,7 +32,8 @@
      * @constructor
      **/
     function Eyes(serverUrl, isDisabled) {
-        EyesBase.call(this, PromiseFactory, serverUrl || EyesBase.DEFAULT_EYES_SERVER, isDisabled);
+        this._promiseFactory = new PromiseFactory();
+        EyesBase.call(this, this._promiseFactory, serverUrl || EyesBase.DEFAULT_EYES_SERVER, isDisabled);
     }
 
     Eyes.prototype = new EyesBase();
@@ -43,12 +41,12 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype._getBaseAgentId = function () {
-        return 'selenium-js/0.0.28';
+        return 'selenium-js/0.0.30';
     };
 
     Eyes.prototype.open = function (driver, appName, testName, viewportSize) {
         var flow = this._flow = driver.controlFlow();
-        PromiseFactory.setFactoryMethods(function (asyncAction) {
+        this._promiseFactory.setFactoryMethods(function (asyncAction) {
             return flow.execute(function () {
                 var deferred = webdriver.promise.defer();
                 asyncAction(deferred.fulfill, deferred.reject);
@@ -239,12 +237,12 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.getViewportSize = function () {
-        return ViewportSize.getViewportSize(this._driver);
+        return ViewportSize.getViewportSize(this._driver, this._promiseFactory);
     };
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.setViewportSize = function (size) {
-        return ViewportSize.setViewportSize(this._driver, size);
+        return ViewportSize.setViewportSize(this._driver, size, this._promiseFactory);
     };
 
     module.exports = Eyes;

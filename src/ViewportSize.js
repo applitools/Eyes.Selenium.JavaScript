@@ -22,19 +22,10 @@
             'return {width: document.documentElement.clientWidth, height: document.documentElement.clientHeight}',
         ViewportSize = {};
 
-    /**
-     * Set the promise factory which will be used for created deferreds/promises. You MUST call this function
-     * BEFORE any other function in the module.
-     * @param promiseFactory The promise factory to set.
-     */
-    ViewportSize.setPromiseFactory = function (promiseFactory) {
-        ViewportSize._promiseFactory = promiseFactory;
-    };
+    function _retryCheckViewportSize(driver, size, retries, promiseFactory) {
+        return promiseFactory.makePromise(function (resolve, reject) {
 
-    function _retryCheckViewportSize(driver, size, retries) {
-        return ViewportSize._promiseFactory.makePromise(function (resolve, reject) {
-
-            ViewportSize.getViewportSize(driver).then(function (viewportSize) {
+            ViewportSize.getViewportSize(driver, promiseFactory).then(function (viewportSize) {
                 if (viewportSize.width === size.width && viewportSize.height === size.height) {
                     resolve(retries);
                     return;
@@ -46,7 +37,7 @@
                 }
 
                 driver.controlFlow().timeout(1000).then(function () {
-                    _retryCheckViewportSize(driver, size, retries - 1).then(function (retriesLeft) {
+                    _retryCheckViewportSize(driver, size, retries - 1, promiseFactory).then(function (retriesLeft) {
                         resolve(retriesLeft);
                     }, function (err) {
                         reject(err);
@@ -56,8 +47,8 @@
         });
     }
 
-    function _retryCheckWindowSize(driver, size, retries) {
-        return ViewportSize._promiseFactory.makePromise(function (resolve, reject) {
+    function _retryCheckWindowSize(driver, size, retries, promiseFactory) {
+        return promiseFactory.makePromise(function (resolve, reject) {
 
             driver.manage().window().getSize().then(function (winSize) {
                 if (winSize.width === size.width && winSize.height === size.height) {
@@ -71,7 +62,7 @@
                 }
 
                 driver.controlFlow().timeout(1000).then(function () {
-                    _retryCheckWindowSize(driver, size, retries - 1).then(function (retriesLeft) {
+                    _retryCheckWindowSize(driver, size, retries - 1, promiseFactory).then(function (retriesLeft) {
                         resolve(retriesLeft);
                     }, function (err) {
                         reject(err);
@@ -87,12 +78,13 @@
      *
      * @method getViewportSize
      * @param {Object} driver
+     * @param {Object} promiseFactory
      *
      * @return {Object} the size
      *
      **/
-    ViewportSize.getViewportSize = function (driver) {
-        return ViewportSize._promiseFactory.makePromise(function (resolve) {
+    ViewportSize.getViewportSize = function (driver, promiseFactory) {
+        return promiseFactory.makePromise(function (resolve) {
             try {
                 return driver.executeScript(_GET_VIEWPORT_SIZE_JAVASCRIPT_FOR_NORMAL_BROWSER)
                     .then(function (size) {
@@ -120,15 +112,15 @@
     };
 
     // TODO: handle the maximize window bug
-    ViewportSize.setViewportSize = function (driver, size) {
+    ViewportSize.setViewportSize = function (driver, size, promiseFactory) {
         // first we will set the window size to the required size. Then we'll check the viewport size and increase the
         // window size accordingly.
-        return ViewportSize._promiseFactory.makePromise(function (resolve, reject) {
+        return promiseFactory.makePromise(function (resolve, reject) {
             try {
                 driver.manage().window().setSize(size.width, size.height)
                     .then(function () {
-                        _retryCheckWindowSize(driver, size, 3).then(function (retriesLeft) {
-                            ViewportSize.getViewportSize(driver)
+                        _retryCheckWindowSize(driver, size, 3, promiseFactory).then(function (retriesLeft) {
+                            ViewportSize.getViewportSize(driver, promiseFactory)
                                 .then(function (viewportSize) {
                                     var computedSize = {
                                         width: ((2 * size.width) - viewportSize.width),
@@ -136,7 +128,7 @@
                                     };
                                     driver.manage().window().setSize(computedSize.width, computedSize.height)
                                         .then(function () {
-                                            _retryCheckViewportSize(driver, size, retriesLeft)
+                                            _retryCheckViewportSize(driver, size, retriesLeft, promiseFactory)
                                                 .then(function () {
                                                     resolve();
                                                 }, function (err) {
