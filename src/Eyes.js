@@ -235,10 +235,11 @@
             .then(function(imageSize) {
                 return BrowserUtils.findImageNormalizationFactor(that._driver, imageSize, that._viewportSize);
             }).then(function(factor) {
-                if (factor === 1) {
-                    return parsedImage;
+                if (factor === 0.5) {
+                    that._logger.verbose('Eyes.getScreenshot() - scaling to fix retina size issue!');
+                    return parsedImage.scaleImage(factor);
                 }
-                return parsedImage.scaleImage(factor);
+                return parsedImage;
             }).then(function () {
                 return parsedImage.getSize();
             }).then(function (imageSize) {
