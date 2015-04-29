@@ -16,13 +16,13 @@
 
     var EyesSDK = require('eyes.sdk'),
         EyesBase = EyesSDK.EyesBase,
-        MutableImage = EyesSDK.MutableImage,
         EyesWebDriver = require('./EyesWebDriver'),
         ViewportSize = require('./ViewportSize'),
         webdriver = require('selenium-webdriver');
 
     var EyesUtils = require('eyes.utils'),
         PromiseFactory = EyesUtils.PromiseFactory,
+        MutableImage = EyesUtils.MutableImage,
         BrowserUtils = EyesUtils.BrowserUtils;
 
     /**
@@ -32,6 +32,7 @@
      * @constructor
      **/
     function Eyes(serverUrl, isDisabled) {
+        this._forceFullPage = false;
         this._promiseFactory = new PromiseFactory();
         EyesBase.call(this, this._promiseFactory, serverUrl || EyesBase.DEFAULT_EYES_SERVER, isDisabled);
     }
@@ -227,8 +228,9 @@
     Eyes.prototype.getScreenShot = function () {
         var that = this;
         var parsedImage;
-        return that._driver.takeScreenshot()
-            .then(function(screenshot64) {
+        var promise = this._forceFullPage ? BrowserUtils.getFullPageScreenshot(that._driver,
+            that._promiseFactory, that._viewportSize) : that._driver.takeScreenshot();
+            return promise.then(function(screenshot64) {
                 parsedImage = new MutableImage(new Buffer(screenshot64, 'base64'), that._promiseFactory);
                 return parsedImage.getSize();
             })
@@ -282,6 +284,11 @@
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.setViewportSize = function (size) {
         return ViewportSize.setViewportSize(this._driver, size, this._promiseFactory);
+    };
+
+    //noinspection JSUnusedGlobalSymbols
+    Eyes.prototype.setForceFullPageScreenshot = function(force) {
+        this._forceFullPage = force;
     };
 
     module.exports = Eyes;
