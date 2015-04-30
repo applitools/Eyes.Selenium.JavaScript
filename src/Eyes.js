@@ -228,10 +228,17 @@
     Eyes.prototype.getScreenShot = function () {
         var that = this;
         var parsedImage;
-        var promise = this._forceFullPage ? BrowserUtils.getFullPageScreenshot(that._driver,
-            that._promiseFactory, that._viewportSize) : that._driver.takeScreenshot();
-            return promise.then(function(screenshot64) {
-                parsedImage = new MutableImage(new Buffer(screenshot64, 'base64'), that._promiseFactory);
+        var promise;
+        if (this._forceFullPage) {
+            promise = BrowserUtils.getFullPageScreenshot(that._driver, that._promiseFactory, that._viewportSize);
+        } else {
+            promise = that._driver.takeScreenshot().then(function(screenshot64) {
+                return new MutableImage(new Buffer(screenshot64, 'base64'), that._promiseFactory);
+            });
+        }
+        return promise
+            .then(function(screenshot) {
+                parsedImage = screenshot;
                 return parsedImage.getSize();
             })
             .then(function(imageSize) {
