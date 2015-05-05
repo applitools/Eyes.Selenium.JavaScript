@@ -33,12 +33,21 @@
      **/
     function Eyes(serverUrl, isDisabled) {
         this._forceFullPage = false;
+        this._hideScrollbars = false;
+        this._stitchMode = Eyes.StitchMode.Scroll;
         this._promiseFactory = new PromiseFactory();
         EyesBase.call(this, this._promiseFactory, serverUrl || EyesBase.DEFAULT_EYES_SERVER, isDisabled);
     }
 
     Eyes.prototype = new EyesBase();
     Eyes.prototype.constructor = Eyes;
+
+    Eyes.StitchMode = Object.freeze({
+        // Uses scrolling to get to the different parts of the page.
+        Scroll: 'Scroll',
+        // Uses CSS transitions to get to the different parts of the page.
+        CSS: 'CSS'
+    });
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype._getBaseAgentId = function () {
@@ -230,7 +239,8 @@
         var parsedImage;
         var promise;
         if (this._forceFullPage) {
-            promise = BrowserUtils.getFullPageScreenshot(that._driver, that._promiseFactory, that._viewportSize);
+            promise = BrowserUtils.getFullPageScreenshot(that._driver, that._promiseFactory, that._viewportSize,
+                this._hideScrollbars, this._stitchMode === Eyes.StitchMode.CSS);
         } else {
             promise = that._driver.takeScreenshot().then(function(screenshot64) {
                 return new MutableImage(new Buffer(screenshot64, 'base64'), that._promiseFactory);
@@ -297,6 +307,50 @@
     Eyes.prototype.setForceFullPageScreenshot = function(force) {
         this._forceFullPage = force;
     };
+
+    //noinspection JSUnusedGlobalSymbols
+    Eyes.prototype.getForceFullPageScreenshot = function() {
+        return this._forceFullPage;
+    };
+
+    //noinspection JSUnusedGlobalSymbols
+    Eyes.prototype.setHideScrollbars = function(hide) {
+        this._hideScrollbars = hide;
+    };
+
+    //noinspection JSUnusedGlobalSymbols
+    Eyes.prototype.getHideScrollbars = function() {
+        return this._hideScrollbars;
+    };
+
+    //noinspection JSUnusedGlobalSymbols
+    /**
+     *
+     * @param mode Use one of the values in Eyes.StitchMode.
+     */
+    Eyes.prototype.setStitchMode = function (mode) {
+        switch (mode) {
+            case Eyes.StitchMode.Scroll:
+                this._stitchMode = Eyes.StitchMode.Scroll;
+                break;
+            case Eyes.StitchMode.CSS:
+                this._stitchMode = Eyes.StitchMode.CSS;
+                break;
+            default:
+                this._stitchMode = Eyes.StitchMode.Scroll;
+                break;
+        }
+    };
+
+    //noinspection JSUnusedGlobalSymbols
+    /**
+     *
+     * @return {Eyes.StitchMode} The currently set StitchMode.
+     */
+    Eyes.prototype.getStitchMode = function () {
+        return this._stitchMode;
+    };
+
 
     module.exports = Eyes;
 }());
