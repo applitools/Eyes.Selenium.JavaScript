@@ -16,14 +16,12 @@
 
     var EyesSDK = require('eyes.sdk');
     var EyesBase = EyesSDK.EyesBase;
-    var EyesWebDriver = require('./EyesWebDriver');
     var ViewportSize = require('./ViewportSize');
-    var webdriver = require('selenium-webdriver');
-
+    var promise = require('selenium-webdriver').promise;
     var EyesUtils = require('eyes.utils');
     var PromiseFactory = EyesUtils.PromiseFactory;
-    var MutableImage = EyesUtils.MutableImage;
     var BrowserUtils = EyesUtils.BrowserUtils;
+    var EyesWebDriver = require('./EyesWebDriver');
 
     /**
      *
@@ -33,6 +31,9 @@
      **/
     function Eyes(serverUrl, isDisabled) {
         this._forceFullPage = false;
+        this._imageRotationDegrees = 0;
+        this._automaticRotation = true;
+        this._isLandscape = false;
         this._hideScrollbars = false;
         this._stitchMode = Eyes.StitchMode.Scroll;
         this._promiseFactory = new PromiseFactory();
@@ -54,81 +55,107 @@
         return 'selenium-js/0.0.35';
     };
 
-    //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.open = function(driver, appName, testName, viewportSize) {
-        var flow = this._flow = driver.controlFlow();
-        this._promiseFactory.setFactoryMethods(function(asyncAction) {
+    function _init(that, flow) {
+        // Set PromiseFactory to work with the protractor control flow and promises
+        that._promiseFactory.setFactoryMethods(function(asyncAction) {
             return flow.execute(function() {
-                var deferred = webdriver.promise.defer();
+                var deferred = promise.defer();
                 asyncAction(deferred.fulfill, deferred.reject);
                 return deferred.promise;
             });
         }, function() {
-            return webdriver.promise.defer();
+            return promise.defer();
         });
-        return this._flow.execute(function() {
-            var deferred = webdriver.promise.defer();
-            try {
-                EyesBase.prototype.open.call(this, appName, testName, viewportSize)
-                    .then(function() {
-                        this._driver = new EyesWebDriver(driver, this, this._logger);
-                        deferred.fulfill(this._driver);
-                    }.bind(this));
-            } catch (err) {
-                this._logger.log(err);
-                deferred.reject(err);
-            }
+    }
 
-            return deferred.promise;
-        }.bind(this));
+    //noinspection JSUnusedGlobalSymbols
+    Eyes.prototype.open = function(driver, appName, testName, viewportSize) {
+        var that = this;
+        var flow = that._flow = driver.controlFlow();
+        _init(that, flow);
+
+        if (this._isDisabled) {
+            return that._flow.execute(function() {
+                return driver;
+            });
+        }
+        return this._flow.execute(function() {
+            return that._driver.getCapabilities()
+                .then(function(capabilities) {
+                    var platformName = capabilities.caps_.platformName;
+                    var platformVersion = capabilities.caps_.platformVersion;
+                    var orientation = capabilities.caps_.orientation || capabilities.caps_.deviceOrientation;
+
+                    var majorVersion;
+                    if (!platformVersion || platformVersion.length < 1) {
+                        return;
+                    }
+                    majorVersion = platformVersion.split('.', 2)[0];
+                    if (platformName.toUpperCase() === 'ANDROID') {
+                        that.setHostOS('Android ' + majorVersion);
+                    } else if (platformName.toUpperCase() === 'IOS') {
+                        that.setHostOS('iOS ' + majorVersion);
+                    } else {
+                        return;
+                    }
+
+                    if (orientation && orientation.toUpperCase() === 'LANDSCAPE') {
+                        that._isLandscape = true;
+                    }
+                })
+                .then(function() {
+                    return EyesBase.prototype.open.call(that, appName, testName, viewportSize)
+                        .then(function() {
+                            that._driver = new EyesWebDriver(driver, that, that._logger);
+                            return that._driver;
+                        });
+                });
+        });
     };
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.close = function(throwEx) {
+        var that = this;
+
+        if (this._isDisabled) {
+            return that._flow.execute(function() {
+            });
+        }
         if (throwEx === undefined) {
             throwEx = true;
         }
 
-        return this._flow.execute(function() {
-            var deferred = webdriver.promise.defer();
-            try {
-                EyesBase.prototype.close.call(this, throwEx)
-                    .then(function(results) {
-                        deferred.fulfill(results);
-                    }.bind(this), function(err) {
-                        deferred.reject(err);
-                    });
-            } catch (err) {
-                deferred.reject(err);
-                if (throwEx) {
-                    throw new Error(err.message);
-                }
-            }
-
-            return deferred.promise;
-
-        }.bind(this));
+        return that._flow.execute(function() {
+            return EyesBase.prototype.close.call(that, false)
+                .then(function(results) {
+                    if (results.isPassed || !throwEx) {
+                        return results;
+                    } else {
+                        throw EyesBase.buildTestError(results, that._sessionStartInfo.scenarioIdOrName,
+                            that._sessionStartInfo.appIdOrName);
+                    }
+                });
+        });
     };
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.checkWindow = function(tag, matchTimeout) {
-        return this._flow.execute(function() {
-            var deferred = webdriver.promise.defer();
-            try {
-                EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout)
-                    .then(function() {
-                        deferred.fulfill();
-                    }.bind(this), function(err) {
-                        this._logger.log(err);
-                        deferred.reject(err);
-                    }.bind(this));
-            } catch (err) {
-                this._logger.log(err);
-                deferred.reject(err);
-            }
-
-            return deferred.promise;
-        }.bind(this));
+        var that = this;
+        if (that._isDisabled) {
+            return that._flow.execute(function() {
+            });
+        }
+        return that._flow.execute(function() {
+            return EyesBase.prototype.checkWindow.call(that, tag, false, matchTimeout)
+                .then(function(result) {
+                    if (result.asExpected || !that._failureReportOverridden) {
+                        return result;
+                    } else {
+                        throw EyesBase.buildTestError(result, that._sessionStartInfo.scenarioIdOrName,
+                            that._sessionStartInfo.appIdOrName);
+                    }
+                });
+        });
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -142,23 +169,22 @@
      * @return {Promise} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkRegion = function(region, tag, matchTimeout) {
-        return this._flow.execute(function() {
-            var deferred = webdriver.promise.defer();
-            try {
-                EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout, region)
-                    .then(function() {
-                        deferred.fulfill();
-                    }.bind(this), function(err) {
-                        this._logger.log(err);
-                        deferred.reject(err);
-                    }.bind(this));
-            } catch (err) {
-                this._logger.log(err);
-                deferred.reject(err);
-            }
-
-            return deferred.promise;
-        }.bind(this));
+        var that = this;
+        if (this._isDisabled) {
+            return that._flow.execute(function() {
+            });
+        }
+        return that._flow.execute(function() {
+            return EyesBase.prototype.checkWindow.call(that, tag, false, matchTimeout, region)
+                .then(function(result) {
+                    if (result.asExpected || !that._failureReportOverridden) {
+                        return result;
+                    } else {
+                        throw EyesBase.buildTestError(result, that._sessionStartInfo.scenarioIdOrName,
+                            that._sessionStartInfo.appIdOrName);
+                    }
+                });
+        });
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -171,29 +197,31 @@
      * @return {Promise} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkRegionByElement = function(element, tag, matchTimeout) {
-        return this._flow.execute(function() {
-            var deferred = webdriver.promise.defer();
-            try {
-                element.getSize().then(function(size) {
-                    element.getLocation().then(function(point) {
-                        var region = {height: size.height, width: size.width, left: point.x, top: point.y,
-                            relative: true};
-                        EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout, region)
-                            .then(function() {
-                                deferred.fulfill();
-                            }.bind(this), function(err) {
-                                this._logger.log(err);
-                                deferred.reject(err);
-                            }.bind(this));
-                    }.bind(this));
-                }.bind(this));
-            } catch (err) {
-                this._logger.log(err);
-                deferred.reject(err);
-            }
-
-            return deferred.promise;
-        }.bind(this));
+        var that = this;
+        var size;
+        if (this._isDisabled) {
+            return that._flow.execute(function() {
+            });
+        }
+        return that._flow.execute(function() {
+            return element.getSize()
+                .then(function(elementSize) {
+                    size = elementSize;
+                    return element.getLocation();
+                })
+                .then(function(point) {
+                    var region = {height: size.height, width: size.width, left: point.x, top: point.y, relative: true};
+                    return EyesBase.prototype.checkWindow.call(that, tag, false, matchTimeout, region)
+                        .then(function(result) {
+                            if (result.asExpected || !that._failureReportOverridden) {
+                                return result;
+                            } else {
+                                throw EyesBase.buildTestError(result, that._sessionStartInfo.scenarioIdOrName,
+                                    that._sessionStartInfo.appIdOrName);
+                            }
+                        });
+                });
+        });
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -206,31 +234,36 @@
      * @return {Promise} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkRegionBy = function(by, tag, matchTimeout) {
-        return this._flow.execute(function() {
-            var deferred = webdriver.promise.defer();
-            try {
-                this._driver.findElement(by).then(function(element) {
-                    element.getSize().then(function(size) {
-                        element.getLocation().then(function(point) {
-                            var region = {height: size.height, width: size.width, left: point.x, top: point.y,
-                                relative: true};
-                            EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout, region)
-                                .then(function() {
-                                    deferred.fulfill();
-                                }.bind(this), function(err) {
-                                    this._logger.log(err);
-                                    deferred.reject(err);
-                                }.bind(this));
-                        }.bind(this));
-                    }.bind(this));
-                }.bind(this));
-            } catch (err) {
-                this._logger.log(err);
-                deferred.reject(err);
-            }
-
-            return deferred.promise;
-        }.bind(this));
+        var that = this;
+        var element;
+        var size;
+        if (this._isDisabled) {
+            return that._flow.execute(function() {
+            });
+        }
+        return that._flow.execute(function() {
+            return that._driver.findElement(by)
+                .then(function(elem) {
+                    element = elem;
+                    return element.getSize();
+                })
+                .then(function(elementSize) {
+                    size = elementSize;
+                    return element.getLocation();
+                })
+                .then(function(point) {
+                    var region = {height: size.height, width: size.width, left: point.x, top: point.y, relative: true};
+                    return EyesBase.prototype.checkWindow.call(that, tag, false, matchTimeout, region)
+                        .then(function(result) {
+                            if (result.asExpected || !that._failureReportOverridden) {
+                                return result;
+                            } else {
+                                throw EyesBase.buildTestError(result, that._sessionStartInfo.scenarioIdOrName,
+                                    that._sessionStartInfo.appIdOrName);
+                            }
+                        });
+                });
+        });
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -240,47 +273,9 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.getScreenShot = function() {
-        var that = this;
-        var parsedImage;
-        var promise;
-        if (this._forceFullPage) {
-            promise = BrowserUtils.getFullPageScreenshot(that._driver, that._promiseFactory, that._viewportSize,
-                this._hideScrollbars, this._stitchMode === Eyes.StitchMode.CSS);
-        } else {
-            promise = that._driver.takeScreenshot().then(function(screenshot64) {
-                return new MutableImage(new Buffer(screenshot64, 'base64'), that._promiseFactory);
-            });
-        }
-        return promise
-            .then(function(screenshot) {
-                parsedImage = screenshot;
-                return parsedImage.getSize();
-            })
-            .then(function(imageSize) {
-                return BrowserUtils.findImageNormalizationFactor(that._driver, imageSize, that._viewportSize);
-            }).then(function(factor) {
-                if (factor === 0.5) {
-                    that._logger.verbose('Eyes.getScreenshot() - scaling to fix retina size issue!');
-                    return parsedImage.scaleImage(factor);
-                }
-                return parsedImage;
-            }).then(function() {
-                return parsedImage.getSize();
-            }).then(function(imageSize) {
-                // If the image is a viewport screenshot, we want to save the current scroll position (we'll need it
-                // for check region).
-                var isViewportScreenshot = imageSize.width <= that._viewportSize.width &&
-                    imageSize.height <= that._viewportSize.height;
-                if (isViewportScreenshot) {
-                    that._logger.verbose('Eyes.getScreenshot() - viewport screenshot found!');
-                    return BrowserUtils.getCurrentScrollPosition(that._driver).then(function(scrollPosition) {
-                        that._logger.verbose('Eyes.getScreenshot() - scroll position: ', scrollPosition);
-                        return parsedImage.setCoordinates(scrollPosition);
-                    });
-                }
-            }).then(function() {
-                return parsedImage;
-            });
+        return BrowserUtils.getScreenshot(this._driver, this._promiseFactory, this._viewportSize, this._forceFullPage,
+            this._hideScrollbars, this._stitchMode === Eyes.StitchMode.CSS, this._imageRotationDegrees,
+            this._automaticRotation, this._os === 'Android' ? 90 : 270, this._isLandscape);
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -291,11 +286,26 @@
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.getInferredEnvironment = function() {
         var res = 'useragent:';
-        return this._driver.getUserAgent().then(function(userAgent) {
-            return res + userAgent;
-        }, function() {
-            return res;
-        });
+        return this._driver.executeScript('return navigator.userAgent')
+            .then(function(userAgent) {
+                return res + userAgent;
+            }, function() {
+                return res;
+            });
+    };
+
+    //noinspection JSUnusedGlobalSymbols
+    /**
+     *
+     * @param mode Use one of the values in EyesBase.FailureReport.
+     */
+    Eyes.prototype.setFailureReport = function(mode) {
+        if (mode === EyesBase.FailureReport.Immediate) {
+            this._failureReportOverridden = true;
+            mode = EyesBase.FailureReport.OnClose;
+        }
+
+        EyesBase.prototype.setFailureReport.call(this, mode);
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -316,6 +326,20 @@
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.getForceFullPageScreenshot = function() {
         return this._forceFullPage;
+    };
+
+    //noinspection JSUnusedGlobalSymbols
+    Eyes.prototype.setForcedImageRotation = function(degrees) {
+        if (typeof degrees != 'number') {
+            throw new TypeError('degrees must be a number! set to 0 to clear');
+        }
+        this._imageRotationDegrees = degrees;
+        this._automaticRotation = false;
+    };
+
+    //noinspection JSUnusedGlobalSymbols
+    Eyes.prototype.getForcedImageRotation = function() {
+        return this._imageRotationDegrees || 0;
     };
 
     //noinspection JSUnusedGlobalSymbols
