@@ -11,19 +11,19 @@
  ---
  */
 
-(function () {
-    "use strict";
+(function() {
+    'use strict';
 
-    var EyesSDK = require('eyes.sdk'),
-        EyesBase = EyesSDK.EyesBase,
-        EyesWebDriver = require('./EyesWebDriver'),
-        ViewportSize = require('./ViewportSize'),
-        webdriver = require('selenium-webdriver');
+    var EyesSDK = require('eyes.sdk');
+    var EyesBase = EyesSDK.EyesBase;
+    var EyesWebDriver = require('./EyesWebDriver');
+    var ViewportSize = require('./ViewportSize');
+    var webdriver = require('selenium-webdriver');
 
-    var EyesUtils = require('eyes.utils'),
-        PromiseFactory = EyesUtils.PromiseFactory,
-        MutableImage = EyesUtils.MutableImage,
-        BrowserUtils = EyesUtils.BrowserUtils;
+    var EyesUtils = require('eyes.utils');
+    var PromiseFactory = EyesUtils.PromiseFactory;
+    var MutableImage = EyesUtils.MutableImage;
+    var BrowserUtils = EyesUtils.BrowserUtils;
 
     /**
      *
@@ -50,26 +50,27 @@
     });
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype._getBaseAgentId = function () {
+    Eyes.prototype._getBaseAgentId = function() {
         return 'selenium-js/0.0.35';
     };
 
-    Eyes.prototype.open = function (driver, appName, testName, viewportSize) {
+    //noinspection JSUnusedGlobalSymbols
+    Eyes.prototype.open = function(driver, appName, testName, viewportSize) {
         var flow = this._flow = driver.controlFlow();
-        this._promiseFactory.setFactoryMethods(function (asyncAction) {
-            return flow.execute(function () {
+        this._promiseFactory.setFactoryMethods(function(asyncAction) {
+            return flow.execute(function() {
                 var deferred = webdriver.promise.defer();
                 asyncAction(deferred.fulfill, deferred.reject);
                 return deferred.promise;
             });
-        }, function () {
+        }, function() {
             return webdriver.promise.defer();
         });
-        return this._flow.execute(function () {
+        return this._flow.execute(function() {
             var deferred = webdriver.promise.defer();
             try {
                 EyesBase.prototype.open.call(this, appName, testName, viewportSize)
-                    .then(function () {
+                    .then(function() {
                         this._driver = new EyesWebDriver(driver, this, this._logger);
                         deferred.fulfill(this._driver);
                     }.bind(this));
@@ -82,18 +83,19 @@
         }.bind(this));
     };
 
-    Eyes.prototype.close = function (throwEx) {
+    //noinspection JSUnusedGlobalSymbols
+    Eyes.prototype.close = function(throwEx) {
         if (throwEx === undefined) {
             throwEx = true;
         }
 
-        return this._flow.execute(function () {
+        return this._flow.execute(function() {
             var deferred = webdriver.promise.defer();
             try {
                 EyesBase.prototype.close.call(this, throwEx)
-                    .then(function (results) {
+                    .then(function(results) {
                         deferred.fulfill(results);
-                    }.bind(this), function (err) {
+                    }.bind(this), function(err) {
                         deferred.reject(err);
                     });
             } catch (err) {
@@ -108,14 +110,15 @@
         }.bind(this));
     };
 
-    Eyes.prototype.checkWindow = function (tag, matchTimeout) {
-        return this._flow.execute(function () {
+    //noinspection JSUnusedGlobalSymbols
+    Eyes.prototype.checkWindow = function(tag, matchTimeout) {
+        return this._flow.execute(function() {
             var deferred = webdriver.promise.defer();
             try {
                 EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout)
-                    .then(function () {
+                    .then(function() {
                         deferred.fulfill();
-                    }.bind(this), function (err) {
+                    }.bind(this), function(err) {
                         this._logger.log(err);
                         deferred.reject(err);
                     }.bind(this));
@@ -138,14 +141,14 @@
      * @param {int} matchTimeout The amount of time to retry matching.
      * @return {Promise} A promise which is resolved when the validation is finished.
      */
-    Eyes.prototype.checkRegion = function (region, tag, matchTimeout) {
-        return this._flow.execute(function () {
+    Eyes.prototype.checkRegion = function(region, tag, matchTimeout) {
+        return this._flow.execute(function() {
             var deferred = webdriver.promise.defer();
             try {
                 EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout, region)
-                    .then(function () {
+                    .then(function() {
                         deferred.fulfill();
-                    }.bind(this), function (err) {
+                    }.bind(this), function(err) {
                         this._logger.log(err);
                         deferred.reject(err);
                     }.bind(this));
@@ -158,6 +161,7 @@
         }.bind(this));
     };
 
+    //noinspection JSUnusedGlobalSymbols
     /**
      * Visually validates a region in the screenshot.
      *
@@ -166,18 +170,18 @@
      * @param {int} matchTimeout The amount of time to retry matching.
      * @return {Promise} A promise which is resolved when the validation is finished.
      */
-    Eyes.prototype.checkRegionByElement = function (element, tag, matchTimeout) {
-        return this._flow.execute(function () {
+    Eyes.prototype.checkRegionByElement = function(element, tag, matchTimeout) {
+        return this._flow.execute(function() {
             var deferred = webdriver.promise.defer();
             try {
-                element.getSize().then(function (size) {
-                    element.getLocation().then(function (point) {
+                element.getSize().then(function(size) {
+                    element.getLocation().then(function(point) {
                         var region = {height: size.height, width: size.width, left: point.x, top: point.y,
                             relative: true};
                         EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout, region)
-                            .then(function () {
+                            .then(function() {
                                 deferred.fulfill();
-                            }.bind(this), function (err) {
+                            }.bind(this), function(err) {
                                 this._logger.log(err);
                                 deferred.reject(err);
                             }.bind(this));
@@ -192,6 +196,7 @@
         }.bind(this));
     };
 
+    //noinspection JSUnusedGlobalSymbols
     /**
      * Visually validates a region in the screenshot.
      *
@@ -200,19 +205,19 @@
      * @param {int} matchTimeout The amount of time to retry matching.
      * @return {Promise} A promise which is resolved when the validation is finished.
      */
-    Eyes.prototype.checkRegionBy = function (by, tag, matchTimeout) {
-        return this._flow.execute(function () {
+    Eyes.prototype.checkRegionBy = function(by, tag, matchTimeout) {
+        return this._flow.execute(function() {
             var deferred = webdriver.promise.defer();
             try {
-                this._driver.findElement(by).then(function (element) {
-                    element.getSize().then(function (size) {
-                        element.getLocation().then(function (point) {
+                this._driver.findElement(by).then(function(element) {
+                    element.getSize().then(function(size) {
+                        element.getLocation().then(function(point) {
                             var region = {height: size.height, width: size.width, left: point.x, top: point.y,
                                 relative: true};
                             EyesBase.prototype.checkWindow.call(this, tag, false, matchTimeout, region)
-                                .then(function () {
+                                .then(function() {
                                     deferred.fulfill();
-                                }.bind(this), function (err) {
+                                }.bind(this), function(err) {
                                     this._logger.log(err);
                                     deferred.reject(err);
                                 }.bind(this));
@@ -229,12 +234,12 @@
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype._waitTimeout = function (ms) {
+    Eyes.prototype._waitTimeout = function(ms) {
         return this._flow.timeout(ms);
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getScreenShot = function () {
+    Eyes.prototype.getScreenShot = function() {
         var that = this;
         var parsedImage;
         var promise;
@@ -259,47 +264,47 @@
                     return parsedImage.scaleImage(factor);
                 }
                 return parsedImage;
-            }).then(function () {
+            }).then(function() {
                 return parsedImage.getSize();
-            }).then(function (imageSize) {
+            }).then(function(imageSize) {
                 // If the image is a viewport screenshot, we want to save the current scroll position (we'll need it
                 // for check region).
-                var isViewportScreenshot = imageSize.width <= that._viewportSize.width
-                    && imageSize.height <= that._viewportSize.height;
+                var isViewportScreenshot = imageSize.width <= that._viewportSize.width &&
+                    imageSize.height <= that._viewportSize.height;
                 if (isViewportScreenshot) {
                     that._logger.verbose('Eyes.getScreenshot() - viewport screenshot found!');
-                    return BrowserUtils.getCurrentScrollPosition(that._driver).then(function (scrollPosition) {
+                    return BrowserUtils.getCurrentScrollPosition(that._driver).then(function(scrollPosition) {
                         that._logger.verbose('Eyes.getScreenshot() - scroll position: ', scrollPosition);
                         return parsedImage.setCoordinates(scrollPosition);
                     });
                 }
-            }).then(function () {
+            }).then(function() {
                 return parsedImage;
             });
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getTitle = function () {
+    Eyes.prototype.getTitle = function() {
         return this._driver.getTitle();
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getInferredEnvironment = function () {
-        var res = "useragent:";
-        return this._driver.getUserAgent().then(function (userAgent) {
+    Eyes.prototype.getInferredEnvironment = function() {
+        var res = 'useragent:';
+        return this._driver.getUserAgent().then(function(userAgent) {
             return res + userAgent;
-        }, function () {
+        }, function() {
             return res;
         });
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getViewportSize = function () {
+    Eyes.prototype.getViewportSize = function() {
         return ViewportSize.getViewportSize(this._driver, this._promiseFactory);
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.setViewportSize = function (size) {
+    Eyes.prototype.setViewportSize = function(size) {
         return ViewportSize.setViewportSize(this._driver, size, this._promiseFactory);
     };
 
@@ -328,7 +333,7 @@
      *
      * @param mode Use one of the values in Eyes.StitchMode.
      */
-    Eyes.prototype.setStitchMode = function (mode) {
+    Eyes.prototype.setStitchMode = function(mode) {
         switch (mode) {
             case Eyes.StitchMode.Scroll:
                 this._stitchMode = Eyes.StitchMode.Scroll;
@@ -347,10 +352,9 @@
      *
      * @return {Eyes.StitchMode} The currently set StitchMode.
      */
-    Eyes.prototype.getStitchMode = function () {
+    Eyes.prototype.getStitchMode = function() {
         return this._stitchMode;
     };
-
 
     module.exports = Eyes;
 }());
