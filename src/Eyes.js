@@ -80,7 +80,7 @@
             });
         }
         return this._flow.execute(function() {
-            return that._driver.getCapabilities()
+            return driver.getCapabilities()
                 .then(function(capabilities) {
                     var platformName = capabilities.caps_.platformName;
                     var platformVersion = capabilities.caps_.platformVersion;
