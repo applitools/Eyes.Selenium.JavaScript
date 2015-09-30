@@ -52,7 +52,7 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype._getBaseAgentId = function() {
-        return 'selenium-js/0.0.37';
+        return 'selenium-js/0.0.38';
     };
 
     function _init(that, flow) {
@@ -92,9 +92,14 @@
                     }
                     majorVersion = platformVersion.split('.', 2)[0];
                     if (platformName.toUpperCase() === 'ANDROID') {
-                        that.setHostOS('Android ' + majorVersion);
+                        // We only automatically set the OS, if the user hadn't manually set it previously.
+                        if (!that.getHostOS()) {
+                            that.setHostOS('Android ' + majorVersion);
+                        }
                     } else if (platformName.toUpperCase() === 'IOS') {
-                        that.setHostOS('iOS ' + majorVersion);
+                        if (!that.getHostOS()) {
+                            that.setHostOS('iOS ' + majorVersion);
+                        }
                     } else {
                         return;
                     }
