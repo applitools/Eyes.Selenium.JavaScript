@@ -52,7 +52,7 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype._getBaseAgentId = function() {
-        return 'selenium-js/0.0.38';
+        return 'selenium-js/0.0.39';
     };
 
     function _init(that, flow) {
@@ -143,6 +143,40 @@
         });
     };
 
+    /**
+     * A helper function for creating region objects to be used in checkWindow
+     * @param {Object} point A point which represents the location of the region (x,y).
+     * @param {Object} size The size of the region (width, height).
+     * @param {boolean} isRelative Whether or not the region coordinates are relative to the image coordinates.
+     * @return {Object} A region object.
+     */
+    var createRegion = function (point, size, isRelative) {
+        return {left: Math.ceil(point.x), top: Math.ceil(point.y), width: Math.ceil(size.width),
+            height: Math.ceil(size.height), relative: isRelative};
+    };
+
+    /**
+     * A helper function for calling the checkWindow on {@code EyesBase} and handling the result.
+     * @param {Eyes} eyes The Eyes object (a derivative of EyesBase) on which to perform the call.
+     * @param {String} tag The tag for the current visual checkpoint.
+     * @param {boolean} ignoreMismatch Whether or not the server should ignore a mismatch.
+     * @param {int} retryTimeout The timeout. (Milliseconds).
+     * @param {Object} region The region to check. Should be of the form  {width, height, left, top}.
+     * @returns {Promise} A promise which resolves to the checkWindow result, or an exception of the result failed
+     *                      and failure reports are immediate.
+     */
+    var callCheckWindowBase = function (eyes, tag, ignoreMismatch, retryTimeout, region) {
+        return EyesBase.prototype.checkWindow.call(eyes, tag, false, retryTimeout, region)
+            .then(function(result) {
+                if (result.asExpected || !eyes._failureReportOverridden) {
+                    return result;
+                } else {
+                    throw EyesBase.buildTestError(result, eyes._sessionStartInfo.scenarioIdOrName,
+                        eyes._sessionStartInfo.appIdOrName);
+                }
+            });
+    };
+
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.checkWindow = function(tag, matchTimeout) {
         var that = this;
@@ -151,15 +185,7 @@
             });
         }
         return that._flow.execute(function() {
-            return EyesBase.prototype.checkWindow.call(that, tag, false, matchTimeout)
-                .then(function(result) {
-                    if (result.asExpected || !that._failureReportOverridden) {
-                        return result;
-                    } else {
-                        throw EyesBase.buildTestError(result, that._sessionStartInfo.scenarioIdOrName,
-                            that._sessionStartInfo.appIdOrName);
-                    }
-                });
+            return callCheckWindowBase(that, tag, false, matchTimeout, undefined);
         });
     };
 
@@ -180,15 +206,7 @@
             });
         }
         return that._flow.execute(function() {
-            return EyesBase.prototype.checkWindow.call(that, tag, false, matchTimeout, region)
-                .then(function(result) {
-                    if (result.asExpected || !that._failureReportOverridden) {
-                        return result;
-                    } else {
-                        throw EyesBase.buildTestError(result, that._sessionStartInfo.scenarioIdOrName,
-                            that._sessionStartInfo.appIdOrName);
-                    }
-                });
+            return callCheckWindowBase(that, tag, false, matchTimeout, region);
         });
     };
 
@@ -215,16 +233,7 @@
                     return element.getLocation();
                 })
                 .then(function(point) {
-                    var region = {height: size.height, width: size.width, left: point.x, top: point.y, relative: true};
-                    return EyesBase.prototype.checkWindow.call(that, tag, false, matchTimeout, region)
-                        .then(function(result) {
-                            if (result.asExpected || !that._failureReportOverridden) {
-                                return result;
-                            } else {
-                                throw EyesBase.buildTestError(result, that._sessionStartInfo.scenarioIdOrName,
-                                    that._sessionStartInfo.appIdOrName);
-                            }
-                        });
+                    return callCheckWindowBase(that, tag, false, matchTimeout, createRegion(point, size, true));
                 });
         });
     };
@@ -257,16 +266,7 @@
                     return element.getLocation();
                 })
                 .then(function(point) {
-                    var region = {height: size.height, width: size.width, left: point.x, top: point.y, relative: true};
-                    return EyesBase.prototype.checkWindow.call(that, tag, false, matchTimeout, region)
-                        .then(function(result) {
-                            if (result.asExpected || !that._failureReportOverridden) {
-                                return result;
-                            } else {
-                                throw EyesBase.buildTestError(result, that._sessionStartInfo.scenarioIdOrName,
-                                    that._sessionStartInfo.appIdOrName);
-                            }
-                        });
+                    return callCheckWindowBase(that, tag, false, matchTimeout, createRegion(point, size, true));
                 });
         });
     };
