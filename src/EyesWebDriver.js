@@ -9,66 +9,66 @@
  */
 
 (function () {
-    "use strict";
+  "use strict";
 
-    var EyesRemoteWebElement = require('./EyesRemoteWebElement'),
-        GeneralUtils = require('eyes.utils').GeneralUtils;
+  var EyesRemoteWebElement = require('./EyesRemoteWebElement'),
+    GeneralUtils = require('eyes.utils').GeneralUtils;
 
-    //var EyesSDK = require('eyes.sdk'),
-        //ScreenShotTaker = EyesSDK.ScreenShotTaker;
+  //var EyesSDK = require('eyes.sdk'),
+  //ScreenShotTaker = EyesSDK.ScreenShotTaker;
 
-    /**
-     *
-     * C'tor = initializes the module settings
-     *
-     * @param {Object} remoteWebDriver
-     * @param {Object} eyes - an instance of Eyes
-     * @param {Object} logger
-     *
-     **/
-    function EyesWebDriver(remoteWebDriver, eyes, logger) {
-        this._eyes = eyes;
-        this._logger = logger;
-        this.setRemoteWebDriver(remoteWebDriver);
-    }
+  /**
+   *
+   * C'tor = initializes the module settings
+   *
+   * @param {Object} remoteWebDriver
+   * @param {Object} eyes - an instance of Eyes
+   * @param {Object} logger
+   *
+   **/
+  function EyesWebDriver(remoteWebDriver, eyes, logger) {
+    this._eyes = eyes;
+    this._logger = logger;
+    this.setRemoteWebDriver(remoteWebDriver);
+  }
 
-    //noinspection JSUnusedGlobalSymbols
-    EyesWebDriver.prototype.getEyes = function () {
-        return this._eyes;
-    };
+  //noinspection JSUnusedGlobalSymbols
+  EyesWebDriver.prototype.getEyes = function () {
+    return this._eyes;
+  };
 
-    //noinspection JSUnusedGlobalSymbols
-    EyesWebDriver.prototype.setEyes = function (eyes) {
-        this._eyes = eyes;
-    };
+  //noinspection JSUnusedGlobalSymbols
+  EyesWebDriver.prototype.setEyes = function (eyes) {
+    this._eyes = eyes;
+  };
 
-    //noinspection JSUnusedGlobalSymbols
-    EyesWebDriver.prototype.getRemoteWebDriver = function () {
-        return this._driver;
-    };
+  //noinspection JSUnusedGlobalSymbols
+  EyesWebDriver.prototype.getRemoteWebDriver = function () {
+    return this._driver;
+  };
 
-    EyesWebDriver.prototype.setRemoteWebDriver = function (remoteWebDriver) {
-        this._driver = remoteWebDriver;
-        GeneralUtils.mixin(this, remoteWebDriver);
-    };
+  EyesWebDriver.prototype.setRemoteWebDriver = function (remoteWebDriver) {
+    this._driver = remoteWebDriver;
+    GeneralUtils.mixin(this, remoteWebDriver);
+  };
 
-    EyesWebDriver.prototype.getUserAgent = function () {
-        return this._driver.executeScript('return navigator.userAgent');
-    };
+  EyesWebDriver.prototype.getUserAgent = function () {
+    return this._driver.executeScript('return navigator.userAgent');
+  };
 
-    EyesWebDriver.prototype.findElement = function (locator) {
-        var that = this;
-        return new EyesRemoteWebElement(that._driver.findElement(locator), that._eyes, that._logger);
-    };
+  EyesWebDriver.prototype.findElement = function (locator) {
+    var that = this;
+    return new EyesRemoteWebElement(that._driver.findElement(locator), that._eyes, that._logger);
+  };
 
-    EyesWebDriver.prototype.findElements = function (locator) {
-        var that = this;
-        return this._driver.findElements(locator).then(function (elements) {
-            return elements.map(function (element) {
-                return new EyesRemoteWebElement(element, that._eyes, that._logger);
-            });
-        });
-    };
+  EyesWebDriver.prototype.findElements = function (locator) {
+    var that = this;
+    return this._driver.findElements(locator).then(function (elements) {
+      return elements.map(function (element) {
+        return new EyesRemoteWebElement(element, that._eyes, that._logger);
+      });
+    });
+  };
 
 //    EyesWebDriver.prototype.init = function () {
 //        return new Promise(function (resolve) {
@@ -81,5 +81,5 @@
 //        }.bind(this));
 //    };
 
-    module.exports = EyesWebDriver;
+  module.exports = EyesWebDriver;
 }());

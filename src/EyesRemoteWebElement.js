@@ -9,106 +9,106 @@
  */
 
 (function () {
-    "use strict";
+  "use strict";
 
-    var EyesSDK = require('eyes.sdk'),
-        MouseAction = EyesSDK.Triggers.MouseAction,
-        GeneralUtils = require('eyes.utils').GeneralUtils;
+  var EyesSDK = require('eyes.sdk'),
+    MouseAction = EyesSDK.Triggers.MouseAction,
+    GeneralUtils = require('eyes.utils').GeneralUtils;
 
-    /**
-     *
-     * C'tor = initializes the module settings
-     *
-     * @param {Object} remoteWebElement
-     * @param {Object} eyes
-     * @param {Object} logger
-     *
-     **/
-    function EyesRemoteWebElement(remoteWebElement, eyes, logger) {
-        this._element = remoteWebElement;
-        this._logger = logger;
-        this._eyes = eyes;
-        GeneralUtils.mixin(this, remoteWebElement);
+  /**
+   *
+   * C'tor = initializes the module settings
+   *
+   * @param {Object} remoteWebElement
+   * @param {Object} eyes
+   * @param {Object} logger
+   *
+   **/
+  function EyesRemoteWebElement(remoteWebElement, eyes, logger) {
+    this._element = remoteWebElement;
+    this._logger = logger;
+    this._eyes = eyes;
+    GeneralUtils.mixin(this, remoteWebElement);
+  }
+
+  function _getRectangle(location, size) {
+    size = size || { height: 0, width: 0 };
+    location = location || { x: 0, y: 0 };
+
+    var left = location.x,
+      top = location.y,
+      width = size.width,
+      height = size.height;
+
+    if (left < 0) {
+      width = Math.max(0, width + left);
+      left = 0;
     }
 
-    function _getRectangle(location, size) {
-        size = size || { height: 0, width: 0 };
-        location = location || { x: 0, y: 0 };
-
-        var left = location.x,
-            top = location.y,
-            width = size.width,
-            height = size.height;
-
-        if (left < 0) {
-            width = Math.max(0, width + left);
-            left = 0;
-        }
-
-        if (top < 0) {
-            height = Math.max(0, height + top);
-            top = 0;
-        }
-
-        return {
-            top: top,
-            left: left,
-            width: width,
-            height: height
-        };
+    if (top < 0) {
+      height = Math.max(0, height + top);
+      top = 0;
     }
 
-    EyesRemoteWebElement.prototype.getBounds = function () {
-        var that = this;
-        return that._element.getLocation().then(function (location) {
-            return that._element.getSize().then(function (size) {
-                return _getRectangle(location, size);
-            }, function () {
-                return _getRectangle(location);
-            });
-        }, function () {
-            return _getRectangle();
-        });
+    return {
+      top: top,
+      left: left,
+      width: width,
+      height: height
     };
+  }
 
-    EyesRemoteWebElement.prototype.sendKeys = function () {
-        var that = this,
-            args = Array.prototype.slice.call(arguments, 0),
-            text = args.join('');
-        that._logger.verbose("sendKeys: text is", text);
-        return that.getBounds().then(function (rect) {
-            that._eyes.addKeyboardTrigger(rect, text);
-            that._logger.verbose("calling element sendKeys: text is", text);
-            return that._element.sendKeys.call(that._element, args);
-        });
-    };
+  EyesRemoteWebElement.prototype.getBounds = function () {
+    var that = this;
+    return that._element.getLocation().then(function (location) {
+      return that._element.getSize().then(function (size) {
+        return _getRectangle(location, size);
+      }, function () {
+        return _getRectangle(location);
+      });
+    }, function () {
+      return _getRectangle();
+    });
+  };
 
-    EyesRemoteWebElement.prototype.click = function () {
-        var that = this;
-        that._logger.verbose("click on element");
-        return that.getBounds().then(function (rect) {
-            var offset = { x: rect.width / 2, y: rect.height / 2 };
-            that._eyes.addMouseTrigger(MouseAction.Click, rect, offset);
+  EyesRemoteWebElement.prototype.sendKeys = function () {
+    var that = this,
+      args = Array.prototype.slice.call(arguments, 0),
+      text = args.join('');
+    that._logger.verbose("sendKeys: text is", text);
+    return that.getBounds().then(function (rect) {
+      that._eyes.addKeyboardTrigger(rect, text);
+      that._logger.verbose("calling element sendKeys: text is", text);
+      return that._element.sendKeys.call(that._element, args);
+    });
+  };
 
-            return that._element.click();
-        });
-    };
+  EyesRemoteWebElement.prototype.click = function () {
+    var that = this;
+    that._logger.verbose("click on element");
+    return that.getBounds().then(function (rect) {
+      var offset = { x: rect.width / 2, y: rect.height / 2 };
+      that._eyes.addMouseTrigger(MouseAction.Click, rect, offset);
 
-    EyesRemoteWebElement.prototype.findElement = function (locator) {
-        var that = this;
-        return this._element.findElement(locator).then(function (element) {
-            return new EyesRemoteWebElement(element, that._eyes, that._logger);
-        });
-    };
+      return that._element.click();
+    });
+  };
 
-    EyesRemoteWebElement.prototype.findElements = function (locator) {
-        var that = this;
-        return this._element.findElements(locator).then(function (elements) {
-            return elements.map(function (element) {
-                return new EyesRemoteWebElement(element, that._eyes, that._logger);
-            });
-        });
-    };
+  EyesRemoteWebElement.prototype.findElement = function (locator) {
+    var that = this;
+    return this._element.findElement(locator).then(function (element) {
+      return new EyesRemoteWebElement(element, that._eyes, that._logger);
+    });
+  };
 
-    module.exports = EyesRemoteWebElement;
+  EyesRemoteWebElement.prototype.findElements = function (locator) {
+    var that = this;
+    return this._element.findElements(locator).then(function (elements) {
+      return elements.map(function (element) {
+        return new EyesRemoteWebElement(element, that._eyes, that._logger);
+      });
+    });
+  };
+
+  module.exports = EyesRemoteWebElement;
 }());
