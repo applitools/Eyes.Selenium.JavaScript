@@ -17,7 +17,7 @@
     var EyesSDK = require('eyes.sdk');
     var EyesBase = EyesSDK.EyesBase;
     var ViewportSize = require('./ViewportSize');
-    var promise = require('selenium-webdriver').promise;
+    var promise = require('q');
     var EyesUtils = require('eyes.utils');
     var PromiseFactory = EyesUtils.PromiseFactory;
     var BrowserUtils = EyesUtils.BrowserUtils;
@@ -52,7 +52,7 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype._getBaseAgentId = function() {
-        return 'selenium-js/0.0.40';
+        return 'selenium-js/0.0.41';
     };
 
     function _init(that, flow) {

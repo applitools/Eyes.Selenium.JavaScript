@@ -13,10 +13,7 @@
 (function () {
     "use strict";
 
-    var webdriver = require('selenium-webdriver'),
-        Window = webdriver.WebDriver.Window,
-        // consts
-        _GET_VIEWPORT_SIZE_JAVASCRIPT_FOR_NORMAL_BROWSER =
+    var _GET_VIEWPORT_SIZE_JAVASCRIPT_FOR_NORMAL_BROWSER =
             'return {width: window.innerWidth, height: window.innerHeight}',
         _GET_VIEWPORT_SIZE_JAVASCRIPT_FOR_BAD_BROWSERS =
             'return {width: document.documentElement.clientWidth, height: document.documentElement.clientHeight}',
@@ -104,7 +101,7 @@
                             });
                     });
             } catch (err) {
-                new Window(driver).getSize().then(function (size) {
+                driver.manage().window().getSize().then(function (size) {
                     resolve(size);
                 });
             }
