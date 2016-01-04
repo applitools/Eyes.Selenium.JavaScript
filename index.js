@@ -8,4 +8,5 @@ exports.ImageMatchSettings = EyesSDK.ImageMatchSettings;
 exports.ExactMatchSettings = EyesSDK.ExactMatchSettings;
 var eyesBase = EyesSDK.EyesBase;
 exports.FailureReport = eyesBase.FailureReport;
-
+var EyesUtils = require('eyes.utils');
+exports.TestResultsFormatter = EyesUtils.TestResultsFormatter;

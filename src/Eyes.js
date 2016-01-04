@@ -52,7 +52,7 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype._getBaseAgentId = function() {
-        return 'selenium-js/0.0.40';
+        return 'selenium-js/0.0.41';
     };
 
     function _init(that, flow) {
@@ -131,14 +131,21 @@
         }
 
         return that._flow.execute(function() {
-            return EyesBase.prototype.close.call(that, false)
+            // FIXME - remove this if the below code works.
+            //return EyesBase.prototype.close.call(that, false)
+            //    .then(function(results) {
+            //        if (results.isPassed || !throwEx) {
+            //            return results;
+            //        } else {
+            //            throw EyesBase.buildTestError(results, that._sessionStartInfo.scenarioIdOrName,
+            //                that._sessionStartInfo.appIdOrName);
+            //        }
+            //    });
+            return EyesBase.prototype.close.call(that, throwEx)
                 .then(function(results) {
-                    if (results.isPassed || !throwEx) {
-                        return results;
-                    } else {
-                        throw EyesBase.buildTestError(results, that._sessionStartInfo.scenarioIdOrName,
-                            that._sessionStartInfo.appIdOrName);
-                    }
+                    return results;
+                }, function (err) {
+                    throw err;
                 });
         });
     };
