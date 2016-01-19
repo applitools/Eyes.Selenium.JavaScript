@@ -131,16 +131,6 @@
         }
 
         return that._flow.execute(function() {
-            // FIXME - remove this if the below code works.
-            //return EyesBase.prototype.close.call(that, false)
-            //    .then(function(results) {
-            //        if (results.isPassed || !throwEx) {
-            //            return results;
-            //        } else {
-            //            throw EyesBase.buildTestError(results, that._sessionStartInfo.scenarioIdOrName,
-            //                that._sessionStartInfo.appIdOrName);
-            //        }
-            //    });
             return EyesBase.prototype.close.call(that, throwEx)
                 .then(function(results) {
                     return results;
