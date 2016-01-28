@@ -98,6 +98,10 @@
             return driver.executeScript(_GET_VIEWPORT_SIZE_JAVASCRIPT_FOR_BAD_BROWSERS)
               .then(function (size) {
                 resolve(size);
+              }, function () {
+                driver.manage().window().getSize().then(function (size) {
+                  resolve(size);
+                });
               });
           });
       } catch (err) {
