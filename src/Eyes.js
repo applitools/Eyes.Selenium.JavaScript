@@ -52,7 +52,7 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype._getBaseAgentId = function() {
-        return 'selenium-js/0.0.47';
+        return 'selenium-js/0.0.48';
     };
 
     function _init(that, flow) {
@@ -82,9 +82,16 @@
         return this._flow.execute(function() {
             return driver.getCapabilities()
                 .then(function(capabilities) {
-                    var platformName = capabilities.caps_.platformName;
-                    var platformVersion = capabilities.caps_.platformVersion;
-                    var orientation = capabilities.caps_.orientation || capabilities.caps_.deviceOrientation;
+                    var platformName, platformVersion, orientation;
+                    if (capabilities.caps_) {
+                        platformName = capabilities.caps_.platformName;
+                        platformVersion = capabilities.caps_.platformVersion;
+                        orientation = capabilities.caps_.orientation || capabilities.caps_.deviceOrientation;
+                    } else {
+                        platformName = capabilities.get('platform');
+                        platformVersion = capabilities.get('version');
+                        orientation = capabilities.get('orientation') || capabilities.get('deviceOrientation');
+                    }
 
                     var majorVersion;
                     if (!platformVersion || platformVersion.length < 1) {
