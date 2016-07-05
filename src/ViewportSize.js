@@ -13,11 +13,25 @@
 (function () {
   "use strict";
 
-  var _GET_VIEWPORT_SIZE_JAVASCRIPT_FOR_NORMAL_BROWSER =
-      'return {width: window.innerWidth, height: window.innerHeight}',
-    _GET_VIEWPORT_SIZE_JAVASCRIPT_FOR_BAD_BROWSERS =
-      'return {width: document.documentElement.clientWidth, height: document.documentElement.clientHeight}',
-    ViewportSize = {};
+  var JS_GET_VIEWPORT_SIZE = "var height = undefined;"
+          + "var width = undefined;"
+          + "  if (window.innerHeight) {height = window.innerHeight;}"
+          + "  else if (document.documentElement "
+          + "&& document.documentElement.clientHeight) "
+          + "{height = document.documentElement.clientHeight;}"
+          + "  else { var b = document.getElementsByTagName('body')[0]; "
+          + "if (b.clientHeight) {height = b.clientHeight;}"
+          + "};"
+          + " if (window.innerWidth) {width = window.innerWidth;}"
+          + " else if (document.documentElement "
+          + "&& document.documentElement.clientWidth) "
+          + "{width = document.documentElement.clientWidth;}"
+          +" else { var b = document.getElementsByTagName('body')[0]; "
+          + "if (b.clientWidth) {"
+          + "width = b.clientWidth;}"
+          + "};"
+          + "return {width: width, height: height};",
+      ViewportSize = {};
 
   function _retryCheckViewportSize(driver, size, retries, promiseFactory) {
     return promiseFactory.makePromise(function (resolve, reject) {
@@ -44,31 +58,6 @@
     });
   }
 
-  function _retryCheckWindowSize(driver, size, retries, promiseFactory) {
-    return promiseFactory.makePromise(function (resolve, reject) {
-
-      driver.manage().window().getSize().then(function (winSize) {
-        if (winSize.width === size.width && winSize.height === size.height) {
-          resolve(retries);
-          return;
-        }
-
-        if (retries === 0) {
-          reject(new Error('no more retries to set window size'));
-          return;
-        }
-
-        driver.controlFlow().timeout(1000).then(function () {
-          _retryCheckWindowSize(driver, size, retries - 1, promiseFactory).then(function (retriesLeft) {
-            resolve(retriesLeft);
-          }, function (err) {
-            reject(err);
-          });
-        });
-      });
-    });
-  }
-
   /**
    *
    * Tries to get the viewport size using Javascript. If fails, gets the entire browser window size!
@@ -83,27 +72,14 @@
   ViewportSize.getViewportSize = function (driver, promiseFactory) {
     return promiseFactory.makePromise(function (resolve) {
       try {
-        return driver.executeScript(_GET_VIEWPORT_SIZE_JAVASCRIPT_FOR_NORMAL_BROWSER)
-          .then(function (size) {
-            if (size.width > 0 && size.height > 0) {
-              resolve(size);
-              return;
-            }
-
-            return driver.executeScript(_GET_VIEWPORT_SIZE_JAVASCRIPT_FOR_BAD_BROWSERS)
-              .then(function (size) {
+        return driver.executeScript(JS_GET_VIEWPORT_SIZE)
+            .then(function (size) {
+              if (size.width > 0 && size.height > 0) {
                 resolve(size);
-              });
-          }, function () {
-            return driver.executeScript(_GET_VIEWPORT_SIZE_JAVASCRIPT_FOR_BAD_BROWSERS)
-              .then(function (size) {
-                resolve(size);
-              }, function () {
-                driver.manage().window().getSize().then(function (size) {
-                  resolve(size);
-                });
-              });
-          });
+                return;
+              }
+            }, function () {
+            });
       } catch (err) {
         driver.manage().window().getSize().then(function (size) {
           resolve(size);
@@ -112,35 +88,58 @@
     }.bind(this));
   };
 
+
   // TODO: handle the maximize window bug
   ViewportSize.setViewportSize = function (driver, size, promiseFactory) {
-    // first we will set the window size to the required size. Then we'll check the viewport size and increase the
-    // window size accordingly.
     return promiseFactory.makePromise(function (resolve, reject) {
       try {
-        driver.manage().window().setSize(size.width, size.height)
-          .then(function () {
-            _retryCheckWindowSize(driver, size, 3, promiseFactory).then(function (retriesLeft) {
-              ViewportSize.getViewportSize(driver, promiseFactory)
-                .then(function (viewportSize) {
-                  var computedSize = {
-                    width: ((2 * size.width) - viewportSize.width),
-                    height: ((2 * size.height) - viewportSize.height)
-                  };
-                  driver.manage().window().setSize(computedSize.width, computedSize.height)
-                    .then(function () {
-                      _retryCheckViewportSize(driver, size, retriesLeft, promiseFactory)
-                        .then(function () {
-                          resolve();
-                        }, function (err) {
-                          reject(err);
-                        });
-                    });
-                });
-            }, function (err) {
-              reject(err);
-            });
-          });
+
+        driver.manage().window().setPosition(0,0).then(function () {
+          ViewportSize.getViewportSize(driver, promiseFactory)
+              .then(function (viewPortSize) {
+                
+                driver.getCapabilities()
+                    .then(function(capabilities) {
+                      var orientation;
+                      if (capabilities.caps_) {
+                        orientation = capabilities.caps_.orientation || capabilities.caps_.deviceOrientation;
+                      } else {
+                        orientation = capabilities.get('orientation') || capabilities.get('deviceOrientation');
+                      }
+                      if (orientation && orientation.toUpperCase() === 'LANDSCAPE' && size.height > size.width) {
+                        var height2 = size.width;
+                        size.width = size.height;
+                        size.height = height2;
+                      }
+                      // If the viewport size is already the required size
+                      if (size.width == viewPortSize.width &&
+                          size.height == viewPortSize.height) {
+                        resolve();
+                      }
+                      driver.manage().window().getSize()
+                          .then(function(browserSize){
+                            var requiredBrowserSize = {
+                              width: browserSize.width + (size.width - viewPortSize.width),
+                              height: browserSize.height + (size.height - viewPortSize.height)
+                            };
+                            driver.manage().window().setSize(requiredBrowserSize.width, requiredBrowserSize.height)
+                                .then(function () {
+                                  resolve();
+
+                                  _retryCheckViewportSize(driver, size, 3, promiseFactory)
+                                      .then(function () {
+                                        resolve();
+                                      }, function (err) {
+                                        reject(err);
+                                      });
+                                });
+                          });
+                    })
+              }, function (err) {
+                reject(err);
+              });
+        });
+
       } catch (err) {
         reject(new Error(err));
       }
