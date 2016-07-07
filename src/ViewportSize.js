@@ -115,7 +115,6 @@
         }.bind(this));
     };
 
-    // TODO: handle the maximize window bug
     ViewportSize.setViewportSize = function (driver, size, promiseFactory, lastRetry) {
         // first we will set the window size to the required size. Then we'll check the viewport size and increase the
         // window size accordingly.
