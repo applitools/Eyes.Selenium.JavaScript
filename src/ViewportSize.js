@@ -115,7 +115,7 @@
         }.bind(this));
     };
 
-    ViewportSize.setViewportSize = function (driver, size, promiseFactory, lastRetry) {
+    ViewportSize.setViewportSize = function (driver, size, promiseFactory, logger, lastRetry) {
         // first we will set the window size to the required size. Then we'll check the viewport size and increase the
         // window size accordingly.
         return promiseFactory.makePromise(function (resolve, reject) {
@@ -130,7 +130,13 @@
                                 };
                                 driver.manage().window().setSize(requiredBrowserSize.width, requiredBrowserSize.height)
                                     .then(function () {
+                                        if(browserSize.height < size.height ||  browserSize.width < size.width){
+                                            logger.log("Please try a smaller viewport size.");
+                                            resolve();
+                                            return;
+                                        }
                                         _retryCheckWindowSize(driver, requiredBrowserSize, 3, promiseFactory).then(function (retriesLeft) {
+
                                             _retryCheckViewportSize(driver, size, retriesLeft, promiseFactory)
                                                 .then(function () {
                                                     resolve();
@@ -138,7 +144,7 @@
                                                     if(lastRetry){
                                                         reject(err);
                                                     } else {
-                                                        ViewportSize.setViewportSize(driver, size, promiseFactory, true);
+                                                        ViewportSize.setViewportSize(driver, size, promiseFactory,logger, true);
                                                     }
                                                 });
                                         }, function (err) {
