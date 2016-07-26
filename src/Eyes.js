@@ -327,7 +327,7 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.setViewportSize = function(size) {
-        return ViewportSize.setViewportSize(this._driver, size, this._promiseFactory);
+        return ViewportSize.setViewportSize(this._driver, size, this._promiseFactory, this._logger);
     };
 
     //noinspection JSUnusedGlobalSymbols
