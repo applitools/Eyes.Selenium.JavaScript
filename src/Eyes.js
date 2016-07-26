@@ -22,6 +22,7 @@
     var PromiseFactory = EyesUtils.PromiseFactory;
     var BrowserUtils = EyesUtils.BrowserUtils;
     var EyesWebDriver = require('./EyesWebDriver');
+    var DEFAULT_WAIT_BEFORE_SCREENSHOTS = 100; // ms
 
     /**
      *
@@ -37,6 +38,8 @@
         this._hideScrollbars = false;
         this._stitchMode = Eyes.StitchMode.Scroll;
         this._promiseFactory = new PromiseFactory();
+        this._waitBeforeScreenshots = DEFAULT_WAIT_BEFORE_SCREENSHOTS;
+
         EyesBase.call(this, this._promiseFactory, serverUrl || EyesBase.DEFAULT_EYES_SERVER, isDisabled);
     }
 
@@ -284,7 +287,7 @@
     Eyes.prototype.getScreenShot = function() {
         return BrowserUtils.getScreenshot(this._driver, this._promiseFactory, this._viewportSize, this._forceFullPage,
             this._hideScrollbars, this._stitchMode === Eyes.StitchMode.CSS, this._imageRotationDegrees,
-            this._automaticRotation, this._os === 'Android' ? 90 : 270, this._isLandscape);
+            this._automaticRotation, this._os === 'Android' ? 90 : 270, this._isLandscape, this._waitBeforeScreenshots);
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -387,6 +390,29 @@
      */
     Eyes.prototype.getStitchMode = function() {
         return this._stitchMode;
+    };
+
+    //noinspection JSUnusedGlobalSymbols
+    /**
+     * Sets the wait time between before each screen capture, including between screen parts of a full page screenshot.
+     *
+     * @param waitBeforeScreenshots The wait time in milliseconds.
+     */
+    Eyes.prototype.setWaitBeforeScreenshots = function (waitBeforeScreenshots) {
+        if (waitBeforeScreenshots <= 0) {
+            this._waitBeforeScreenshots = DEFAULT_WAIT_BEFORE_SCREENSHOTS;
+        } else {
+            this._waitBeforeScreenshots = waitBeforeScreenshots;
+        }
+    };
+
+    //noinspection JSUnusedGlobalSymbols
+    /**
+     *
+     * @returns {number|*} the wait time between before each screen capture, in milliseconds.
+     */
+    Eyes.prototype.getWaitBeforeScreenshots = function () {
+        return this._waitBeforeScreenshots;
     };
 
     module.exports = Eyes;

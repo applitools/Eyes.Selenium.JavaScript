@@ -25,7 +25,7 @@
     "license": "Apache-2.0",
     "main": "index",
     "dependencies": {
-        "eyes.utils": "0.0.14",
+        "eyes.utils": "0.0.15",
         "eyes.sdk": "0.0.44",
         "q": "^1.4.1",
         "winston": "*"
