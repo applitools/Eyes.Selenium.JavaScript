@@ -560,5 +560,18 @@
         return this._waitBeforeScreenshots;
     };
 
+    /**
+     *
+     * @returns {Promise} A promise which resolves to the webdriver's session ID.
+     */
+    Eyes.prototype.getAUTSessionId = function () {
+        return this._promiseFactory.makePromise(function (resolve) {
+            this._driver.getRemoteWebDriver().getSession()
+                .then(function (session) {
+                    resolve(session.getId());
+                });
+        }.bind(this));
+    };
+
     module.exports = Eyes;
 }());
