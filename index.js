@@ -1,5 +1,17 @@
+exports.BordersAwareElementContentLocationProvider = require('./src/BordersAwareElementContentLocationProvider');
+exports.ContextBasedScaleProvider = require('./src/ContextBasedScaleProvider');
 exports.Eyes = require('./src/Eyes');
+exports.EyesRemoteWebElement = require('./src/EyesRemoteWebElement');
+exports.EyesSeleniumUtils = require('./src/EyesSeleniumUtils');
+exports.EyesTargetLocator = require('./src/EyesTargetLocator');
+exports.EyesWebDriver = require('./src/EyesWebDriver');
+exports.EyesWebDriverScreenshot = require('./src/EyesWebDriverScreenshot');
 exports.FileLogHandler = require('./src/FileLogHandler');
+exports.Frame = require('./src/Frame');
+exports.FrameChain = require('./src/FrameChain');
+exports.ScrollPositionMemento = require('./src/ScrollPositionMemento');
+exports.ScrollPositionProvider = require('./src/ScrollPositionProvider');
+exports.ViewportSize = require('./src/ViewportSize');
 var EyesSDK = require('eyes.sdk');
 exports.ConsoleLogHandler = EyesSDK.ConsoleLogHandler;
 exports.NullLogHandler  = EyesSDK.NullLogHandler;
