@@ -37,7 +37,7 @@
     // We only consider scroll of the default content if this is a viewport screenshot.
     if (screenshotType == ScreenshotType.VIEWPORT) {
       var defaultContentScroll = firstFrame.getParentScrollPosition();
-      locationInScreenshot.offset(-defaultContentScroll.getX(), -defaultContentScroll.getY());
+      locationInScreenshot.offset([-defaultContentScroll.getX(), -defaultContentScroll.getY()]);
     }
 
     logger.verbose("Iterating over frames..");
@@ -53,10 +53,10 @@
       var frameParentScrollPosition = frame.getParentScrollPosition();
 
       // Offsetting the location in the screenshot
-      locationInScreenshot.offset(
+      locationInScreenshot.offset([
         frameLocation.getX() - frameParentScrollPosition.getX(),
         frameLocation.getY() - frameParentScrollPosition.getY()
-      );
+      ]);
 
     }
 
@@ -143,7 +143,7 @@
         } else {
           frameLocationInScreenshot = new Location(0, 0);
           if (that._screenshotType == ScreenshotType.VIEWPORT) {
-            frameLocationInScreenshot.offset(-that._scrollPosition.getX(), -that._scrollPosition.getY());
+            frameLocationInScreenshot.offset([-that._scrollPosition.getX(), -that._scrollPosition.getY()]);
           }
         }
       }
@@ -251,12 +251,12 @@
         && to == CoordinatesType.SCREENSHOT_AS_IS) {
 
         // If this is not a sub-screenshot, this will have no effect.
-        result.offset(this._frameLocationInScreenshot.getX(), this._frameLocationInScreenshot.getY());
+        result.offset([this._frameLocationInScreenshot.getX(), this._frameLocationInScreenshot.getY()]);
 
       } else if (from == CoordinatesType.SCREENSHOT_AS_IS &&
         (to == CoordinatesType.CONTEXT_RELATIVE || to == CoordinatesType.CONTEXT_AS_IS)){
 
-        result.offset(-this._frameLocationInScreenshot.getX(), -this._frameLocationInScreenshot.getY());
+        result.offset([-this._frameLocationInScreenshot.getX(), -this._frameLocationInScreenshot.getY()]);
       }
       return result;
     }
@@ -265,11 +265,11 @@
       case CoordinatesType.CONTEXT_AS_IS:
         switch (to) {
           case CoordinatesType.CONTEXT_RELATIVE:
-            result.offset(this._scrollPosition.getX(), this._scrollPosition.getY());
+            result.offset([this._scrollPosition.getX(), this._scrollPosition.getY()]);
             break;
 
           case CoordinatesType.SCREENSHOT_AS_IS:
-            result.offset(this._frameLocationInScreenshot.getX(), this._frameLocationInScreenshot.getY());
+            result.offset([this._frameLocationInScreenshot.getX(), this._frameLocationInScreenshot.getY()]);
             break;
 
           default:
@@ -281,13 +281,13 @@
         switch (to) {
           case CoordinatesType.SCREENSHOT_AS_IS:
             // First, convert context-relative to context-as-is.
-            result.offset(-this._scrollPosition.getX(), -this._scrollPosition.getY());
+            result.offset([-this._scrollPosition.getX(), -this._scrollPosition.getY()]);
             // Now convert context-as-is to screenshot-as-is.
-            result.offset(this._frameLocationInScreenshot.getX(), this._frameLocationInScreenshot.getY());
+            result.offset([this._frameLocationInScreenshot.getX(), this._frameLocationInScreenshot.getY()]);
             break;
 
           case CoordinatesType.CONTEXT_AS_IS:
-            result.offset(-this._scrollPosition.getX(), -this._scrollPosition.getY());
+            result.offset([-this._scrollPosition.getX(), -this._scrollPosition.getY()]);
             break;
 
           default:
@@ -299,13 +299,13 @@
         switch (to) {
           case CoordinatesType.CONTEXT_RELATIVE:
             // First convert to context-as-is.
-            result.offset(-this._frameLocationInScreenshot.getX(), -this._frameLocationInScreenshot.getY());
+            result.offset([-this._frameLocationInScreenshot.getX(), -this._frameLocationInScreenshot.getY()]);
             // Now convert to context-relative.
-            result.offset(this._scrollPosition.getX(), this._scrollPosition.getY());
+            result.offset([this._scrollPosition.getX(), this._scrollPosition.getY()]);
             break;
 
           case CoordinatesType.CONTEXT_AS_IS:
-            result.offset(-this._frameLocationInScreenshot.getX(), -this._frameLocationInScreenshot.getY());
+            result.offset([-this._frameLocationInScreenshot.getX(), -this._frameLocationInScreenshot.getY()]);
             break;
 
           default:
