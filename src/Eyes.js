@@ -566,7 +566,11 @@
      */
     Eyes.prototype.getAUTSessionId = function () {
         return this._promiseFactory.makePromise(function (resolve) {
-            this._driver.getRemoteWebDriver().getSession()
+            if (!this._driver) {
+                resolve(undefined);
+                return;
+            }
+            this._driver.getSession()
                 .then(function (session) {
                     resolve(session.getId());
                 });
