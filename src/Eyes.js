@@ -11,7 +11,7 @@
  ---
  */
 
-(function() {
+(function () {
     'use strict';
 
     var EyesSDK = require('eyes.sdk'),
@@ -63,37 +63,37 @@
     });
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype._getBaseAgentId = function() {
+    Eyes.prototype._getBaseAgentId = function () {
         return 'selenium-js/0.0.52';
     };
 
     function _init(that, flow) {
         // Set PromiseFactory to work with the protractor control flow and promises
-        that._promiseFactory.setFactoryMethods(function(asyncAction) {
-            return flow.execute(function() {
+        that._promiseFactory.setFactoryMethods(function (asyncAction) {
+            return flow.execute(function () {
                 var deferred = promise.defer();
                 asyncAction(deferred.fulfill, deferred.reject);
                 return deferred.promise;
             });
-        }, function() {
+        }, function () {
             return promise.defer();
         });
     }
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.open = function(driver, appName, testName, viewportSize) {
+    Eyes.prototype.open = function (driver, appName, testName, viewportSize) {
         var that = this;
         var flow = that._flow = driver.controlFlow();
         _init(that, flow);
 
         if (this._isDisabled) {
-            return that._flow.execute(function() {
+            return that._flow.execute(function () {
                 return driver;
             });
         }
-        return this._flow.execute(function() {
+        return flow.execute(function () {
             return driver.getCapabilities()
-                .then(function(capabilities) {
+                .then(function (capabilities) {
                     var platformName, platformVersion, orientation;
                     if (capabilities.caps_) {
                         platformName = capabilities.caps_.platformName;
@@ -127,11 +127,11 @@
                         that._isLandscape = true;
                     }
                 })
-                .then(function() {
+                .then(function () {
                     return EyesBase.prototype.open.call(that, appName, testName, viewportSize);
-                }).then(function() {
+                }).then(function () {
                     return new EyesWebDriver(driver, that, that._logger, that._promiseFactory);
-                }).then(function(driver) {
+                }).then(function (driver) {
                     that._devicePixelRatio = Eyes.UNKNOWN_DEVICE_PIXEL_RATIO;
 
                     that._driver = driver;
@@ -141,20 +141,20 @@
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.close = function(throwEx) {
+    Eyes.prototype.close = function (throwEx) {
         var that = this;
 
         if (this._isDisabled) {
-            return that._flow.execute(function() {
+            return that._flow.execute(function () {
             });
         }
         if (throwEx === undefined) {
             throwEx = true;
         }
 
-        return that._flow.execute(function() {
+        return that._flow.execute(function () {
             return EyesBase.prototype.close.call(that, throwEx)
-                .then(function(results) {
+                .then(function (results) {
                     return results;
                 }, function (err) {
                     throw err;
@@ -170,8 +170,10 @@
      * @return {Object} A region object.
      */
     var createRegion = function (point, size, isRelative) {
-        return {left: Math.ceil(point.x), top: Math.ceil(point.y), width: Math.ceil(size.width),
-            height: Math.ceil(size.height), relative: isRelative};
+        return {
+            left: Math.ceil(point.x), top: Math.ceil(point.y), width: Math.ceil(size.width),
+            height: Math.ceil(size.height), relative: isRelative
+        };
     };
 
     /**
@@ -186,7 +188,7 @@
      */
     var callCheckWindowBase = function (eyes, tag, ignoreMismatch, retryTimeout, region) {
         return EyesBase.prototype.checkWindow.call(eyes, tag, false, retryTimeout, region)
-            .then(function(result) {
+            .then(function (result) {
                 if (result.asExpected || !eyes._failureReportOverridden) {
                     return result;
                 } else {
@@ -197,13 +199,13 @@
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.checkWindow = function(tag, matchTimeout) {
+    Eyes.prototype.checkWindow = function (tag, matchTimeout) {
         var that = this;
         if (that._isDisabled) {
-            return that._flow.execute(function() {
+            return that._flow.execute(function () {
             });
         }
-        return that._flow.execute(function() {
+        return that._flow.execute(function () {
             that._regionToCheck = undefined;
             return callCheckWindowBase(that, tag, false, matchTimeout, that._regionToCheck);
         });
@@ -218,7 +220,7 @@
      * @param {string} tag An optional tag to be associated with the snapshot.
      * @returns {Promise<void>}
      */
-    var checkCurrentFrame = function(eyes, matchTimeout, tag) {
+    var checkCurrentFrame = function (eyes, matchTimeout, tag) {
         eyes._logger.verbose("CheckCurrentFrame(" + matchTimeout + ", '" + tag + "')");
 
         eyes._checkFrameOrElement = true;
@@ -255,31 +257,31 @@
      * @param {int} matchTimeout The amount of time to retry matching (milliseconds).
      * @param {string} tag An optional tag to be associated with the match.
      */
-    Eyes.prototype.checkFrame = function(element, matchTimeout, tag) {
+    Eyes.prototype.checkFrame = function (element, matchTimeout, tag) {
         var that = this;
         if (that._isDisabled) {
             this._logger.log("checkFrame(element, " + matchTimeout + ", '" + tag + "'): Ignored");
-            return that._flow.execute(function() {
+            return that._flow.execute(function () {
             });
         }
 
         ArgumentGuard.notNull(element, "frameReference");
         this._logger.log("CheckFrame(element, " + matchTimeout + ", '" + tag + "')");
 
-        return that._flow.execute(function() {
+        return that._flow.execute(function () {
             that._logger.verbose("Switching to frame based on element reference...");
             return that._driver.switchTo().frame(element)
-              .then(function() {
-                  that._logger.verbose("Done!");
-                  return checkCurrentFrame(that, matchTimeout, tag);
-              })
-              .then(function() {
-                  that._logger.verbose("Switching back to parent frame...");
-                  return that._driver.switchTo().parentFrame();
-              })
-              .then(function() {
-                  that._logger.verbose("Done!");
-              });
+                .then(function () {
+                    that._logger.verbose("Done!");
+                    return checkCurrentFrame(that, matchTimeout, tag);
+                })
+                .then(function () {
+                    that._logger.verbose("Switching back to parent frame...");
+                    return that._driver.switchTo().parentFrame();
+                })
+                .then(function () {
+                    that._logger.verbose("Done!");
+                });
         });
     };
 
@@ -293,13 +295,13 @@
      * @param {int} matchTimeout The amount of time to retry matching.
      * @return {Promise} A promise which is resolved when the validation is finished.
      */
-    Eyes.prototype.checkRegion = function(region, tag, matchTimeout) {
+    Eyes.prototype.checkRegion = function (region, tag, matchTimeout) {
         var that = this;
         if (this._isDisabled) {
-            return that._flow.execute(function() {
+            return that._flow.execute(function () {
             });
         }
-        return that._flow.execute(function() {
+        return that._flow.execute(function () {
             that._regionToCheck = region;
             return callCheckWindowBase(that, tag, false, matchTimeout, that._regionToCheck);
         });
@@ -314,20 +316,20 @@
      * @param {int} matchTimeout The amount of time to retry matching.
      * @return {Promise} A promise which is resolved when the validation is finished.
      */
-    Eyes.prototype.checkRegionByElement = function(element, tag, matchTimeout) {
+    Eyes.prototype.checkRegionByElement = function (element, tag, matchTimeout) {
         var that = this;
         var size;
         if (this._isDisabled) {
-            return that._flow.execute(function() {
+            return that._flow.execute(function () {
             });
         }
-        return that._flow.execute(function() {
+        return that._flow.execute(function () {
             return element.getSize()
-                .then(function(elementSize) {
+                .then(function (elementSize) {
                     size = elementSize;
                     return element.getLocation();
                 })
-                .then(function(point) {
+                .then(function (point) {
                     that._regionToCheck = createRegion(point, size, true);
                     return callCheckWindowBase(that, tag, false, matchTimeout, that._regionToCheck);
                 });
@@ -343,25 +345,25 @@
      * @param {int} matchTimeout The amount of time to retry matching.
      * @return {Promise} A promise which is resolved when the validation is finished.
      */
-    Eyes.prototype.checkRegionBy = function(by, tag, matchTimeout) {
+    Eyes.prototype.checkRegionBy = function (by, tag, matchTimeout) {
         var that = this;
         var element;
         var size;
         if (this._isDisabled) {
-            return that._flow.execute(function() {
+            return that._flow.execute(function () {
             });
         }
-        return that._flow.execute(function() {
+        return that._flow.execute(function () {
             return that._driver.findElement(by)
-                .then(function(elem) {
+                .then(function (elem) {
                     element = elem;
                     return element.getSize();
                 })
-                .then(function(elementSize) {
+                .then(function (elementSize) {
                     size = elementSize;
                     return element.getLocation();
                 })
-                .then(function(point) {
+                .then(function (point) {
                     that._regionToCheck = createRegion(point, size, true);
                     return callCheckWindowBase(that, tag, false, matchTimeout, that._regionToCheck);
                 });
@@ -369,7 +371,7 @@
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype._waitTimeout = function(ms) {
+    Eyes.prototype._waitTimeout = function (ms) {
         return this._flow.timeout(ms);
     };
 
@@ -377,7 +379,7 @@
      * @returns {Promise.<MutableImage>}
      */
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getScreenShot = function() {
+    Eyes.prototype.getScreenShot = function () {
         return BrowserUtils.getScreenshot(
             this._driver,
             this._promiseFactory,
@@ -395,17 +397,17 @@
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getTitle = function() {
+    Eyes.prototype.getTitle = function () {
         return this._driver.getTitle();
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getInferredEnvironment = function() {
+    Eyes.prototype.getInferredEnvironment = function () {
         var res = 'useragent:';
         return this._driver.executeScript('return navigator.userAgent')
-            .then(function(userAgent) {
+            .then(function (userAgent) {
                 return res + userAgent;
-            }, function() {
+            }, function () {
                 return res;
             });
     };
@@ -415,7 +417,7 @@
      *
      * @param mode Use one of the values in EyesBase.FailureReport.
      */
-    Eyes.prototype.setFailureReport = function(mode) {
+    Eyes.prototype.setFailureReport = function (mode) {
         if (mode === EyesBase.FailureReport.Immediate) {
             this._failureReportOverridden = true;
             mode = EyesBase.FailureReport.OnClose;
@@ -425,27 +427,27 @@
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getViewportSize = function() {
+    Eyes.prototype.getViewportSize = function () {
         return BrowserUtils.getViewportSize(this._driver, this._promiseFactory);
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.setViewportSize = function(size) {
+    Eyes.prototype.setViewportSize = function (size) {
         return BrowserUtils.setViewportSize(this._driver, size, this._promiseFactory, this._logger, false);
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.setForceFullPageScreenshot = function(force) {
+    Eyes.prototype.setForceFullPageScreenshot = function (force) {
         this._forceFullPage = force;
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getForceFullPageScreenshot = function() {
+    Eyes.prototype.getForceFullPageScreenshot = function () {
         return this._forceFullPage;
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.setForcedImageRotation = function(degrees) {
+    Eyes.prototype.setForcedImageRotation = function (degrees) {
         if (typeof degrees != 'number') {
             throw new TypeError('degrees must be a number! set to 0 to clear');
         }
@@ -454,17 +456,17 @@
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getForcedImageRotation = function() {
+    Eyes.prototype.getForcedImageRotation = function () {
         return this._imageRotationDegrees || 0;
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.setHideScrollbars = function(hide) {
+    Eyes.prototype.setHideScrollbars = function (hide) {
         this._hideScrollbars = hide;
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getHideScrollbars = function() {
+    Eyes.prototype.getHideScrollbars = function () {
         return this._hideScrollbars;
     };
 
@@ -473,7 +475,7 @@
      *
      * @param mode Use one of the values in Eyes.StitchMode.
      */
-    Eyes.prototype.setStitchMode = function(mode) {
+    Eyes.prototype.setStitchMode = function (mode) {
         switch (mode) {
             case Eyes.StitchMode.Scroll:
                 this._stitchMode = Eyes.StitchMode.Scroll;
@@ -492,7 +494,7 @@
      *
      * @return {Eyes.StitchMode} The currently set StitchMode.
      */
-    Eyes.prototype.getStitchMode = function() {
+    Eyes.prototype.getStitchMode = function () {
         return this._stitchMode;
     };
 
@@ -519,6 +521,7 @@
         return this._waitBeforeScreenshots;
     };
 
+    //noinspection JSUnusedGlobalSymbols
     /**
      *
      * @returns {Promise} A promise which resolves to the webdriver's session ID.

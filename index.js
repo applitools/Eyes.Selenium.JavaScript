@@ -9,6 +9,7 @@ exports.ScrollPositionProvider = require('./src/ScrollPositionProvider');
 var EyesSDK = require('eyes.sdk');
 exports.ConsoleLogHandler = EyesSDK.ConsoleLogHandler;
 exports.NullLogHandler  = EyesSDK.NullLogHandler;
+exports.FileLogHandler  = EyesSDK.FileLogHandler;
 exports.MatchLevel = EyesSDK.MatchLevel;
 exports.ImageMatchSettings = EyesSDK.ImageMatchSettings;
 exports.ExactMatchSettings = EyesSDK.ExactMatchSettings;
