@@ -17,12 +17,9 @@
     FrameChain = require('./FrameChain'),
     EyesRemoteWebElement = require('./EyesRemoteWebElement'),
     ScrollPositionProvider = require('./ScrollPositionProvider'),
-    EyesSeleniumUtils = require('./EyesSeleniumUtils'),
-    EyesTargetLocator = require('./EyesTargetLocator'),
-    BordersAwareElementContentLocationProvider = require('./BordersAwareElementContentLocationProvider');
-  var RectangleSize = EyesSDK.RectangleSize,
-    Location = EyesSDK.Location,
-    GeneralUtils = EyesUtils.GeneralUtils;
+    EyesTargetLocator = require('./EyesTargetLocator');
+  var GeneralUtils = EyesUtils.GeneralUtils,
+    BrowserUtils = EyesUtils.BrowserUtils;
 
   /**
    *
@@ -128,7 +125,7 @@
     /**
      * @param {EyesTargetLocator.TargetType} targetType
      * @param {EyesRemoteWebElement|WebElement} targetFrame
-     * @returns {!promise.Promise<void>}
+     * @returns {Promise<void>}
      */
     OnWillSwitch.willSwitchToFrame = function (targetType, targetFrame) {
       that._logger.verbose("willSwitchToFrame()");
@@ -136,7 +133,6 @@
         case EyesTargetLocator.TargetType.DEFAULT_CONTENT:
           that._logger.verbose("Default content.");
           that._frameChain.clear();
-          //return that.controlFlow().execute(function () {});
           return that._promiseFactory.makePromise(function (resolve) {
               resolve();
           });
@@ -160,15 +156,14 @@
               return targetFrame.getSize();
             })
             .then(function(_size) {
-              size = new RectangleSize(_size.width, _size.height);
-              return new ScrollPositionProvider(that._logger, that._driver).getCurrentPosition();
+              size = _size;
+              return new ScrollPositionProvider(that._logger, that._driver, that._promiseFactory).getCurrentPosition();
             })
             .then(function(_scrollPosition) {
               sp = _scrollPosition;
 
               // Get the frame's content location.
-              var baeclp = new BordersAwareElementContentLocationProvider(that._logger, that._promiseFactory);
-              return baeclp.getLocation(targetFrame, new Location(pl.x, pl.y));
+              return BrowserUtils.getLocationWithBordersAddition(that._logger, targetFrame, pl, that._promiseFactory);
             }).then(function (contentLocation) {
               that._frameChain.push(new Frame(that._logger, targetFrame, frameId, contentLocation, size, sp));
               that._logger.verbose("Done!");
@@ -182,12 +177,12 @@
       that._logger.verbose("Done!");
     };
 
-    return new EyesTargetLocator(this._logger, this, this._driver.switchTo(), OnWillSwitch);
+    return new EyesTargetLocator(this._logger, this, this._driver.switchTo(), OnWillSwitch, this._promiseFactory);
   };
 
   /**
    * @param {boolean} forceQuery If true, we will perform the query even if we have a cached viewport size.
-   * @return {!promise.Promise<RectangleSize>} The viewport size of the default content (outer most frame).
+   * @return {Promise<{width: number, height: number}>} The viewport size of the default content (outer most frame).
    */
   EyesWebDriver.prototype.getDefaultContentViewportSize = function (forceQuery) {
     var that = this;
@@ -195,7 +190,7 @@
       that._logger.verbose("getDefaultContentViewportSize()");
 
       if (that._defaultContentViewportSize != null && !forceQuery) {
-        that._logger.verbose("Using cached viewport size: " + that._defaultContentViewportSize);
+        that._logger.verbose("Using cached viewport size: [" + that._defaultContentViewportSize.width + "," + that._defaultContentViewportSize.height + "]");
         resolve(that._defaultContentViewportSize);
         return;
       }
@@ -205,19 +200,19 @@
       if (currentFrames.size() > 0) {
         return that.switchTo().defaultContent().then(function () {
           that._logger.verbose("Extracting viewport size...");
-          return EyesSeleniumUtils.extractViewportSize(that._logger, that._driver, that._eyes, that._promiseFactory);
+          return BrowserUtils.getViewportSize(that._driver, that._promiseFactory);
         }).then(function (viewportSize) {
             that._defaultContentViewportSize = viewportSize;
-            that._logger.verbose("Done! Viewport size: " + that._defaultContentViewportSize);
+            that._logger.verbose("Done! Viewport size: [" + that._defaultContentViewportSize.width + "," + that._defaultContentViewportSize.height + "]");
             return that.switchTo().frames(currentFrames);
         }).then(function () {
           resolve(that._defaultContentViewportSize);
         });
       }
 
-      return EyesSeleniumUtils.extractViewportSize(that._logger, that._driver, that._eyes, that._promiseFactory).then(function (viewportSize) {
+      return BrowserUtils.getViewportSize(that._driver, that._promiseFactory).then(function (viewportSize) {
         that._defaultContentViewportSize = viewportSize;
-        that._logger.verbose("Done! Viewport size: " + that._defaultContentViewportSize);
+        that._logger.verbose("Done! Viewport size: [" + that._defaultContentViewportSize.width + "," + that._defaultContentViewportSize.height + "]");
         resolve(that._defaultContentViewportSize);
       });
     });

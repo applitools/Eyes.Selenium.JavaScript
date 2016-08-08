@@ -7,15 +7,11 @@
     /**
      * @constructor
      * @param {Object} logger A Logger instance.
-     * @param {WebElement} reference The web element for the frame, used as a reference
-     * to switch into the frame.
-     * @param {string} frameId The id of the frame. Can be used later for comparing
-     * two frames.
-     * @param {Location} location The location of the frame within the current frame.
-     * @param {RectangleSize} size The frame element size (i.e., the size of the frame on the
-     * screen, not the internal document size).
-     * @param {Location} parentScrollPosition The scroll position the frame's parent was
-     *                             in when the frame was switched to.
+     * @param {WebElement} reference The web element for the frame, used as a reference to switch into the frame.
+     * @param {string} frameId The id of the frame. Can be used later for comparing two frames.
+     * @param {{x: number, y: number}} location The location of the frame within the current frame.
+     * @param {{width: number, height: number}} size The frame element size (i.e., the size of the frame on the screen, not the internal document size).
+     * @param {{x: number, y: number}} parentScrollPosition The scroll position the frame's parent was in when the frame was switched to.
      */
     function Frame(logger, reference, frameId, location, size, parentScrollPosition) {
         ArgumentGuard.notNull(logger, "logger");
@@ -25,7 +21,10 @@
         ArgumentGuard.notNull(size, "size");
         ArgumentGuard.notNull(parentScrollPosition, "parentScrollPosition");
 
-        logger.verbose("Frame(logger, reference, " + frameId + ", " + location + ", " + size + ", " + parentScrollPosition + ")");
+        logger.verbose("Frame(logger, reference, " + frameId + ", " +
+            "[" + location.x + ", " + location.y + "], " +
+            "[" + size.width + ", " + size.height + "], " +
+            "[" + parentScrollPosition.x + ", " + parentScrollPosition.y + "])");
 
         this._logger = logger;
         this._reference = reference;
@@ -50,21 +49,21 @@
     };
 
     /**
-     * @returns {Location}
+     * @returns {{x: number, y: number}}
      */
     Frame.prototype.getLocation = function () {
         return this._location;
     };
 
     /**
-     * @returns {RectangleSize}
+     * @returns {{width: number, height: number}}
      */
     Frame.prototype.getSize = function () {
         return this._size;
     };
 
     /**
-     * @returns {Location}
+     * @returns {{x: number, y: number}}
      */
     Frame.prototype.getParentScrollPosition = function () {
         return this._parentScrollPosition;
