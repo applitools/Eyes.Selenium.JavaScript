@@ -19,8 +19,11 @@
         promise = require('q'),
         EyesWebDriver = require('./EyesWebDriver'),
         EyesRemoteWebElement = require('./EyesRemoteWebElement'),
-        EyesWebDriverScreenshot = require('./EyesWebDriverScreenshot');
-    var EyesBase = EyesSDK.EyesBase,
+        EyesWebDriverScreenshot = require('./EyesWebDriverScreenshot'),
+        ElementFinderWrappers = require('./ElementFinderWrappers');
+    var ElementFinderWrapper = ElementFinderWrappers.ElementFinderWrapper,
+        ElementArrayFinderWrapper = ElementFinderWrappers.ElementArrayFinderWrapper,
+        EyesBase = EyesSDK.EyesBase,
         PromiseFactory = EyesUtils.PromiseFactory,
         BrowserUtils = EyesUtils.BrowserUtils,
         ArgumentGuard = EyesUtils.ArgumentGuard,
@@ -64,10 +67,26 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype._getBaseAgentId = function () {
-        return 'selenium-js/0.0.52';
+        if (this._isProtratorLoaded) {
+            return 'eyes-protractor/0.0.57';
+        } else {
+            return 'selenium-js/0.0.52';
+        }
     };
 
-    function _init(that, flow) {
+    function _init(that, flow, isDisabled) {
+        // extend protractor element to return ours
+        if (!isDisabled && that._isProtratorLoaded) {
+            var originalElementFn = global.element;
+            global.element = function (locator) {
+                return new ElementFinderWrapper(originalElementFn(locator), that, that._logger);
+            };
+
+            global.element.all = function (locator) {
+                return new ElementArrayFinderWrapper(originalElementFn.all(locator), that, that._logger);
+            };
+        }
+
         // Set PromiseFactory to work with the protractor control flow and promises
         that._promiseFactory.setFactoryMethods(function (asyncAction) {
             return flow.execute(function () {
@@ -83,14 +102,24 @@
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.open = function (driver, appName, testName, viewportSize) {
         var that = this;
+
+        if (typeof protractor !== 'undefined') {
+            that._isProtratorLoaded = true;
+            that._logger.verbose("Running using Protractor module");
+        } else {
+            that._isProtratorLoaded = false;
+            that._logger.verbose("Running using Selenium module");
+        }
+
         var flow = that._flow = driver.controlFlow();
-        _init(that, flow);
+        _init(that, flow, this._isDisabled);
 
         if (this._isDisabled) {
             return that._flow.execute(function () {
                 return driver;
             });
         }
+
         return flow.execute(function () {
             return driver.getCapabilities()
                 .then(function (capabilities) {
