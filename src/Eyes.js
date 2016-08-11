@@ -66,7 +66,7 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype._getBaseAgentId = function() {
-        return 'selenium-js/0.0.52';
+        return 'selenium-js/0.0.53';
     };
 
     function _init(that, flow) {
