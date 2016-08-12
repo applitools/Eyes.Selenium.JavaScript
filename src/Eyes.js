@@ -70,7 +70,7 @@
         if (this._isProtratorLoaded) {
             return 'eyes-protractor/0.0.57';
         } else {
-            return 'selenium-js/0.0.52';
+            return 'selenium-js/0.0.53';
         }
     };
 
