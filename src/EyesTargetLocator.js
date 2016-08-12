@@ -298,7 +298,7 @@
         return this._driver._promiseFactory.makePromise(function (resolve) {
             that._logger.verbose("Switching to element..");
             that._targetLocator.activeElement().then(function (element) {
-                var result = new EyesRemoteWebElement(element, that._driver, that._logger);
+                var result = new EyesRemoteWebElement(element, that._driver.getEyes(), that._logger);
                 that._logger.verbose("Done!");
                 resolve(result);
             })

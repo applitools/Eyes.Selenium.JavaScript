@@ -20,7 +20,7 @@
         EyesWebDriver = require('./EyesWebDriver'),
         EyesRemoteWebElement = require('./EyesRemoteWebElement'),
         EyesWebDriverScreenshot = require('./EyesWebDriverScreenshot'),
-        ElementFinderWrappers = require('./ElementFinderWrappers');
+        ElementFinderWrappers = require('./ElementFinderWrapper');
     var ElementFinderWrapper = ElementFinderWrappers.ElementFinderWrapper,
         ElementArrayFinderWrapper = ElementFinderWrappers.ElementArrayFinderWrapper,
         EyesBase = EyesSDK.EyesBase,
@@ -263,14 +263,11 @@
             return ewds.buildScreenshot(null, null, null);
         }).then(function () {
             eyes._logger.verbose("Done!");
-            sForceFullPage = eyes._forceFullPage;
-            eyes._forceFullPage = true;
             sHideScrollBars = eyes._hideScrollbars;
             eyes._hideScrollbars = true;
             eyes._regionToCheck = ewds.getFrameWindow();
             return callCheckWindowBase(eyes, tag, false, matchTimeout, eyes._regionToCheck);
         }).then(function () {
-            eyes._forceFullPage = sForceFullPage;
             eyes._hideScrollbars = sHideScrollBars;
             eyes._regionToCheck = null;
             eyes._checkFrameOrElement = false;
@@ -421,6 +418,7 @@
             this._os === 'Android' ? 90 : 270,
             this._isLandscape,
             this._waitBeforeScreenshots,
+            this._checkFrameOrElement,
             this._regionToCheck
         );
     };

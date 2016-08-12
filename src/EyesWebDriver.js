@@ -66,14 +66,14 @@
 
   EyesWebDriver.prototype.findElement = function (locator) {
     var that = this;
-    return new EyesRemoteWebElement(that._driver.findElement(locator), that, that._logger);
+    return new EyesRemoteWebElement(that._driver.findElement(locator), that.getEyes(), that._logger);
   };
 
   EyesWebDriver.prototype.findElements = function (locator) {
     var that = this;
     return this._driver.findElements(locator).then(function (elements) {
       return elements.map(function (element) {
-        return new EyesRemoteWebElement(element, that, that._logger);
+        return new EyesRemoteWebElement(element, that.getEyes(), that._logger);
       });
     });
   };

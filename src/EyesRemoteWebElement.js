@@ -21,13 +21,14 @@
      * C'tor = initializes the module settings
      *
      * @param {Object} remoteWebElement
-     * @param {EyesWebDriver} eyesDriver
+     * @param {Eyes} eyes
      * @param {Object} logger
+     * @constructor
      **/
-    function EyesRemoteWebElement(remoteWebElement, eyesDriver, logger) {
+    function EyesRemoteWebElement(remoteWebElement, eyes, logger) {
         this._element = remoteWebElement;
         this._logger = logger;
-        this._eyes = eyesDriver;
+        this._eyes = eyes;
         GeneralUtils.mixin(this, remoteWebElement);
     }
 
