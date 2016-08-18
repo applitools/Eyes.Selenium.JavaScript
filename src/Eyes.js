@@ -20,7 +20,10 @@
         EyesWebDriver = require('./EyesWebDriver'),
         EyesRemoteWebElement = require('./EyesRemoteWebElement'),
         EyesWebDriverScreenshot = require('./EyesWebDriverScreenshot'),
-        ElementFinderWrappers = require('./ElementFinderWrapper');
+        ElementFinderWrappers = require('./ElementFinderWrapper'),
+        ScrollPositionProvider = require('./ScrollPositionProvider'),
+        CssTranslatePositionProvider = require('./CssTranslatePositionProvider'),
+        ElementPositionProvider = require('./ElementPositionProvider');
     var ElementFinderWrapper = ElementFinderWrappers.ElementFinderWrapper,
         ElementArrayFinderWrapper = ElementFinderWrappers.ElementArrayFinderWrapper,
         EyesBase = EyesSDK.EyesBase,
@@ -74,19 +77,7 @@
         }
     };
 
-    function _init(that, flow, isDisabled) {
-        // extend protractor element to return ours
-        if (!isDisabled && that._isProtratorLoaded) {
-            var originalElementFn = global.element;
-            global.element = function (locator) {
-                return new ElementFinderWrapper(originalElementFn(locator), that, that._logger);
-            };
-
-            global.element.all = function (locator) {
-                return new ElementArrayFinderWrapper(originalElementFn.all(locator), that, that._logger);
-            };
-        }
-
+    function _init(that, flow) {
         // Set PromiseFactory to work with the protractor control flow and promises
         that._promiseFactory.setFactoryMethods(function (asyncAction) {
             return flow.execute(function () {
@@ -112,7 +103,7 @@
         }
 
         var flow = that._flow = driver.controlFlow();
-        _init(that, flow, this._isDisabled);
+        _init(that, flow);
 
         if (this._isDisabled) {
             return that._flow.execute(function () {
@@ -162,8 +153,21 @@
                     return new EyesWebDriver(driver, that, that._logger, that._promiseFactory);
                 }).then(function (driver) {
                     that._devicePixelRatio = Eyes.UNKNOWN_DEVICE_PIXEL_RATIO;
-
                     that._driver = driver;
+
+                    // extend protractor element to return ours
+                    if (that._isProtratorLoaded) {
+                        var originalElementFn = global.element;
+                        global.element = function (locator) {
+                            return new ElementFinderWrapper(originalElementFn(locator), that._driver, that._logger);
+                        };
+
+                        global.element.all = function (locator) {
+                            return new ElementArrayFinderWrapper(originalElementFn.all(locator), that._driver, that._logger);
+                        };
+                    }
+
+                    that.setStitchMode(that._stitchMode);
                     return that._driver;
                 });
         });
@@ -311,6 +315,77 @@
         });
     };
 
+    /**
+     * Takes a snapshot of the application under test and matches a specific
+     * element with the expected region output.
+     *
+     * @param {EyesRemoteWebElement} element The element to check.
+     * @param {int|null} matchTimeout The amount of time to retry matching (milliseconds).
+     * @param {string} tag An optional tag to be associated with the match.
+     */
+    Eyes.prototype.checkElement = function (element, matchTimeout, tag) {
+        var that = this;
+        if (that._isDisabled) {
+            this._logger.log("checkElement(element, " + matchTimeout + ", '" + tag + "'): Ignored");
+            return that._flow.execute(function () {
+            });
+        }
+
+        ArgumentGuard.notNull(element, "frameReference");
+        this._logger.log("checkElement(element, " + matchTimeout + ", '" + tag + "')");
+
+        return that._flow.execute(function () {
+
+            var originalOverflow, elLocation, elSize,
+                borderLeftWidth, borderRightWidth, borderTopWidth, borderBottomWidth,
+                elementRegion;
+
+            that._checkFrameOrElement = true;
+
+            var originalPositionProvider = that.getPositionProvider();
+            that.setPositionProvider(new ElementPositionProvider(that._logger, that._driver, element, that._promiseFactory));
+
+            // Set overflow to "hidden".
+            return element.getOverflow().then(function (value) {
+                originalOverflow = value;
+                return element.setOverflow("hidden");
+            }).then(function () {
+                return element.getLocation();
+            }).then(function (value) {
+                elLocation = value;
+                return element.getSize();
+            }).then(function (value) {
+                elSize = value;
+                return element.getBorderLeftWidth();
+            }).then(function (value) {
+                borderLeftWidth = value;
+                return element.getBorderRightWidth();
+            }).then(function (value) {
+                borderRightWidth = value;
+                return element.getBorderTopWidth();
+            }).then(function (value) {
+                borderTopWidth = value;
+                return element.getBorderBottomWidth();
+            }).then(function (value) {
+                borderBottomWidth = value;
+
+                elementRegion = createRegion(elLocation, elSize, true);
+                that._logger.verbose("Element region: " + elementRegion);
+
+                that._regionToCheck = elementRegion;
+                return callCheckWindowBase(that, tag, false, matchTimeout, that._regionToCheck);
+            }).then(function () {
+                if (originalOverflow != null) {
+                    return element.setOverflow(originalOverflow);
+                }
+            }).then(function () {
+                that._checkFrameOrElement = false;
+                that.setPositionProvider(originalPositionProvider);
+                that._regionToCheck = null;
+            });
+        });
+    };
+
     //noinspection JSUnusedGlobalSymbols
     /**
      * Visually validates a region in the screenshot.
@@ -402,14 +477,16 @@
     };
 
     /**
+     * @param {string} tag
      * @returns {Promise.<MutableImage>}
      */
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getScreenShot = function () {
+    Eyes.prototype.getScreenShot = function (tag) {
         return BrowserUtils.getScreenshot(
             this._driver,
             this._promiseFactory,
             this._viewportSize,
+            this._positionProvider,
             this._forceFullPage,
             this._hideScrollbars,
             this._stitchMode === Eyes.StitchMode.CSS,
@@ -419,7 +496,9 @@
             this._isLandscape,
             this._waitBeforeScreenshots,
             this._checkFrameOrElement,
-            this._regionToCheck
+            this._regionToCheck,
+            this._saveDebugScreenshots,
+            tag
         );
     };
 
@@ -504,13 +583,12 @@
      */
     Eyes.prototype.setStitchMode = function (mode) {
         switch (mode) {
-            case Eyes.StitchMode.Scroll:
-                this._stitchMode = Eyes.StitchMode.Scroll;
-                break;
             case Eyes.StitchMode.CSS:
+                this.setPositionProvider(new CssTranslatePositionProvider(this._logger, this._driver, this._promiseFactory));
                 this._stitchMode = Eyes.StitchMode.CSS;
                 break;
             default:
+                this.setPositionProvider(new ScrollPositionProvider(this._logger, this._driver, this._promiseFactory));
                 this._stitchMode = Eyes.StitchMode.Scroll;
                 break;
         }
@@ -546,6 +624,22 @@
      */
     Eyes.prototype.getWaitBeforeScreenshots = function () {
         return this._waitBeforeScreenshots;
+    };
+
+    //noinspection JSUnusedGlobalSymbols
+    /**
+     * @param {boolean} saveDebugScreenshots If true, will save all screenshots to local directory
+     */
+    Eyes.prototype.setSaveDebugScreenshots = function (saveDebugScreenshots) {
+        this._saveDebugScreenshots = saveDebugScreenshots;
+    };
+
+    //noinspection JSUnusedGlobalSymbols
+    /**
+     * @returns {boolean}
+     */
+    Eyes.prototype.getSaveDebugScreenshots = function () {
+        return this._saveDebugScreenshots;
     };
 
     //noinspection JSUnusedGlobalSymbols

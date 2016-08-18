@@ -23,22 +23,22 @@
      * Wrapper for ElementArrayFinder object from Protractor
      *
      * @param {ElementArrayFinder} arrayFinder
-     * @param {Eyes} eyes
+     * @param {EyesWebDriver} eyesDriver
      * @param {Logger} logger
      * @constructor
      **/
-    function ElementArrayFinderWrapper(arrayFinder, eyes, logger) {
+    function ElementArrayFinderWrapper(arrayFinder, eyesDriver, logger) {
         GeneralUtils.mixin(this, arrayFinder);
 
         this._logger = logger;
-        this._eyes = eyes;
+        this._eyesDriver = eyesDriver;
         this._arrayFinder = arrayFinder;
 
         var that = this;
         // Wrap the functions that return objects that require pre-wrapping
         ELEMENT_ARRAY_FINDER_TO_ELEMENT_FINDER_FUNCTIONS.forEach(function (fnName) {
             that[fnName] = function () {
-                return new ElementFinderWrapper(that._arrayFinder[fnName].apply(that._arrayFinder, arguments), that._eyes, that._logger);
+                return new ElementFinderWrapper(that._arrayFinder[fnName].apply(that._arrayFinder, arguments), that._eyesDriver, that._logger);
             };
         });
 
@@ -48,7 +48,7 @@
             return originalFn.apply(that._arrayFinder).then(function (arr) {
                 var list = [];
                 arr.forEach(function (finder) {
-                    list.push(new ElementFinderWrapper(finder, that._eyes, that._logger));
+                    list.push(new ElementFinderWrapper(finder, that._eyesDriver, that._logger));
                 });
                 return list;
             });
@@ -65,7 +65,7 @@
         that._logger.verbose("ElementArrayFinderWrapper:getWebElements - called");
         var res = [];
         that._arrayFinder.getWebElements.apply(that._arrayFinder).forEach(function (el) {
-            res.push(new EyesRemoteWebElement(el, that._eyes, that._logger));
+            res.push(new EyesRemoteWebElement(el, that._eyesDriver, that._logger));
         });
         return res;
     };
