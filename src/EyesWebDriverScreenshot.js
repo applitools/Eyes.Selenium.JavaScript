@@ -87,9 +87,9 @@
     EyesWebDriverScreenshot.prototype.constructor = EyesWebDriverScreenshot;
 
     /**
-     * @param {ScreenshotType} screenshotType (Optional) The screenshot's type (e.g., viewport/full page).
-     * @param {{x: number, y: number}} frameLocationInScreenshot (Optional) The current frame's location in the screenshot.
-     * @param {{width: number, height: number}} frameSize The full internal size of the frame.
+     * @param {ScreenshotType} [screenshotType] The screenshot's type (e.g., viewport/full page).
+     * @param {{x: number, y: number}} [frameLocationInScreenshot] The current frame's location in the screenshot.
+     * @param {{width: number, height: number}} [frameSize] The full internal size of the frame.
      * @returns {Promise<void>}
      */
     EyesWebDriverScreenshot.prototype.buildScreenshot = function (screenshotType, frameLocationInScreenshot, frameSize) {
