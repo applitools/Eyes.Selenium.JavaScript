@@ -45,11 +45,10 @@
      * @param {Object} logger A Logger instance.
      * @param {EyesWebDriver} driver The WebDriver from which the targetLocator was received.
      * @param {TargetLocator} targetLocator The actual TargetLocator object.
-     * @param {OnWillSwitch} onWillSwitch A delegate to be called whenever a relevant switch
-     * @param {PromiseFactory} promiseFactory
+     * @param {OnWillSwitch} onWillSwitch A delegate to be called whenever a relavant switch
      * is about to be performed.
      */
-    function EyesTargetLocator(logger, driver, targetLocator, onWillSwitch, promiseFactory) {
+    function EyesTargetLocator(logger, driver, targetLocator, onWillSwitch) {
         ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(driver, "driver");
         ArgumentGuard.notNull(targetLocator, "targetLocator");
@@ -59,14 +58,13 @@
         this._driver = driver;
         this._targetLocator = targetLocator;
         this._onWillSwitch = onWillSwitch;
-        this._promiseFactory = promiseFactory;
-        this._scrollPosition = new ScrollPositionProvider(this._logger, this._driver, this._promiseFactory);
+        this._scrollPosition = new ScrollPositionProvider(this._logger, this._driver);
         GeneralUtils.mixin(this, targetLocator);
     }
 
     /**
      * @param {int|string|EyesRemoteWebElement} obj
-     * @returns {Promise<void>}
+     * @returns {!promise.Promise<void>}
      */
     EyesTargetLocator.prototype.frame = function (obj) {
         var that = this, frames;
@@ -143,30 +141,20 @@
         }
     };
 
-    /**
-     * @returns {Promise.<void>}
-     */
-
-    EyesTargetLocator.prototype.parentFrame = function () {
-        var that = this;
-        this._logger.verbose("EyesTargetLocator.parentFrame()");
-        return this._driver._promiseFactory.makePromise(function (resolve) {
-            if (that._driver.getFrameChain().size() != 0) {
-                that._logger.verbose("Making preparations..");
-                return that._onWillSwitch.willSwitchToFrame(EyesTargetLocator.TargetType.PARENT_FRAME, null).then(function () {
-                    return that._targetLocator.defaultContent();
-                }).then(function () {
-                    that._logger.verbose("Done! Switching to parent frame..");
-                    return that.frames(that._driver.getFrameChain());
-                }).then(function () {
-                    that._logger.verbose("Done!");
-                    resolve();
-                });
-            }
-
-            resolve();
-        });
-    };
+    // /**
+    //  * @returns {EyesWebDriver}
+    //  */
+    // EyesTargetLocator.prototype.parentFrame = function () {
+    //   this._logger.verbose("EyesTargetLocator.parentFrame()");
+    //   if (this._driver.getFrameChain().size() != 0) {
+    //     this._logger.verbose("Making preparations..");
+    //     this._onWillSwitch.willSwitchToFrame(TargetType.PARENT_FRAME, null);
+    //     this._logger.verbose("Done! Switching to parent frame..");
+    //     this._targetLocator.parentFrame();
+    //   }
+    //   this._logger.verbose("Done!");
+    //   return this._driver;
+    // };
 
     /**
      * Switches into every frame in the frame chain. This is used as way to
@@ -174,30 +162,22 @@
      * @param {FrameChain|string[]} obj The path to the frame to switch to.
      * Or the path to the frame to check. This is a list of frame names/IDs
      * (where each frame is nested in the previous frame).
-     * @return {Promise<void>} The WebDriver with the switched context.
+     * @return {!promise.Promise<void>} The WebDriver with the switched context.
      */
     EyesTargetLocator.prototype.frames = function (obj) {
         var that = this;
         return this._driver._promiseFactory.makePromise(function (resolve) {
             if (obj instanceof FrameChain) {
                 that._logger.verbose("EyesTargetLocator.frames(frameChain)");
-                if (obj.size() > 0) {
-                    return _framesSetPosition(that, obj, obj.size() - 1, that._driver._promiseFactory).then(function () {
-                        that._logger.verbose("Done switching into nested frames!");
-                        resolve();
-                    });
-                }
-
-                resolve();
+                _framesSetPosition(that, obj, obj.size() - 1, that._driver._promiseFactory).then(function () {
+                    that._logger.verbose("Done switching into nested frames!");
+                    resolve();
+                });
             } else if (Array.isArray(obj)) {
-                if (obj.length > 0) {
-                    return _framesSetPositionFromArray(that, obj, obj.length - 1, that._driver._promiseFactory).then(function () {
-                        that._logger.verbose("Done switching into nested frames!");
-                        resolve();
-                    });
-                }
-
-                resolve();
+                _framesSetPositionFromArray(that, obj, obj.length - 1, that._driver._promiseFactory).then(function () {
+                    that._logger.verbose("Done switching into nested frames!");
+                    resolve();
+                });
             }
         });
     };
@@ -250,25 +230,20 @@
 
     /**
      * @param {string} nameOrHandle
-     * @returns {Promise.<void>}
+     * @returns {EyesWebDriver}
      */
     EyesTargetLocator.prototype.window = function (nameOrHandle) {
-        var that = this;
         this._logger.verbose("EyesTargetLocator.window()");
-        return this._driver._promiseFactory.makePromise(function (resolve) {
-            that._logger.verbose("Making preparations..");
-            that._onWillSwitch.willSwitchToWindow(nameOrHandle).then(function () {
-                that._logger.verbose("Done! Switching to window..");
-                return that._targetLocator.window(nameOrHandle);
-            }).then(function () {
-                that._logger.verbose("Done!");
-                resolve();
-            });
-        });
+        this._logger.verbose("Making preparations..");
+        this._onWillSwitch.willSwitchToWindow(nameOrHandle);
+        this._logger.verbose("Done! Switching to window..");
+        this._targetLocator.window(nameOrHandle);
+        this._logger.verbose("Done!");
+        return this._driver;
     };
 
     /**
-     * @returns {Promise.<void>}
+     * @returns {!promise.Promise<void>}
      */
     EyesTargetLocator.prototype.defaultContent = function () {
         var that = this;
@@ -289,35 +264,30 @@
         });
     };
 
-    /**
-     * @returns {Promise.<EyesRemoteWebElement>}
-     */
-    EyesTargetLocator.prototype.activeElement = function () {
-        var that = this;
-        this._logger.verbose("EyesTargetLocator.activeElement()");
-        return this._driver._promiseFactory.makePromise(function (resolve) {
-            that._logger.verbose("Switching to element..");
-            that._targetLocator.activeElement().then(function (element) {
-                var result = new EyesRemoteWebElement(element, that._driver, that._logger);
-                that._logger.verbose("Done!");
-                resolve(result);
-            })
-        });
-    };
+    // /**
+    //  * @returns {WebElement|*}
+    //  */
+    // EyesTargetLocator.prototype.activeElement = function () {
+    //   this._logger.verbose("EyesTargetLocator.activeElement()");
+    //   this._logger.verbose("Switching to element..");
+    //   var element = this._targetLocator.activeElement();
+    //   if (!(element instanceof RemoteWebElement)) {
+    //     throw new Error("activeElement is not a remote web element!");
+    //   }
+    //   var result = new EyesRemoteWebElement(logger, driver, (RemoteWebElement)element);
+    //   this._logger.verbose("Done!");
+    //   return result;
+    // };
 
     /**
-     * @returns {Promise.<Alert>}
+     * @returns {Alert}
      */
     EyesTargetLocator.prototype.alert = function () {
-        var that = this;
         this._logger.verbose("EyesTargetLocator.alert()");
-        return this._driver._promiseFactory.makePromise(function (resolve) {
-            that._logger.verbose("Switching to alert..");
-            that._targetLocator.alert().then(function (alert) {
-                that._logger.verbose("Done!");
-                resolve(alert);
-            });
-        });
+        this._logger.verbose("Switching to alert..");
+        var result = this._targetLocator.alert();
+        this._logger.verbose("Done!");
+        return result;
     };
 
     module.exports = EyesTargetLocator;
