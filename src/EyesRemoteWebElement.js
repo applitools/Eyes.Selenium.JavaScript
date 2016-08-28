@@ -23,7 +23,6 @@
    * @param {Object} remoteWebElement
    * @param {EyesWebDriver} eyesDriver
    * @param {Object} logger
-   *
    **/
   function EyesRemoteWebElement(remoteWebElement, eyesDriver, logger) {
     this._element = remoteWebElement;
@@ -31,22 +30,6 @@
     this._eyes = eyesDriver;
     GeneralUtils.mixin(this, remoteWebElement);
   }
-
-  /**
-   * @return {string}
-   */
-  EyesRemoteWebElement.JS_GET_COMPUTED_STYLE_FORMATTED_STR = function (propStyle) {
-    return "var elem = arguments[0]; " +
-      "var styleProp = '" + propStyle + "'; " +
-      "if (window.getComputedStyle) { " +
-      "return window.getComputedStyle(elem, null)" +
-      ".getPropertyValue(styleProp);" +
-      "} else if (elem.currentStyle) { " +
-      "return elem.currentStyle[styleProp];" +
-      "} else { " +
-      "return null;" +
-      "}";
-  };
 
   function _getRectangle(location, size) {
     size = size || { height: 0, width: 0 };
@@ -85,18 +68,6 @@
       });
     }, function () {
       return _getRectangle();
-    });
-  };
-
-  /**
-   * Returns the computed value of the style property for the current element.
-   * @param {string} propStyle The style property which value we would like to extract.
-   * @return {!promise.Promise<string>} The value of the style property of the element, or {@code null}.
-   */
-  EyesRemoteWebElement.prototype.getComputedStyle = function (propStyle) {
-    var scriptToExec = EyesRemoteWebElement.JS_GET_COMPUTED_STYLE_FORMATTED_STR(propStyle);
-    return this.getDriver().executeScript(scriptToExec, this).then(function(computedStyle) {
-      return computedStyle;
     });
   };
 

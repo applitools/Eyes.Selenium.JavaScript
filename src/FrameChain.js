@@ -4,8 +4,8 @@
   var EyesSDK = require('eyes.sdk'),
     EyesUtils = require('eyes.utils'),
     Frame = require('./Frame');
-  var Location = EyesSDK.Location,
-    ArgumentGuard = EyesUtils.ArgumentGuard;
+  var ArgumentGuard = EyesUtils.ArgumentGuard,
+    GeometryUtils = EyesUtils.GeometryUtils;
 
   /**
    * Creates a new frame chain.
@@ -110,30 +110,30 @@
   };
 
   /**
-   * @return {Location} The location of the current frame in the page.
+   * @return {{x: number, y: number}} The location of the current frame in the page.
    */
   FrameChain.prototype.getCurrentFrameOffset = function () {
-    var result = new Location(0 ,0);
+    var result = {x: 0, y: 0};
 
     for (var i = 0, l = this._frames.length; i < l; i++) {
-      result.offset(this._frames[i].getLocation());
+      result = GeometryUtils.locationOffset(result, this._frames[i].getLocation());
     }
 
     return result;
   };
 
   /**
-   * @return {Location} The outermost frame's location, or NoFramesException.
+   * @return {{x: number, y: number}} The outermost frame's location, or NoFramesException.
    */
   FrameChain.prototype.getDefaultContentScrollPosition = function () {
     if (this._frames.length == 0) {
       throw new Error("No frames in frame chain");
     }
-    return new Location(this._frames[0].getParentScrollPosition());
+    return this._frames[0].getParentScrollPosition();
   };
 
   /**
-   * @return {RectangleSize} The size of the current frame.
+   * @return {{width: number, height: number}} The size of the current frame.
    */
   FrameChain.prototype.getCurrentFrameSize = function () {
     this._logger.verbose("getCurrentFrameSize()");

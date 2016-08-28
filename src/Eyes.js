@@ -17,16 +17,14 @@
     var EyesSDK = require('eyes.sdk'),
         EyesUtils = require('eyes.utils'),
         promise = require('q'),
-        ViewportSize = require('./ViewportSize'),
         EyesWebDriver = require('./EyesWebDriver'),
         EyesRemoteWebElement = require('./EyesRemoteWebElement'),
-        EyesWebDriverScreenshot = require('./EyesWebDriverScreenshot'),
-        EyesSeleniumUtils = require('./EyesSeleniumUtils'),
-        ContextBasedScaleProvider = require('./ContextBasedScaleProvider');
+        EyesWebDriverScreenshot = require('./EyesWebDriverScreenshot');
     var EyesBase = EyesSDK.EyesBase,
         PromiseFactory = EyesUtils.PromiseFactory,
         BrowserUtils = EyesUtils.BrowserUtils,
-        ArgumentGuard = EyesUtils.ArgumentGuard;
+        ArgumentGuard = EyesUtils.ArgumentGuard,
+        MutableImage = EyesUtils.MutableImage;
     var USE_DEFAULT_MATCH_TIMEOUT = -1,
         RESPONSE_TIME_DEFAULT_DEADLINE = 10,
         RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE = 20,
@@ -206,46 +204,9 @@
             });
         }
         return that._flow.execute(function() {
-            return callCheckWindowBase(that, tag, false, matchTimeout, undefined);
+            that._regionToCheck = undefined;
+            return callCheckWindowBase(that, tag, false, matchTimeout, that._regionToCheck);
         });
-    };
-
-    /**
-     * Updates the state of scaling related parameters.
-     */
-    var updateScalingParams = function(eyes) {
-        if (eyes._devicePixelRatio == Eyes.UNKNOWN_DEVICE_PIXEL_RATIO) {
-            eyes._logger.verbose("Trying to extract device pixel ratio...");
-
-            try {
-                var viewportSize;
-                return EyesSeleniumUtils.getDevicePixelRatio(eyes._driver).then(function (ratio) {
-                    return ratio;
-                }, function () {
-                    eyes._logger.verbose("Failed to extract device pixel ratio! Using default.");
-                    return Eyes.DEFAULT_DEVICE_PIXEL_RATIO;
-                }).then(function (ratio) {
-                    eyes._devicePixelRatio = ratio;
-
-                    eyes._logger.verbose("Device pixel ratio: " + eyes._devicePixelRatio);
-                    eyes._logger.verbose("Setting scale provider..");
-                    return eyes.getViewportSize();
-                }).then(function (size) {
-                    viewportSize = size;
-                    return EyesSeleniumUtils.getCurrentFrameContentEntireSize(eyes._driver);
-                }).then(function (entireSize) {
-                    eyes._scaleProvider = new ContextBasedScaleProvider(entireSize, viewportSize, eyes._devicePixelRatio, eyes._promiseFactory);
-
-                    return eyes._scaleProvider;
-                });
-            } catch (err) {
-                // This can happen in Appium for example.
-                eyes._logger.verbose("Failed to set ContextBasedScaleProvider.");
-                eyes._logger.verbose("Using FixedScaleProvider instead...");
-                throw Error();
-                //eyes._scaleProvider = new FixedScaleProvider(1 / eyes._devicePixelRatio);
-            }
-        }
     };
 
     /**
@@ -255,39 +216,33 @@
      * @param {int} matchTimeout The amount of time to retry matching.
      *                     (Milliseconds)
      * @param {string} tag An optional tag to be associated with the snapshot.
-     * @returns {!promise.Promise<void>}
+     * @returns {Promise<void>}
      */
     var checkCurrentFrame = function(eyes, matchTimeout, tag) {
         eyes._logger.verbose("CheckCurrentFrame(" + matchTimeout + ", '" + tag + "')");
 
         eyes._checkFrameOrElement = true;
-
-        var ewds, image;
         eyes._logger.verbose("Getting screenshot as base64..");
 
-        // FIXME - Scaling should be handled in a single place instead
-        // return updateScalingParams(eyes).then(function () {
-        //     return eyes._driver.getDefaultContentViewportSize(false);
-        return eyes._driver.getDefaultContentViewportSize(false).then(function (viewportSize) {
-            eyes._viewportSize = viewportSize;
-            return eyes.getScreenShot();
+        var ewds, sForceFullPage, sHideScrollBars;
+        return eyes._driver.takeScreenshot().then(function (screenshot64) {
+            return new MutableImage(new Buffer(screenshot64, 'base64'), eyes._promiseFactory);
         }).then(function (screenshotImage) {
-        //     image = screenshotImage;
-        //     return screenshotImage.getSize();
-        // }).then(function (size) {
-        //     eyes._viewportSize = null;
-        //     var scale = eyes._scaleProvider.calculateScale(size.width);
-        //     return image.scaleImage(scale);
-        // }).then(function () {
-            ewds = new EyesWebDriverScreenshot(eyes._logger, eyes._driver, screenshotImage);
+            ewds = new EyesWebDriverScreenshot(eyes._logger, eyes._driver, screenshotImage, eyes._promiseFactory);
             return ewds.buildScreenshot(null, null, null);
         }).then(function () {
             eyes._logger.verbose("Done!");
-            eyes._viewportSize = null;
-            return callCheckWindowBase(eyes, tag, false, matchTimeout, ewds.getFrameWindow());
+            sForceFullPage = eyes._forceFullPage;
+            eyes._forceFullPage = true;
+            sHideScrollBars = eyes._hideScrollbars;
+            eyes._hideScrollbars = true;
+            eyes._regionToCheck = ewds.getFrameWindow();
+            return callCheckWindowBase(eyes, tag, false, matchTimeout, eyes._regionToCheck);
         }).then(function () {
-            eyes._checkFrameOrElement = false;
+            eyes._forceFullPage = sForceFullPage;
+            eyes._hideScrollbars = sHideScrollBars;
             eyes._regionToCheck = null;
+            eyes._checkFrameOrElement = false;
         });
     };
 
@@ -309,7 +264,6 @@
         }
 
         ArgumentGuard.notNull(element, "frameReference");
-
         this._logger.log("CheckFrame(element, " + matchTimeout + ", '" + tag + "')");
 
         return that._flow.execute(function() {
@@ -321,9 +275,7 @@
               })
               .then(function() {
                   that._logger.verbose("Switching back to parent frame...");
-                  // TODO: save all switching and restore parent
-                  //return that._driver.switchTo().parentFrame();
-                  return that._driver.switchTo().defaultContent();
+                  return that._driver.switchTo().parentFrame();
               })
               .then(function() {
                   that._logger.verbose("Done!");
@@ -348,7 +300,8 @@
             });
         }
         return that._flow.execute(function() {
-            return callCheckWindowBase(that, tag, false, matchTimeout, region);
+            that._regionToCheck = region;
+            return callCheckWindowBase(that, tag, false, matchTimeout, that._regionToCheck);
         });
     };
 
@@ -375,7 +328,8 @@
                     return element.getLocation();
                 })
                 .then(function(point) {
-                    return callCheckWindowBase(that, tag, false, matchTimeout, createRegion(point, size, true));
+                    that._regionToCheck = createRegion(point, size, true);
+                    return callCheckWindowBase(that, tag, false, matchTimeout, that._regionToCheck);
                 });
         });
     };
@@ -408,7 +362,8 @@
                     return element.getLocation();
                 })
                 .then(function(point) {
-                    return callCheckWindowBase(that, tag, false, matchTimeout, createRegion(point, size, true));
+                    that._regionToCheck = createRegion(point, size, true);
+                    return callCheckWindowBase(that, tag, false, matchTimeout, that._regionToCheck);
                 });
         });
     };
@@ -418,6 +373,9 @@
         return this._flow.timeout(ms);
     };
 
+    /**
+     * @returns {Promise.<MutableImage>}
+     */
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.getScreenShot = function() {
         return BrowserUtils.getScreenshot(
@@ -431,7 +389,8 @@
             this._automaticRotation,
             this._os === 'Android' ? 90 : 270,
             this._isLandscape,
-            this._waitBeforeScreenshots
+            this._waitBeforeScreenshots,
+            this._regionToCheck
         );
     };
 
@@ -467,12 +426,12 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.getViewportSize = function() {
-        return ViewportSize.getViewportSize(this._driver, this._promiseFactory);
+        return BrowserUtils.getViewportSize(this._driver, this._promiseFactory);
     };
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.setViewportSize = function(size) {
-        return ViewportSize.setViewportSize(this._driver, size, this._promiseFactory, this._logger);
+        return BrowserUtils.setViewportSize(this._driver, size, this._promiseFactory, this._logger, false);
     };
 
     //noinspection JSUnusedGlobalSymbols
