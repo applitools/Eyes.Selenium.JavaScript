@@ -15,7 +15,8 @@
         "selenium",
         "testing",
         "webdriver",
-        "webdriverjs"
+        "webdriverjs",
+        "protractor"
     ],
     "homepage": "http://www.applitools.com/",
     "repository": {
@@ -27,8 +28,7 @@
     "dependencies": {
         "eyes.utils": "0.0.17",
         "eyes.sdk": "0.0.48",
-        "q": "^1.4.1",
-        "winston": "*"
+        "q": "^1.4.1"
     },
     "devDependencies": {
         "mocha": "*",

@@ -11,22 +11,23 @@
  ---
  */
 
-(function() {
+(function () {
     'use strict';
 
     var EyesSDK = require('eyes.sdk'),
         EyesUtils = require('eyes.utils'),
         promise = require('q'),
-        ViewportSize = require('./ViewportSize'),
         EyesWebDriver = require('./EyesWebDriver'),
         EyesRemoteWebElement = require('./EyesRemoteWebElement'),
         EyesWebDriverScreenshot = require('./EyesWebDriverScreenshot'),
-        EyesSeleniumUtils = require('./EyesSeleniumUtils'),
-        ContextBasedScaleProvider = require('./ContextBasedScaleProvider');
-    var EyesBase = EyesSDK.EyesBase,
+        ElementFinderWrappers = require('./ElementFinderWrapper');
+    var ElementFinderWrapper = ElementFinderWrappers.ElementFinderWrapper,
+        ElementArrayFinderWrapper = ElementFinderWrappers.ElementArrayFinderWrapper,
+        EyesBase = EyesSDK.EyesBase,
         PromiseFactory = EyesUtils.PromiseFactory,
         BrowserUtils = EyesUtils.BrowserUtils,
-        ArgumentGuard = EyesUtils.ArgumentGuard;
+        ArgumentGuard = EyesUtils.ArgumentGuard,
+        MutableImage = EyesUtils.MutableImage;
     var USE_DEFAULT_MATCH_TIMEOUT = -1,
         RESPONSE_TIME_DEFAULT_DEADLINE = 10,
         RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE = 20,
@@ -65,37 +66,63 @@
     });
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype._getBaseAgentId = function() {
-        return 'selenium-js/0.0.53';
+    Eyes.prototype._getBaseAgentId = function () {
+        if (this._isProtratorLoaded) {
+            return 'eyes-protractor/0.0.57';
+        } else {
+            return 'selenium-js/0.0.53';
+        }
     };
 
-    function _init(that, flow) {
+    function _init(that, flow, isDisabled) {
+        // extend protractor element to return ours
+        if (!isDisabled && that._isProtratorLoaded) {
+            var originalElementFn = global.element;
+            global.element = function (locator) {
+                return new ElementFinderWrapper(originalElementFn(locator), that, that._logger);
+            };
+
+            global.element.all = function (locator) {
+                return new ElementArrayFinderWrapper(originalElementFn.all(locator), that, that._logger);
+            };
+        }
+
         // Set PromiseFactory to work with the protractor control flow and promises
-        that._promiseFactory.setFactoryMethods(function(asyncAction) {
-            return flow.execute(function() {
+        that._promiseFactory.setFactoryMethods(function (asyncAction) {
+            return flow.execute(function () {
                 var deferred = promise.defer();
                 asyncAction(deferred.fulfill, deferred.reject);
                 return deferred.promise;
             });
-        }, function() {
+        }, function () {
             return promise.defer();
         });
     }
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.open = function(driver, appName, testName, viewportSize) {
+    Eyes.prototype.open = function (driver, appName, testName, viewportSize) {
         var that = this;
+
+        if (typeof protractor !== 'undefined') {
+            that._isProtratorLoaded = true;
+            that._logger.verbose("Running using Protractor module");
+        } else {
+            that._isProtratorLoaded = false;
+            that._logger.verbose("Running using Selenium module");
+        }
+
         var flow = that._flow = driver.controlFlow();
-        _init(that, flow);
+        _init(that, flow, this._isDisabled);
 
         if (this._isDisabled) {
-            return that._flow.execute(function() {
+            return that._flow.execute(function () {
                 return driver;
             });
         }
-        return this._flow.execute(function() {
+
+        return flow.execute(function () {
             return driver.getCapabilities()
-                .then(function(capabilities) {
+                .then(function (capabilities) {
                     var platformName, platformVersion, orientation;
                     if (capabilities.caps_) {
                         platformName = capabilities.caps_.platformName;
@@ -129,11 +156,11 @@
                         that._isLandscape = true;
                     }
                 })
-                .then(function() {
+                .then(function () {
                     return EyesBase.prototype.open.call(that, appName, testName, viewportSize);
-                }).then(function() {
+                }).then(function () {
                     return new EyesWebDriver(driver, that, that._logger, that._promiseFactory);
-                }).then(function(driver) {
+                }).then(function (driver) {
                     that._devicePixelRatio = Eyes.UNKNOWN_DEVICE_PIXEL_RATIO;
 
                     that._driver = driver;
@@ -143,20 +170,20 @@
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.close = function(throwEx) {
+    Eyes.prototype.close = function (throwEx) {
         var that = this;
 
         if (this._isDisabled) {
-            return that._flow.execute(function() {
+            return that._flow.execute(function () {
             });
         }
         if (throwEx === undefined) {
             throwEx = true;
         }
 
-        return that._flow.execute(function() {
+        return that._flow.execute(function () {
             return EyesBase.prototype.close.call(that, throwEx)
-                .then(function(results) {
+                .then(function (results) {
                     return results;
                 }, function (err) {
                     throw err;
@@ -172,8 +199,10 @@
      * @return {Object} A region object.
      */
     var createRegion = function (point, size, isRelative) {
-        return {left: Math.ceil(point.x), top: Math.ceil(point.y), width: Math.ceil(size.width),
-            height: Math.ceil(size.height), relative: isRelative};
+        return {
+            left: Math.ceil(point.x), top: Math.ceil(point.y), width: Math.ceil(size.width),
+            height: Math.ceil(size.height), relative: isRelative
+        };
     };
 
     /**
@@ -188,7 +217,7 @@
      */
     var callCheckWindowBase = function (eyes, tag, ignoreMismatch, retryTimeout, region) {
         return EyesBase.prototype.checkWindow.call(eyes, tag, false, retryTimeout, region)
-            .then(function(result) {
+            .then(function (result) {
                 if (result.asExpected || !eyes._failureReportOverridden) {
                     return result;
                 } else {
@@ -199,53 +228,16 @@
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.checkWindow = function(tag, matchTimeout) {
+    Eyes.prototype.checkWindow = function (tag, matchTimeout) {
         var that = this;
         if (that._isDisabled) {
-            return that._flow.execute(function() {
+            return that._flow.execute(function () {
             });
         }
-        return that._flow.execute(function() {
-            return callCheckWindowBase(that, tag, false, matchTimeout, undefined);
+        return that._flow.execute(function () {
+            that._regionToCheck = undefined;
+            return callCheckWindowBase(that, tag, false, matchTimeout, that._regionToCheck);
         });
-    };
-
-    /**
-     * Updates the state of scaling related parameters.
-     */
-    var updateScalingParams = function(eyes) {
-        if (eyes._devicePixelRatio == Eyes.UNKNOWN_DEVICE_PIXEL_RATIO) {
-            eyes._logger.verbose("Trying to extract device pixel ratio...");
-
-            try {
-                var viewportSize;
-                return EyesSeleniumUtils.getDevicePixelRatio(eyes._driver).then(function (ratio) {
-                    return ratio;
-                }, function () {
-                    eyes._logger.verbose("Failed to extract device pixel ratio! Using default.");
-                    return Eyes.DEFAULT_DEVICE_PIXEL_RATIO;
-                }).then(function (ratio) {
-                    eyes._devicePixelRatio = ratio;
-
-                    eyes._logger.verbose("Device pixel ratio: " + eyes._devicePixelRatio);
-                    eyes._logger.verbose("Setting scale provider..");
-                    return eyes.getViewportSize();
-                }).then(function (size) {
-                    viewportSize = size;
-                    return EyesSeleniumUtils.getCurrentFrameContentEntireSize(eyes._driver);
-                }).then(function (entireSize) {
-                    eyes._scaleProvider = new ContextBasedScaleProvider(entireSize, viewportSize, eyes._devicePixelRatio, eyes._promiseFactory);
-
-                    return eyes._scaleProvider;
-                });
-            } catch (err) {
-                // This can happen in Appium for example.
-                eyes._logger.verbose("Failed to set ContextBasedScaleProvider.");
-                eyes._logger.verbose("Using FixedScaleProvider instead...");
-                throw Error();
-                //eyes._scaleProvider = new FixedScaleProvider(1 / eyes._devicePixelRatio);
-            }
-        }
     };
 
     /**
@@ -255,39 +247,30 @@
      * @param {int} matchTimeout The amount of time to retry matching.
      *                     (Milliseconds)
      * @param {string} tag An optional tag to be associated with the snapshot.
-     * @returns {!promise.Promise<void>}
+     * @returns {Promise<void>}
      */
-    var checkCurrentFrame = function(eyes, matchTimeout, tag) {
+    var checkCurrentFrame = function (eyes, matchTimeout, tag) {
         eyes._logger.verbose("CheckCurrentFrame(" + matchTimeout + ", '" + tag + "')");
 
         eyes._checkFrameOrElement = true;
-
-        var ewds, image;
         eyes._logger.verbose("Getting screenshot as base64..");
 
-        // FIXME - Scaling should be handled in a single place instead
-        // return updateScalingParams(eyes).then(function () {
-        //     return eyes._driver.getDefaultContentViewportSize(false);
-        return eyes._driver.getDefaultContentViewportSize(false).then(function (viewportSize) {
-            eyes._viewportSize = viewportSize;
-            return eyes.getScreenShot();
+        var ewds, sForceFullPage, sHideScrollBars;
+        return eyes._driver.takeScreenshot().then(function (screenshot64) {
+            return new MutableImage(new Buffer(screenshot64, 'base64'), eyes._promiseFactory);
         }).then(function (screenshotImage) {
-        //     image = screenshotImage;
-        //     return screenshotImage.getSize();
-        // }).then(function (size) {
-        //     eyes._viewportSize = null;
-        //     var scale = eyes._scaleProvider.calculateScale(size.width);
-        //     return image.scaleImage(scale);
-        // }).then(function () {
-            ewds = new EyesWebDriverScreenshot(eyes._logger, eyes._driver, screenshotImage);
+            ewds = new EyesWebDriverScreenshot(eyes._logger, eyes._driver, screenshotImage, eyes._promiseFactory);
             return ewds.buildScreenshot(null, null, null);
         }).then(function () {
             eyes._logger.verbose("Done!");
-            eyes._viewportSize = null;
-            return callCheckWindowBase(eyes, tag, false, matchTimeout, ewds.getFrameWindow());
+            sHideScrollBars = eyes._hideScrollbars;
+            eyes._hideScrollbars = true;
+            eyes._regionToCheck = ewds.getFrameWindow();
+            return callCheckWindowBase(eyes, tag, false, matchTimeout, eyes._regionToCheck);
         }).then(function () {
-            eyes._checkFrameOrElement = false;
+            eyes._hideScrollbars = sHideScrollBars;
             eyes._regionToCheck = null;
+            eyes._checkFrameOrElement = false;
         });
     };
 
@@ -300,34 +283,31 @@
      * @param {int} matchTimeout The amount of time to retry matching (milliseconds).
      * @param {string} tag An optional tag to be associated with the match.
      */
-    Eyes.prototype.checkFrame = function(element, matchTimeout, tag) {
+    Eyes.prototype.checkFrame = function (element, matchTimeout, tag) {
         var that = this;
         if (that._isDisabled) {
             this._logger.log("checkFrame(element, " + matchTimeout + ", '" + tag + "'): Ignored");
-            return that._flow.execute(function() {
+            return that._flow.execute(function () {
             });
         }
 
         ArgumentGuard.notNull(element, "frameReference");
-
         this._logger.log("CheckFrame(element, " + matchTimeout + ", '" + tag + "')");
 
-        return that._flow.execute(function() {
+        return that._flow.execute(function () {
             that._logger.verbose("Switching to frame based on element reference...");
             return that._driver.switchTo().frame(element)
-              .then(function() {
-                  that._logger.verbose("Done!");
-                  return checkCurrentFrame(that, matchTimeout, tag);
-              })
-              .then(function() {
-                  that._logger.verbose("Switching back to parent frame...");
-                  // TODO: save all switching and restore parent
-                  //return that._driver.switchTo().parentFrame();
-                  return that._driver.switchTo().defaultContent();
-              })
-              .then(function() {
-                  that._logger.verbose("Done!");
-              });
+                .then(function () {
+                    that._logger.verbose("Done!");
+                    return checkCurrentFrame(that, matchTimeout, tag);
+                })
+                .then(function () {
+                    that._logger.verbose("Switching back to parent frame...");
+                    return that._driver.switchTo().parentFrame();
+                })
+                .then(function () {
+                    that._logger.verbose("Done!");
+                });
         });
     };
 
@@ -341,14 +321,15 @@
      * @param {int} matchTimeout The amount of time to retry matching.
      * @return {Promise} A promise which is resolved when the validation is finished.
      */
-    Eyes.prototype.checkRegion = function(region, tag, matchTimeout) {
+    Eyes.prototype.checkRegion = function (region, tag, matchTimeout) {
         var that = this;
         if (this._isDisabled) {
-            return that._flow.execute(function() {
+            return that._flow.execute(function () {
             });
         }
-        return that._flow.execute(function() {
-            return callCheckWindowBase(that, tag, false, matchTimeout, region);
+        return that._flow.execute(function () {
+            that._regionToCheck = region;
+            return callCheckWindowBase(that, tag, false, matchTimeout, that._regionToCheck);
         });
     };
 
@@ -361,21 +342,22 @@
      * @param {int} matchTimeout The amount of time to retry matching.
      * @return {Promise} A promise which is resolved when the validation is finished.
      */
-    Eyes.prototype.checkRegionByElement = function(element, tag, matchTimeout) {
+    Eyes.prototype.checkRegionByElement = function (element, tag, matchTimeout) {
         var that = this;
         var size;
         if (this._isDisabled) {
-            return that._flow.execute(function() {
+            return that._flow.execute(function () {
             });
         }
-        return that._flow.execute(function() {
+        return that._flow.execute(function () {
             return element.getSize()
-                .then(function(elementSize) {
+                .then(function (elementSize) {
                     size = elementSize;
                     return element.getLocation();
                 })
-                .then(function(point) {
-                    return callCheckWindowBase(that, tag, false, matchTimeout, createRegion(point, size, true));
+                .then(function (point) {
+                    that._regionToCheck = createRegion(point, size, true);
+                    return callCheckWindowBase(that, tag, false, matchTimeout, that._regionToCheck);
                 });
         });
     };
@@ -389,37 +371,41 @@
      * @param {int} matchTimeout The amount of time to retry matching.
      * @return {Promise} A promise which is resolved when the validation is finished.
      */
-    Eyes.prototype.checkRegionBy = function(by, tag, matchTimeout) {
+    Eyes.prototype.checkRegionBy = function (by, tag, matchTimeout) {
         var that = this;
         var element;
         var size;
         if (this._isDisabled) {
-            return that._flow.execute(function() {
+            return that._flow.execute(function () {
             });
         }
-        return that._flow.execute(function() {
+        return that._flow.execute(function () {
             return that._driver.findElement(by)
-                .then(function(elem) {
+                .then(function (elem) {
                     element = elem;
                     return element.getSize();
                 })
-                .then(function(elementSize) {
+                .then(function (elementSize) {
                     size = elementSize;
                     return element.getLocation();
                 })
-                .then(function(point) {
-                    return callCheckWindowBase(that, tag, false, matchTimeout, createRegion(point, size, true));
+                .then(function (point) {
+                    that._regionToCheck = createRegion(point, size, true);
+                    return callCheckWindowBase(that, tag, false, matchTimeout, that._regionToCheck);
                 });
         });
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype._waitTimeout = function(ms) {
+    Eyes.prototype._waitTimeout = function (ms) {
         return this._flow.timeout(ms);
     };
 
+    /**
+     * @returns {Promise.<MutableImage>}
+     */
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getScreenShot = function() {
+    Eyes.prototype.getScreenShot = function () {
         return BrowserUtils.getScreenshot(
             this._driver,
             this._promiseFactory,
@@ -431,22 +417,24 @@
             this._automaticRotation,
             this._os === 'Android' ? 90 : 270,
             this._isLandscape,
-            this._waitBeforeScreenshots
+            this._waitBeforeScreenshots,
+            this._checkFrameOrElement,
+            this._regionToCheck
         );
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getTitle = function() {
+    Eyes.prototype.getTitle = function () {
         return this._driver.getTitle();
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getInferredEnvironment = function() {
+    Eyes.prototype.getInferredEnvironment = function () {
         var res = 'useragent:';
         return this._driver.executeScript('return navigator.userAgent')
-            .then(function(userAgent) {
+            .then(function (userAgent) {
                 return res + userAgent;
-            }, function() {
+            }, function () {
                 return res;
             });
     };
@@ -456,7 +444,7 @@
      *
      * @param mode Use one of the values in EyesBase.FailureReport.
      */
-    Eyes.prototype.setFailureReport = function(mode) {
+    Eyes.prototype.setFailureReport = function (mode) {
         if (mode === EyesBase.FailureReport.Immediate) {
             this._failureReportOverridden = true;
             mode = EyesBase.FailureReport.OnClose;
@@ -466,27 +454,27 @@
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getViewportSize = function() {
-        return ViewportSize.getViewportSize(this._driver, this._promiseFactory);
+    Eyes.prototype.getViewportSize = function () {
+        return BrowserUtils.getViewportSize(this._driver, this._promiseFactory);
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.setViewportSize = function(size) {
-        return ViewportSize.setViewportSize(this._driver, size, this._promiseFactory, this._logger);
+    Eyes.prototype.setViewportSize = function (size) {
+        return BrowserUtils.setViewportSize(this._driver, size, this._promiseFactory, this._logger, false);
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.setForceFullPageScreenshot = function(force) {
+    Eyes.prototype.setForceFullPageScreenshot = function (force) {
         this._forceFullPage = force;
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getForceFullPageScreenshot = function() {
+    Eyes.prototype.getForceFullPageScreenshot = function () {
         return this._forceFullPage;
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.setForcedImageRotation = function(degrees) {
+    Eyes.prototype.setForcedImageRotation = function (degrees) {
         if (typeof degrees != 'number') {
             throw new TypeError('degrees must be a number! set to 0 to clear');
         }
@@ -495,17 +483,17 @@
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getForcedImageRotation = function() {
+    Eyes.prototype.getForcedImageRotation = function () {
         return this._imageRotationDegrees || 0;
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.setHideScrollbars = function(hide) {
+    Eyes.prototype.setHideScrollbars = function (hide) {
         this._hideScrollbars = hide;
     };
 
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getHideScrollbars = function() {
+    Eyes.prototype.getHideScrollbars = function () {
         return this._hideScrollbars;
     };
 
@@ -514,7 +502,7 @@
      *
      * @param mode Use one of the values in Eyes.StitchMode.
      */
-    Eyes.prototype.setStitchMode = function(mode) {
+    Eyes.prototype.setStitchMode = function (mode) {
         switch (mode) {
             case Eyes.StitchMode.Scroll:
                 this._stitchMode = Eyes.StitchMode.Scroll;
@@ -533,7 +521,7 @@
      *
      * @return {Eyes.StitchMode} The currently set StitchMode.
      */
-    Eyes.prototype.getStitchMode = function() {
+    Eyes.prototype.getStitchMode = function () {
         return this._stitchMode;
     };
 
@@ -560,6 +548,7 @@
         return this._waitBeforeScreenshots;
     };
 
+    //noinspection JSUnusedGlobalSymbols
     /**
      *
      * @returns {Promise} A promise which resolves to the webdriver's session ID.
