@@ -52,7 +52,7 @@
         this._imageRotationDegrees = 0;
         this._automaticRotation = true;
         this._isLandscape = false;
-        this._hideScrollbars = false;
+        this._hideScrollbars = null;
         this._stitchMode = Eyes.StitchMode.Scroll;
         this._promiseFactory = new PromiseFactory();
         this._waitBeforeScreenshots = DEFAULT_WAIT_BEFORE_SCREENSHOTS;
