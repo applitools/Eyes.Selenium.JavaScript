@@ -66,6 +66,10 @@
     Eyes.prototype = new EyesBase();
     Eyes.prototype.constructor = Eyes;
 
+    /**
+     * @readonly
+     * @enum {string}
+     */
     Eyes.StitchMode = Object.freeze({
         // Uses scrolling to get to the different parts of the page.
         Scroll: 'Scroll',
@@ -237,6 +241,11 @@
     };
 
     //noinspection JSUnusedGlobalSymbols
+    /**
+     * @param {string} tag
+     * @param {int} matchTimeout
+     * @return {ManagedPromise}
+     */
     Eyes.prototype.checkWindow = function (tag, matchTimeout) {
         var that = this;
         if (that._isDisabled) {
@@ -619,30 +628,35 @@
     };
 
     //noinspection JSUnusedGlobalSymbols
+    /**
+     * @param {boolean} hide
+     */
     Eyes.prototype.setHideScrollbars = function (hide) {
         this._hideScrollbars = hide;
     };
 
     //noinspection JSUnusedGlobalSymbols
+    /**
+     * @return {boolean|null}
+     */
     Eyes.prototype.getHideScrollbars = function () {
         return this._hideScrollbars;
     };
 
     //noinspection JSUnusedGlobalSymbols
     /**
-     *
-     * @param mode Use one of the values in Eyes.StitchMode.
+     * @param {Eyes.StitchMode} mode
      */
     Eyes.prototype.setStitchMode = function (mode) {
-        switch (mode) {
-            case Eyes.StitchMode.CSS:
-                this.setPositionProvider(new CssTranslatePositionProvider(this._logger, this._driver, this._promiseFactory));
-                this._stitchMode = Eyes.StitchMode.CSS;
-                break;
-            default:
-                this.setPositionProvider(new ScrollPositionProvider(this._logger, this._driver, this._promiseFactory));
-                this._stitchMode = Eyes.StitchMode.Scroll;
-                break;
+        this._stitchMode = mode;
+        if (this._driver != null) {
+            switch (mode) {
+                case Eyes.StitchMode.CSS:
+                    this.setPositionProvider(new CssTranslatePositionProvider(this._logger, this._driver, this._promiseFactory));
+                    break;
+                default:
+                    this.setPositionProvider(new ScrollPositionProvider(this._logger, this._driver, this._promiseFactory));
+            }
         }
     };
 
