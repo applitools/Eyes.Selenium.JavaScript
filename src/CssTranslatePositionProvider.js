@@ -21,7 +21,7 @@
         this._logger = logger;
         this._driver = executor;
         this._promiseFactory = promiseFactory;
-        that._lastSetPosition = null;
+        this._lastSetPosition = null;
     }
 
     CssTranslatePositionProvider.prototype = new PositionProvider();
