@@ -14,28 +14,27 @@
      * @param {PromiseFactory} promiseFactory
      * @augments PositionProvider
      */
-    function ScrollPositionProvider(logger, executor, promiseFactory) {
+    function CssTranslatePositionProvider(logger, executor, promiseFactory) {
         ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(executor, "executor");
 
         this._logger = logger;
         this._driver = executor;
         this._promiseFactory = promiseFactory;
+        that._lastSetPosition = null;
     }
 
-    ScrollPositionProvider.prototype = new PositionProvider();
-    ScrollPositionProvider.prototype.constructor = ScrollPositionProvider;
+    CssTranslatePositionProvider.prototype = new PositionProvider();
+    CssTranslatePositionProvider.prototype.constructor = CssTranslatePositionProvider;
 
     /**
      * @returns {Promise<{x: number, y: number}>} The scroll position of the current frame.
      */
-    ScrollPositionProvider.prototype.getCurrentPosition = function () {
+    CssTranslatePositionProvider.prototype.getCurrentPosition = function () {
         var that = this;
         that._logger.verbose("getCurrentScrollPosition()");
-        return BrowserUtils.getCurrentScrollPosition(this._driver, this._promiseFactory).then(function (result) {
-            that._logger.verbose("Current position: [" + result.x + "," + result.y + "]");
-            return result;
-        });
+        that._logger.verbose("position to return: " + that._lastSetPosition);
+        return that._lastSetPosition;
     };
 
     /**
@@ -43,18 +42,19 @@
      * @param {{x: number, y: number}} location The position to scroll to.
      * @returns {Promise<void>}
      */
-    ScrollPositionProvider.prototype.setPosition = function (location) {
+    CssTranslatePositionProvider.prototype.setPosition = function (location) {
         var that = this;
-        that._logger.verbose("Scrolling to [" + location.y + "," + location.y + "]");
-        return BrowserUtils.scrollTo(this._driver, location, this._promiseFactory).then(function () {
-            that._logger.verbose("Done scrolling!");
+        that._logger.verbose("Setting position to [" + location.y + "," + location.y + "]");
+        return BrowserUtils.translateTo(this._driver, location, this._promiseFactory).then(function () {
+            that._logger.verbose("Done!");
+            that._lastSetPosition = location;
         });
     };
 
     /**
      * @returns {Promise<{width: number, height: number}>} The entire size of the container which the position is relative to.
      */
-    ScrollPositionProvider.prototype.getEntireSize = function () {
+    CssTranslatePositionProvider.prototype.getEntireSize = function () {
         var that = this;
         return BrowserUtils.getEntirePageSize(this._driver, this._promiseFactory).then(function (result) {
             that._logger.verbose("Entire size: [" + result.width + "," + result.height + "]");
@@ -62,5 +62,5 @@
         });
     };
 
-    module.exports = ScrollPositionProvider;
+    module.exports = CssTranslatePositionProvider;
 }());
