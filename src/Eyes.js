@@ -27,6 +27,8 @@
     var ElementFinderWrapper = ElementFinderWrappers.ElementFinderWrapper,
         ElementArrayFinderWrapper = ElementFinderWrappers.ElementArrayFinderWrapper,
         EyesBase = EyesSDK.EyesBase,
+        FixedScaleProvider = EyesSDK.FixedScaleProvider,
+        ContextBasedScaleProvider = EyesSDK.ContextBasedScaleProvider,
         PromiseFactory = EyesUtils.PromiseFactory,
         BrowserUtils = EyesUtils.BrowserUtils,
         ArgumentGuard = EyesUtils.ArgumentGuard,
@@ -35,6 +37,9 @@
         RESPONSE_TIME_DEFAULT_DEADLINE = 10,
         RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE = 20,
         DEFAULT_WAIT_BEFORE_SCREENSHOTS = 100; // ms
+
+    var UNKNOWN_DEVICE_PIXEL_RATIO = 0,
+        DEFAULT_DEVICE_PIXEL_RATIO = 1;
 
     /**
      *
@@ -244,6 +249,44 @@
         });
     };
 
+    var updateScalingParams = function (eyes) {
+        return eyes._promiseFactory.makePromise(function (resolve) {
+            if (eyes._devicePixelRatio == UNKNOWN_DEVICE_PIXEL_RATIO) {
+                eyes._logger.verbose("Trying to extract device pixel ratio...");
+
+                return BrowserUtils.getDevicePixelRatio(eyes._driver, eyes._promiseFactory).then(function (ratio) {
+                    eyes._devicePixelRatio = ratio;
+                }, function (err) {
+                    eyes._logger.verbose("Failed to extract device pixel ratio! Using default.");
+                    eyes._devicePixelRatio = DEFAULT_DEVICE_PIXEL_RATIO;
+                }).then(function () {
+                    eyes._logger.verbose("Device pixel ratio: " + eyes._devicePixelRatio);
+
+                    eyes._logger.verbose("Setting scale provider..");
+                    var enSize;
+                    return eyes._positionProvider.getEntireSize().then(function (entireSize) {
+                        enSize = entireSize;
+                        return eyes.getViewportSize();
+                    }).then(function (vpSize) {
+                        return new ContextBasedScaleProvider(enSize, vpSize, eyes._devicePixelRatio, eyes._promiseFactory);
+                    }).then(function(scaleProvider) {
+                        eyes.setScaleProvider(scaleProvider);
+                    }, function (err) {
+                        // This can happen in Appium for example.
+                        eyes._logger.verbose("Failed to set ContextBasedScaleProvider.");
+                        eyes._logger.verbose("Using FixedScaleProvider instead...");
+                        eyes.setScaleProvider(new FixedScaleProvider(1 / eyes._devicePixelRatio, eyes._promiseFactory));
+                    }).then(function () {
+                        eyes._logger.verbose("Done!");
+                        resolve();
+                    });
+                });
+            }
+
+            resolve();
+        });
+    };
+
     /**
      * Verifies the current frame.
      *
@@ -259,12 +302,17 @@
         eyes._checkFrameOrElement = true;
         eyes._logger.verbose("Getting screenshot as base64..");
 
-        var ewds, sForceFullPage, sHideScrollBars;
-        return eyes._driver.takeScreenshot().then(function (screenshot64) {
+        var ewds, sHideScrollBars;
+
+        return updateScalingParams(eyes).then(function () {
+            return eyes._driver.takeScreenshot();
+        }).then(function (screenshot64) {
             return new MutableImage(new Buffer(screenshot64, 'base64'), eyes._promiseFactory);
-        }).then(function (screenshotImage) {
-            ewds = new EyesWebDriverScreenshot(eyes._logger, eyes._driver, screenshotImage, eyes._promiseFactory);
-            return ewds.buildScreenshot(null, null, null);
+        }).then(function (image) {
+            return eyes._scaleProvider.scaleImage(image);
+        }).then(function (scaledImage) {
+            ewds = new EyesWebDriverScreenshot(eyes._logger, eyes._driver, scaledImage, eyes._promiseFactory);
+            return ewds.buildScreenshot();
         }).then(function () {
             eyes._logger.verbose("Done!");
             sHideScrollBars = eyes._hideScrollbars;
@@ -482,24 +530,28 @@
      */
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.getScreenShot = function (tag) {
-        return BrowserUtils.getScreenshot(
-            this._driver,
-            this._promiseFactory,
-            this._viewportSize,
-            this._positionProvider,
-            this._forceFullPage,
-            this._hideScrollbars,
-            this._stitchMode === Eyes.StitchMode.CSS,
-            this._imageRotationDegrees,
-            this._automaticRotation,
-            this._os === 'Android' ? 90 : 270,
-            this._isLandscape,
-            this._waitBeforeScreenshots,
-            this._checkFrameOrElement,
-            this._regionToCheck,
-            this._saveDebugScreenshots,
-            tag
-        );
+        var that = this;
+        return updateScalingParams(that).then(function () {
+            return BrowserUtils.getScreenshot(
+                that._driver,
+                that._promiseFactory,
+                that._viewportSize,
+                that._positionProvider,
+                that._scaleProvider,
+                that._forceFullPage,
+                that._hideScrollbars,
+                that._stitchMode === Eyes.StitchMode.CSS,
+                that._imageRotationDegrees,
+                that._automaticRotation,
+                that._os === 'Android' ? 90 : 270,
+                that._isLandscape,
+                that._waitBeforeScreenshots,
+                that._checkFrameOrElement,
+                that._regionToCheck,
+                that._saveDebugScreenshots,
+                tag
+            );
+        });
     };
 
     //noinspection JSUnusedGlobalSymbols
