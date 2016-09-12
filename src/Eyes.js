@@ -79,11 +79,7 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype._getBaseAgentId = function () {
-        if (this._isProtratorLoaded) {
-            return 'eyes-protractor/0.0.57';
-        } else {
-            return 'selenium-js/0.0.53';
-        }
+        return 'selenium-js/0.0.53';
     };
 
     function _init(that, flow) {
@@ -335,6 +331,7 @@
         });
     };
 
+    //noinspection JSUnusedGlobalSymbols
     /**
      * Matches the frame given as parameter, by switching into the frame and
      * using stitching to get an image of the frame.
@@ -372,6 +369,7 @@
         });
     };
 
+    //noinspection JSUnusedGlobalSymbols
     /**
      * Takes a snapshot of the application under test and matches a specific
      * element with the expected region output.

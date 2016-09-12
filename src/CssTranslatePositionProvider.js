@@ -1,8 +1,7 @@
 (function() {
     'use strict';
 
-    var EyesSDK = require('eyes.sdk'),
-        EyesUtils = require('eyes.utils');
+    var EyesUtils = require('eyes.utils');
     var PositionProvider = EyesUtils.PositionProvider,
         BrowserUtils = EyesUtils.BrowserUtils,
         ArgumentGuard = EyesUtils.ArgumentGuard;
@@ -44,7 +43,7 @@
      */
     CssTranslatePositionProvider.prototype.setPosition = function (location) {
         var that = this;
-        that._logger.verbose("Setting position to [" + location.y + "," + location.y + "]");
+        that._logger.verbose("Setting position to:", location);
         return BrowserUtils.translateTo(this._driver, location, this._promiseFactory).then(function () {
             that._logger.verbose("Done!");
             that._lastSetPosition = location;
