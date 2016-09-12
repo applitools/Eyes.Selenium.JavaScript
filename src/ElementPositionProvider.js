@@ -1,8 +1,7 @@
 (function() {
     'use strict';
 
-    var EyesSDK = require('eyes.sdk'),
-        EyesUtils = require('eyes.utils');
+    var EyesUtils = require('eyes.utils');
     var PositionProvider = EyesUtils.PositionProvider,
         ArgumentGuard = EyesUtils.ArgumentGuard;
 
@@ -56,7 +55,7 @@
      */
     ElementPositionProvider.prototype.setPosition = function (location) {
         var that = this;
-        that._logger.verbose("Scrolling to [" + location.y + "," + location.y + "]");
+        that._logger.verbose("Scrolling to:", location);
         return that._element.scrollTo(location).then(function () {
             that._logger.verbose("Done scrolling!");
         });

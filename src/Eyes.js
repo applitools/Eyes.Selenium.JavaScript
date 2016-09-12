@@ -42,9 +42,9 @@
         DEFAULT_DEVICE_PIXEL_RATIO = 1;
 
     /**
-     *
      * @param {String} serverUrl
      * @param {Boolean} isDisabled - set to true to disable Applitools Eyes and use the webdriver directly.
+     * @augments EyesBase
      * @constructor
      **/
     function Eyes(serverUrl, isDisabled) {
@@ -79,11 +79,7 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype._getBaseAgentId = function () {
-        if (this._isProtratorLoaded) {
-            return 'eyes-protractor/0.0.57';
-        } else {
-            return 'selenium-js/0.0.53';
-        }
+        return 'selenium-js/0.0.53';
     };
 
     function _init(that, flow) {
@@ -224,7 +220,7 @@
      * @param {String} tag The tag for the current visual checkpoint.
      * @param {boolean} ignoreMismatch Whether or not the server should ignore a mismatch.
      * @param {int} retryTimeout The timeout. (Milliseconds).
-     * @param {Object} region The region to check. Should be of the form  {width, height, left, top}.
+     * @param {Object} [region] The region to check. Should be of the form  {width, height, left, top}.
      * @returns {Promise} A promise which resolves to the checkWindow result, or an exception of the result failed
      *                      and failure reports are immediate.
      */
@@ -253,8 +249,8 @@
             });
         }
         return that._flow.execute(function () {
-            that._regionToCheck = undefined;
-            return callCheckWindowBase(that, tag, false, matchTimeout, that._regionToCheck);
+            that._regionToCheck = null;
+            return callCheckWindowBase(that, tag, false, matchTimeout);
         });
     };
 
@@ -266,7 +262,7 @@
                 return BrowserUtils.getDevicePixelRatio(eyes._driver, eyes._promiseFactory).then(function (ratio) {
                     eyes._devicePixelRatio = ratio;
                 }, function (err) {
-                    eyes._logger.verbose("Failed to extract device pixel ratio! Using default.");
+                    eyes._logger.verbose("Failed to extract device pixel ratio! Using default.", err);
                     eyes._devicePixelRatio = DEFAULT_DEVICE_PIXEL_RATIO;
                 }).then(function () {
                     eyes._logger.verbose("Device pixel ratio: " + eyes._devicePixelRatio);
@@ -282,7 +278,7 @@
                         eyes.setScaleProvider(scaleProvider);
                     }, function (err) {
                         // This can happen in Appium for example.
-                        eyes._logger.verbose("Failed to set ContextBasedScaleProvider.");
+                        eyes._logger.verbose("Failed to set ContextBasedScaleProvider.", err);
                         eyes._logger.verbose("Using FixedScaleProvider instead...");
                         eyes.setScaleProvider(new FixedScaleProvider(1 / eyes._devicePixelRatio, eyes._promiseFactory));
                     }).then(function () {
@@ -327,7 +323,7 @@
             sHideScrollBars = eyes._hideScrollbars;
             eyes._hideScrollbars = true;
             eyes._regionToCheck = ewds.getFrameWindow();
-            return callCheckWindowBase(eyes, tag, false, matchTimeout, eyes._regionToCheck);
+            return callCheckWindowBase(eyes, tag, false, matchTimeout);
         }).then(function () {
             eyes._hideScrollbars = sHideScrollBars;
             eyes._regionToCheck = null;
@@ -335,6 +331,7 @@
         });
     };
 
+    //noinspection JSUnusedGlobalSymbols
     /**
      * Matches the frame given as parameter, by switching into the frame and
      * using stitching to get an image of the frame.
@@ -372,6 +369,7 @@
         });
     };
 
+    //noinspection JSUnusedGlobalSymbols
     /**
      * Takes a snapshot of the application under test and matches a specific
      * element with the expected region output.
@@ -430,7 +428,7 @@
                 that._logger.verbose("Element region: " + elementRegion);
 
                 that._regionToCheck = elementRegion;
-                return callCheckWindowBase(that, tag, false, matchTimeout, that._regionToCheck);
+                return callCheckWindowBase(that, tag, false, matchTimeout);
             }).then(function () {
                 if (originalOverflow != null) {
                     return element.setOverflow(originalOverflow);
@@ -460,8 +458,8 @@
             });
         }
         return that._flow.execute(function () {
-            that._regionToCheck = region;
-            return callCheckWindowBase(that, tag, false, matchTimeout, that._regionToCheck);
+            that._regionToCheck = null;
+            return callCheckWindowBase(that, tag, false, matchTimeout, region);
         });
     };
 
@@ -488,8 +486,8 @@
                     return element.getLocation();
                 })
                 .then(function (point) {
-                    that._regionToCheck = createRegion(point, size, true);
-                    return callCheckWindowBase(that, tag, false, matchTimeout, that._regionToCheck);
+                    that._regionToCheck = null;
+                    return callCheckWindowBase(that, tag, false, matchTimeout, createRegion(point, size, true));
                 });
         });
     };
@@ -522,8 +520,8 @@
                     return element.getLocation();
                 })
                 .then(function (point) {
-                    that._regionToCheck = createRegion(point, size, true);
-                    return callCheckWindowBase(that, tag, false, matchTimeout, that._regionToCheck);
+                    that._regionToCheck = null;
+                    return callCheckWindowBase(that, tag, false, matchTimeout, createRegion(point, size, true));
                 });
         });
     };
