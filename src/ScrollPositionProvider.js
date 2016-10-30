@@ -32,7 +32,7 @@
         var that = this;
         that._logger.verbose("getCurrentScrollPosition()");
         return BrowserUtils.getCurrentScrollPosition(this._driver, this._promiseFactory).then(function (result) {
-            that._logger.verbose("Current position: [" + result.x + "," + result.y + "]");
+            that._logger.verbose("Current position: ", result);
             return result;
         });
     };
@@ -56,8 +56,26 @@
     ScrollPositionProvider.prototype.getEntireSize = function () {
         var that = this;
         return BrowserUtils.getEntirePageSize(this._driver, this._promiseFactory).then(function (result) {
-            that._logger.verbose("Entire size: [" + result.width + "," + result.height + "]");
+            that._logger.verbose("Entire size: ", result);
             return result;
+        });
+    };
+
+    /**
+     * @returns {Promise<{x: number, y: number}>}
+     */
+    ScrollPositionProvider.prototype.getState = function () {
+        return this.getCurrentPosition();
+    };
+
+    /**
+     * @param {{x: number, y: number}} state The initial state of position
+     * @returns {Promise<void>}
+     */
+    ScrollPositionProvider.prototype.restoreState = function (state) {
+        var that = this;
+        return this.setPosition(state).then(function () {
+            that._logger.verbose("Position restored.");
         });
     };
 

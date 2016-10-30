@@ -31,20 +31,16 @@
      * @returns {Promise<{x: number, y: number}>} The scroll position of the current frame.
      */
     ElementPositionProvider.prototype.getCurrentPosition = function () {
-        var that = this, elScrollLeft, elScrollTop;
-        that._logger.verbose("getCurrentScrollPosition()");
+        var that = this, elScrollLeft;
+        that._logger.verbose("getCurrentPosition()");
 
         return that._element.getScrollLeft().then(function (value) {
             elScrollLeft = value;
             return that._element.getScrollTop();
         }).then(function (value) {
-            elScrollTop = value;
-            that._logger.verbose("Current position: [" + elScrollLeft + "," + elScrollTop + "]");
-
-            return {
-                x: elScrollLeft,
-                y: elScrollTop
-            };
+            var location = { x: elScrollLeft, y: value };
+            that._logger.verbose("Current position: ", location);
+            return location;
         });
     };
 
@@ -73,12 +69,30 @@
         }).then(function (value) {
             elScrollHeight = value;
 
-            that._logger.verbose("Entire size: [" + elScrollWidth + "," + elScrollHeight + "]");
+            that._logger.verbose("Entire size: ", elScrollWidth, ",", elScrollHeight);
 
             return {
                 width: elScrollWidth,
                 height: elScrollHeight
             };
+        });
+    };
+
+    /**
+     * @returns {Promise<{x: number, y: number}>}
+     */
+    ElementPositionProvider.prototype.getState = function () {
+        return this.getCurrentPosition();
+    };
+
+    /**
+     * @param {{x: number, y: number}} state The initial state of position
+     * @returns {Promise<void>}
+     */
+    ElementPositionProvider.prototype.restoreState = function (state) {
+        var that = this;
+        return this.setPosition(state).then(function () {
+            that._logger.verbose("Position restored.");
         });
     };
 

@@ -21,10 +21,7 @@
         ArgumentGuard.notNull(size, "size");
         ArgumentGuard.notNull(parentScrollPosition, "parentScrollPosition");
 
-        logger.verbose("Frame(logger, reference, " + frameId + ", " +
-            "[" + location.x + ", " + location.y + "], " +
-            "[" + size.width + ", " + size.height + "], " +
-            "[" + parentScrollPosition.x + ", " + parentScrollPosition.y + "])");
+        logger.verbose("Frame(logger, reference, " + frameId + ", ", location, ", ", size, ", ", parentScrollPosition, ")");
 
         this._logger = logger;
         this._reference = reference;

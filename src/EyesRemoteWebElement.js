@@ -64,9 +64,9 @@
      * C'tor = initializes the module settings
      *
      * @constructor
-     * @param {Object} remoteWebElement
+     * @param {WebElement} remoteWebElement
      * @param {EyesWebDriver} eyesDriver
-     * @param {Object} logger
+     * @param {Logger} logger
      * @augments WebElement
      **/
     function EyesRemoteWebElement(remoteWebElement, eyesDriver, logger) {
@@ -168,7 +168,7 @@
      * @return {promise.Promise.<string>} The value of the style property of the element, or {@code null}.
      */
     EyesRemoteWebElement.prototype.getComputedStyle = function (propStyle) {
-        return this._eyesDriver.executeScript(JS_GET_COMPUTED_STYLE_FORMATTED_STR(propStyle), this);
+        return this._eyesDriver.executeScript(JS_GET_COMPUTED_STYLE_FORMATTED_STR(propStyle), this._element);
     };
 
     /**
@@ -184,7 +184,7 @@
      * @return {promise.Promise.<int>} The value of the scrollLeft property of the element.
      */
     EyesRemoteWebElement.prototype.getScrollLeft  = function () {
-        return this._eyesDriver.executeScript(JS_GET_SCROLL_LEFT, this).then(function (value) {
+        return this._eyesDriver.executeScript(JS_GET_SCROLL_LEFT, this._element).then(function (value) {
             return parseInt(value, 10);
         });
     };
@@ -193,7 +193,7 @@
      * @return {promise.Promise.<int>} The value of the scrollTop property of the element.
      */
     EyesRemoteWebElement.prototype.getScrollTop  = function () {
-        return this._eyesDriver.executeScript(JS_GET_SCROLL_TOP, this).then(function (value) {
+        return this._eyesDriver.executeScript(JS_GET_SCROLL_TOP, this._element).then(function (value) {
             return parseInt(value, 10);
         });
     };
@@ -202,7 +202,7 @@
      * @return {promise.Promise.<int>} The value of the scrollWidth property of the element.
      */
     EyesRemoteWebElement.prototype.getScrollWidth  = function () {
-        return this._eyesDriver.executeScript(JS_GET_SCROLL_WIDTH, this).then(function (value) {
+        return this._eyesDriver.executeScript(JS_GET_SCROLL_WIDTH, this._element).then(function (value) {
             return parseInt(value, 10);
         });
     };
@@ -211,7 +211,7 @@
      * @return {promise.Promise.<int>} The value of the scrollHeight property of the element.
      */
     EyesRemoteWebElement.prototype.getScrollHeight  = function () {
-        return this._eyesDriver.executeScript(JS_GET_SCROLL_HEIGHT, this).then(function (value) {
+        return this._eyesDriver.executeScript(JS_GET_SCROLL_HEIGHT, this._element).then(function (value) {
             return parseInt(value, 10);
         });
     };
@@ -250,14 +250,14 @@
      * @return {promise.Promise.<void>}
      */
     EyesRemoteWebElement.prototype.scrollTo = function (location) {
-        return this._eyesDriver.executeScript(JS_SCROLL_TO_FORMATTED_STR(location.x, location.y), this);
+        return this._eyesDriver.executeScript(JS_SCROLL_TO_FORMATTED_STR(location.x, location.y), this._element);
     };
 
     /**
      * @return {promise.Promise.<string>} The overflow of the element.
      */
     EyesRemoteWebElement.prototype.getOverflow = function () {
-        return this._eyesDriver.executeScript(JS_GET_OVERFLOW, this);
+        return this._eyesDriver.executeScript(JS_GET_OVERFLOW, this._element);
     };
 
     /**
@@ -265,7 +265,14 @@
      * @return {promise.Promise.<void>} The overflow of the element.
      */
     EyesRemoteWebElement.prototype.setOverflow = function (overflow) {
-        return this._eyesDriver.executeScript(JS_SET_OVERFLOW_FORMATTED_STR(overflow), this);
+        return this._eyesDriver.executeScript(JS_SET_OVERFLOW_FORMATTED_STR(overflow), this._element);
+    };
+
+    /**
+     * @return {WebElement} The original element object
+     */
+    EyesRemoteWebElement.prototype.getRemoteWebElement = function () {
+        return this._element;
     };
 
     module.exports = EyesRemoteWebElement;

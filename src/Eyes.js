@@ -392,8 +392,7 @@
         return that._flow.execute(function () {
 
             var originalOverflow, elLocation, elSize,
-                borderLeftWidth, borderRightWidth, borderTopWidth, borderBottomWidth,
-                elementRegion;
+                borderLeftWidth, borderRightWidth, borderTopWidth, borderBottomWidth;
 
             that._checkFrameOrElement = true;
 
@@ -424,10 +423,15 @@
             }).then(function (value) {
                 borderBottomWidth = value;
 
-                elementRegion = createRegion(elLocation, elSize, true);
-                that._logger.verbose("Element region: " + elementRegion);
+                that._regionToCheck = createRegion({
+                    x: elLocation.x + borderLeftWidth,
+                    y: elLocation.y + borderTopWidth
+                }, {
+                    width: elSize.width - borderLeftWidth - borderRightWidth,
+                    height: elSize.height - borderTopWidth - borderBottomWidth
+                }, true);
 
-                that._regionToCheck = elementRegion;
+                that._logger.verbose("Element region: ", that._regionToCheck);
                 return callCheckWindowBase(that, tag, false, matchTimeout);
             }).then(function () {
                 if (originalOverflow != null) {
@@ -439,6 +443,24 @@
                 that._regionToCheck = null;
             });
         });
+    };
+
+    //noinspection JSUnusedGlobalSymbols
+    /**
+     * Takes a snapshot of the application under test and matches a specific
+     * element with the expected region output.
+     *
+     * @param {webdriver.by} locator The element to check.
+     * @param {int|null} matchTimeout The amount of time to retry matching (milliseconds).
+     * @param {string} tag An optional tag to be associated with the match.
+     */
+    Eyes.prototype.checkElementBy = function (locator, matchTimeout, tag) {
+        var that = this;
+        ArgumentGuard.notNull(locator, "locator");
+
+        return that._driver.findElement(locator).then(function (element) {
+            return that.checkElement(element, matchTimeout, tag);
+        })
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -522,6 +544,51 @@
                 .then(function (point) {
                     that._regionToCheck = null;
                     return callCheckWindowBase(that, tag, false, matchTimeout, createRegion(point, size, true));
+                });
+        });
+    };
+
+    /**
+     * Switches into the given frame, takes a snapshot of the application under
+     * test and matches a region specified by the given selector.
+     *
+     * @param {string} frameNameOrId The name or id of the frame to switch to. (as would be used in a call to driver.switchTo().frame()).
+     * @param {webdriver.By} locator A Selector specifying the region to check.
+     * @param {int|null} matchTimeout  The amount of time to retry matching. (Milliseconds)
+     * @param {string} tag An optional tag to be associated with the snapshot.
+     * @param {boolean} stitchContent If {@code true}, stitch the internal content of the region (i.e., perform
+     *                  {@link #checkElement(By, int, String)} on the region.
+     */
+    Eyes.prototype.checkRegionInFrame = function (frameNameOrId, locator, matchTimeout, tag, stitchContent) {
+        var that = this;
+        if (that._isDisabled) {
+            this._logger.log("checkRegionInFrame(element, selector, ", matchTimeout, ", ", tag, "): Ignored");
+            return that._flow.execute(function () {
+            });
+        }
+
+        this._logger.log("checkRegionInFrame(element, selector, ", matchTimeout, ", ", tag, ")");
+
+        return that._flow.execute(function () {
+            that._logger.verbose("Switching to frame based on element reference...");
+            return that._driver.switchTo().frame(frameNameOrId)
+                .then(function () {
+                    that._logger.verbose("Done!");
+                    return that._driver.findElement(locator);
+                })
+                .then(function (element) {
+                    if (stitchContent) {
+                        return that.checkElement(element, matchTimeout, tag);
+                    } else {
+                        return that.checkRegionByElement(element, tag, matchTimeout);
+                    }
+                })
+                .then(function () {
+                    that._logger.verbose("Switching back to parent frame...");
+                    return that._driver.switchTo().parentFrame();
+                })
+                .then(function () {
+                    that._logger.verbose("Done!");
                 });
         });
     };

@@ -181,6 +181,7 @@
         return new FrameChain(this._logger, this._frameWindow);
     };
 
+    //noinspection JSUnusedGlobalSymbols
     /**
      * Returns a part of the screenshot based on the given region.
      *
@@ -190,7 +191,7 @@
      * @return {Promise<EyesWebDriverScreenshot>} A screenshot instance containing the given region.
      */
     EyesWebDriverScreenshot.prototype.convertLocationFromRegion = function (region, coordinatesType, throwIfClipped) {
-        this._logger.verbose("getSubScreenshot([" + region + "], " + coordinatesType + ", " + throwIfClipped + ")");
+        this._logger.verbose("getSubScreenshot(", region, ", ", coordinatesType, ", ", throwIfClipped, ")");
 
         ArgumentGuard.notNull(region, "region");
         ArgumentGuard.notNull(coordinatesType, "coordinatesType");
@@ -202,7 +203,7 @@
         var sizeFromSubRegion = GeometryUtils.createSizeFromRegion(asIsSubScreenshotRegion);
         if (GeometryUtils.isRegionEmpty(asIsSubScreenshotRegion) || (throwIfClipped &&
             !(sizeFromRegion.height == sizeFromSubRegion.height && sizeFromRegion.width == sizeFromSubRegion.width))) {
-            throw new Error("Region [" + region + ", (" + coordinatesType + ")] is out of screenshot bounds [" + this._frameWindow + "]");
+            throw new Error("Region ", region, ", (", coordinatesType, ") is out of screenshot bounds ", this._frameWindow);
         }
 
         var subScreenshotImage = this._image.cropImage(asIsSubScreenshotRegion);
@@ -220,6 +221,7 @@
         });
     };
 
+    //noinspection JSUnusedGlobalSymbols
     /**
      * Converts a location's coordinates with the {@code from} coordinates type
      * to the {@code to} coordinates type.
@@ -327,6 +329,7 @@
         return result;
     };
 
+    //noinspection JSUnusedGlobalSymbols
     /**
      * @param {{x: number, y: number}} location
      * @param {CoordinatesType} coordinatesType
@@ -342,6 +345,7 @@
         return this._location;
     };
 
+    //noinspection JSUnusedGlobalSymbols
     /**
      *
      * @param {{top: number, left: number, width: number, height: number}} region
@@ -385,6 +389,7 @@
         return intersectedRegion;
     };
 
+    //noinspection JSUnusedGlobalSymbols
     /**
      * Gets the elements region in the screenshot.
      *
