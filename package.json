@@ -28,11 +28,14 @@
     "dependencies": {
         "eyes.utils": "0.0.17",
         "eyes.sdk": "0.0.48",
+        "selenium-webdriver": "3.0.0-beta-3",
         "q": "^1.4.1"
     },
     "devDependencies": {
-        "mocha": "*",
-        "chai": "*"
+        "ava": "avajs/ava#3c3a6d8b7a27d20096acb7d44538f2aaa33a8d0e"
+    },
+    "scripts": {
+        "test": "ava"
     },
     "engines": {
         "node": ">=0.10.x"
