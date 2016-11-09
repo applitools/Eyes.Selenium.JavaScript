@@ -7,7 +7,7 @@
         FrameChain = require('./FrameChain'),
         Frame = require('./Frame');
     var EyesScreenshot = EyesSDK.EyesScreenshot,
-        CoordinatesType = EyesSDK.CoordinatesType,
+        CoordinatesType = EyesUtils.CoordinatesType,
         ArgumentGuard = EyesUtils.ArgumentGuard,
         GeneralUtils = EyesUtils.GeneralUtils,
         GeometryUtils = EyesUtils.GeometryUtils;
@@ -69,6 +69,7 @@
      * @param {EyesWebDriver} driver The web driver used to get the screenshot.
      * @param {Object} image The actual screenshot image.
      * @param {Object} promiseFactory
+     * @augments EyesScreenshot
      */
     function EyesWebDriverScreenshot(logger, driver, image, promiseFactory) {
         EyesScreenshot.call(this, image);
@@ -81,9 +82,11 @@
         this._image = image;
         this._promiseFactory = promiseFactory;
         this._frameChain = driver.getFrameChain();
+
+        EyesScreenshot.call(this._image);
     }
 
-    EyesWebDriverScreenshot.prototype = EyesScreenshot;
+    EyesWebDriverScreenshot.prototype = new EyesScreenshot();
     EyesWebDriverScreenshot.prototype.constructor = EyesWebDriverScreenshot;
 
     /**

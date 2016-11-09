@@ -6,6 +6,7 @@ exports.EyesWebDriverScreenshot = require('./src/EyesWebDriverScreenshot');
 exports.Frame = require('./src/Frame');
 exports.FrameChain = require('./src/FrameChain');
 exports.ScrollPositionProvider = require('./src/ScrollPositionProvider');
+exports.EyesRegionProvider = require('./src/EyesRegionProvider');
 var EyesSDK = require('eyes.sdk');
 exports.ConsoleLogHandler = EyesSDK.ConsoleLogHandler;
 exports.NullLogHandler  = EyesSDK.NullLogHandler;

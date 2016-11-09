@@ -115,7 +115,7 @@
             that._logger.verbose("Making preparations..");
             return that._onWillSwitch.willSwitchToFrame(EyesTargetLocator.TargetType.FRAME, obj).then(function () {
                 that._logger.verbose("Done! Switching to frame...");
-                return that._targetLocator.frame(obj)
+                return that._targetLocator.frame(obj.getRemoteWebElement())
             }).then(function () {
                 that._logger.verbose("Done!");
             });
