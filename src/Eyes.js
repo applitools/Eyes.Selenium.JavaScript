@@ -158,10 +158,8 @@
                 .then(function () {
                     return EyesBase.prototype.open.call(that, appName, testName, viewportSize);
                 }).then(function () {
-                    return new EyesWebDriver(driver, that, that._logger, that._promiseFactory);
-                }).then(function (driver) {
                     that._devicePixelRatio = Eyes.UNKNOWN_DEVICE_PIXEL_RATIO;
-                    that._driver = driver;
+                    that._driver = new EyesWebDriver(driver, that, that._logger, that._promiseFactory);
 
                     // extend protractor element to return ours
                     if (that._isProtratorLoaded) {
