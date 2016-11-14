@@ -28,16 +28,16 @@
     "dependencies": {
         "eyes.utils": "0.0.17",
         "eyes.sdk": "0.0.48",
-        "selenium-webdriver": "^2.53.0",
         "q": "^1.4.1"
     },
     "devDependencies": {
+        "selenium-webdriver": "^3.0.0",
         "ava": "avajs/ava#2d04763"
     },
     "scripts": {
         "test": "ava"
     },
     "engines": {
-        "node": ">=4.2.x"
+        "node": ">=6.9.0"
     }
 }
