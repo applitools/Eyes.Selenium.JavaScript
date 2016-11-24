@@ -260,14 +260,14 @@
                         enSize = entireSize;
                         return eyes.getViewportSize();
                     }).then(function (vpSize) {
-                        return new ContextBasedScaleProvider(enSize, vpSize, eyes._devicePixelRatio, eyes._promiseFactory);
+                        return new ContextBasedScaleProvider(enSize, vpSize, eyes._scaleMethod, eyes._devicePixelRatio, eyes._promiseFactory);
                     }).then(function(scaleProvider) {
                         eyes.setScaleProvider(scaleProvider);
                     }, function (err) {
                         // This can happen in Appium for example.
                         eyes._logger.verbose("Failed to set ContextBasedScaleProvider.", err);
                         eyes._logger.verbose("Using FixedScaleProvider instead...");
-                        eyes.setScaleProvider(new FixedScaleProvider(1 / eyes._devicePixelRatio, eyes._promiseFactory));
+                        eyes.setScaleProvider(new FixedScaleProvider(1 / eyes._devicePixelRatio, null, eyes._promiseFactory));
                     }).then(function () {
                         eyes._logger.verbose("Done!");
                         resolve();

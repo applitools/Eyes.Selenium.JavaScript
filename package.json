@@ -32,7 +32,7 @@
     },
     "devDependencies": {
         "selenium-webdriver": "^3.0.0",
-        "ava": "avajs/ava#2d04763"
+        "ava": "^0.17.0"
     },
     "scripts": {
         "test": "ava"
