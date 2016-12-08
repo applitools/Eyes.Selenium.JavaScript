@@ -29,12 +29,16 @@
         ElementArrayFinderWrapper = ElementFinderWrappers.ElementArrayFinderWrapper,
         EyesBase = EyesSDK.EyesBase,
         FixedScaleProvider = EyesSDK.FixedScaleProvider,
-        ContextBasedScaleProvider = EyesSDK.ContextBasedScaleProvider,
+        ContextBasedScaleProviderFactory = EyesSDK.ContextBasedScaleProviderFactory,
+        FixedScaleProviderFactory = EyesSDK.FixedScaleProviderFactory,
+        NullScaleProvider = EyesSDK.NullScaleProvider,
         CoordinatesType = EyesUtils.CoordinatesType,
         PromiseFactory = EyesUtils.PromiseFactory,
         BrowserUtils = EyesUtils.BrowserUtils,
         ArgumentGuard = EyesUtils.ArgumentGuard,
         MutableImage = EyesUtils.MutableImage,
+        SimplePropertyHandler = EyesUtils.SimplePropertyHandler,
+        ScaleProviderIdentityFactory = EyesUtils.ScaleProviderIdentityFactory,
         GeometryUtils = EyesUtils.GeometryUtils;
     var USE_DEFAULT_MATCH_TIMEOUT = -1,
         RESPONSE_TIME_DEFAULT_DEADLINE = 10,
@@ -241,9 +245,14 @@
         });
     };
 
+    /**
+     * @param eyes
+     * @returns {ScaleProviderFactory}
+     */
     var updateScalingParams = function (eyes) {
         return eyes._promiseFactory.makePromise(function (resolve) {
-            if (eyes._devicePixelRatio == UNKNOWN_DEVICE_PIXEL_RATIO) {
+            if (eyes._devicePixelRatio == UNKNOWN_DEVICE_PIXEL_RATIO && eyes._scaleProviderHandler.get() instanceof NullScaleProvider) {
+                var factory, enSize, vpSize;
                 eyes._logger.verbose("Trying to extract device pixel ratio...");
 
                 return BrowserUtils.getDevicePixelRatio(eyes._driver, eyes._promiseFactory).then(function (ratio) {
@@ -253,29 +262,27 @@
                     eyes._devicePixelRatio = DEFAULT_DEVICE_PIXEL_RATIO;
                 }).then(function () {
                     eyes._logger.verbose("Device pixel ratio: " + eyes._devicePixelRatio);
-
                     eyes._logger.verbose("Setting scale provider..");
-                    var enSize;
-                    return eyes._positionProvider.getEntireSize().then(function (entireSize) {
-                        enSize = entireSize;
-                        return eyes.getViewportSize();
-                    }).then(function (vpSize) {
-                        return new ContextBasedScaleProvider(enSize, vpSize, eyes._scaleMethod, eyes._devicePixelRatio, eyes._promiseFactory);
-                    }).then(function(scaleProvider) {
-                        eyes.setScaleProvider(scaleProvider);
-                    }, function (err) {
-                        // This can happen in Appium for example.
-                        eyes._logger.verbose("Failed to set ContextBasedScaleProvider.", err);
-                        eyes._logger.verbose("Using FixedScaleProvider instead...");
-                        eyes.setScaleProvider(new FixedScaleProvider(1 / eyes._devicePixelRatio, null, eyes._promiseFactory));
-                    }).then(function () {
-                        eyes._logger.verbose("Done!");
-                        resolve();
-                    });
+                    return eyes._positionProvider.getEntireSize();
+                }).then(function (entireSize) {
+                    enSize = entireSize;
+                    return eyes.getViewportSize();
+                }).then(function (viewportSize) {
+                    vpSize = viewportSize;
+                    factory = new ContextBasedScaleProviderFactory(enSize, vpSize, eyes.getScaleMethod(), eyes._devicePixelRatio, eyes._scaleProviderHandler);
+                }, function (err) {
+                    // This can happen in Appium for example.
+                    eyes._logger.verbose("Failed to set ContextBasedScaleProvider.", err);
+                    eyes._logger.verbose("Using FixedScaleProvider instead...");
+                    factory = new FixedScaleProviderFactory(1/eyes._devicePixelRatio, eyes.getScaleMethod(), eyes._scaleProviderHandler);
+                }).then(function () {
+                    eyes._logger.verbose("Done!");
+                    resolve(factory);
                 });
             }
 
-            resolve();
+            // If we already have a scale provider set, we'll just use it, and pass a mock as provider handler.
+            resolve(new ScaleProviderIdentityFactory(eyes._scaleProviderHandler.get(), new SimplePropertyHandler()));
         });
     };
 
@@ -294,14 +301,17 @@
         eyes._checkFrameOrElement = true;
         eyes._logger.verbose("Getting screenshot as base64..");
 
-        var ewds, sHideScrollBars;
+        var ewds, sHideScrollBars, scaleProviderFactory;
 
-        return updateScalingParams(eyes).then(function () {
+        return updateScalingParams(eyes).then(function (factory) {
+            scaleProviderFactory = factory;
             return eyes._driver.takeScreenshot();
         }).then(function (screenshot64) {
             return new MutableImage(new Buffer(screenshot64, 'base64'), eyes._promiseFactory);
         }).then(function (image) {
-            return eyes._scaleProvider.scaleImage(image);
+            return image.getSize();
+        }).then(function (imageSize) {
+            return image.scaleImage(scaleProviderFactory.getScaleProvider(imageSize.width));
         }).then(function (scaledImage) {
             ewds = new EyesWebDriverScreenshot(eyes._logger, eyes._driver, scaledImage, eyes._promiseFactory);
             ewds.buildScreenshot();
@@ -583,13 +593,13 @@
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.getScreenShot = function (tag) {
         var that = this;
-        return updateScalingParams(that).then(function () {
+        return updateScalingParams(that).then(function (factory) {
             return BrowserUtils.getScreenshot(
                 that._driver,
                 that._promiseFactory,
                 that._viewportSize,
                 that._positionProvider,
-                that._scaleProvider,
+                factory,
                 that._forceFullPage,
                 that._hideScrollbars,
                 that._stitchMode === Eyes.StitchMode.CSS,
