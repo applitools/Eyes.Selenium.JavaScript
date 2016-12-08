@@ -1,25 +1,34 @@
-var test = require('ava');
-var webdriver = require('selenium-webdriver'),
+const test = require('ava'),
+    webdriver = require('selenium-webdriver'),
+    chrome = require('selenium-webdriver/chrome'),
     By = webdriver.By,
-    until = webdriver.until;
-var eyesSelenium = require("../index");
+    until = webdriver.until,
+    eyesSelenium = require("../index");
 
-var driver = null;
-var eyes = null;
-var promise = null;
+const ScaleMethod = eyesSelenium.ScaleMethod,
+    StitchMode = eyesSelenium.Eyes.StitchMode;
+
+let driver = null,
+    eyes = null,
+    promise = null;
 
 test.before(() => {
-    driver = new webdriver.Builder().withCapabilities(webdriver.Capabilities.chrome()).build();
+    const options = new chrome.Options().addArguments("--force-device-scale-factor=1.25");
+    driver = new webdriver.Builder()
+        .forBrowser('chrome')
+        .setChromeOptions(options)
+        .build();
 
     eyes = new eyesSelenium.Eyes();
     eyes.setApiKey(process.env.APPLITOOLS_API_KEY);
     eyes.setLogHandler(new eyesSelenium.ConsoleLogHandler(true));
-    eyes.setStitchMode(eyesSelenium.Eyes.StitchMode.CSS);
+    eyes.setStitchMode(StitchMode.CSS);
     eyes.setForceFullPageScreenshot(true);
+    eyes.setScaleMethod(ScaleMethod.SPEED);
 });
 
 test.beforeEach(t => {
-    var testTitle = t.title.replace('beforeEach for ', '');
+    const testTitle = t.title.replace('beforeEach for ', '');
     promise = eyes.open(driver, "Eyes Selenium SDK", testTitle);
     return promise;
 });
