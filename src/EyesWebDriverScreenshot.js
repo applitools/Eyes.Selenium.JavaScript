@@ -32,8 +32,7 @@
         logger.verbose("Getting first frame..");
         var firstFrame = frameChain.getFrame(0);
         logger.verbose("Done!");
-        var firstFrameLocation = firstFrame.getLocation();
-        var locationInScreenshot = {x: firstFrameLocation.x, y: firstFrameLocation.y};
+        var locationInScreenshot = GeometryUtils.createLocationFromLocation(firstFrame.getLocation());
 
         // We only consider scroll of the default content if this is a viewport screenshot.
         if (screenshotType == ScreenshotType.VIEWPORT) {
@@ -127,9 +126,9 @@
         }).then(function (ppCp) {
             // Getting the scroll position. For native Appium apps we can't get the scroll position, so we use (0,0)
             if (ppCp) {
-                that._scrollPosition = ppCp;
+                that._currentFrameScrollPosition = ppCp;
             } else {
-                that._scrollPosition = {x: 0, y: 0};
+                that._currentFrameScrollPosition = GeometryUtils.createLocation(0, 0);
             }
 
             if (screenshotType == null) {
@@ -147,12 +146,6 @@
                     frameLocationInScreenshot = calcFrameLocationInScreenshot(that._logger, that._frameChain, that._screenshotType);
                 } else {
                     frameLocationInScreenshot = GeometryUtils.createLocation(0, 0);
-                    if (that._screenshotType == ScreenshotType.VIEWPORT) {
-                        frameLocationInScreenshot = GeometryUtils.locationOffset(frameLocationInScreenshot, {
-                            x: -that._scrollPosition.x,
-                            y: -that._scrollPosition.y
-                        });
-                    }
                 }
             }
             that._frameLocationInScreenshot = frameLocationInScreenshot;
@@ -272,7 +265,7 @@
             case CoordinatesType.CONTEXT_AS_IS:
                 switch (to) {
                     case CoordinatesType.CONTEXT_RELATIVE:
-                        result = GeometryUtils.locationOffset(result, this._scrollPosition);
+                        result = GeometryUtils.locationOffset(result, this._currentFrameScrollPosition);
                         break;
 
                     case CoordinatesType.SCREENSHOT_AS_IS:
@@ -288,13 +281,13 @@
                 switch (to) {
                     case CoordinatesType.SCREENSHOT_AS_IS:
                         // First, convert context-relative to context-as-is.
-                        result = GeometryUtils.locationOffset(result, {x: -this._scrollPosition.x, y: -this._scrollPosition.y});
+                        result = GeometryUtils.locationOffset(result, {x: -this._currentFrameScrollPosition.x, y: -this._currentFrameScrollPosition.y});
                         // Now convert context-as-is to screenshot-as-is.
                         result = GeometryUtils.locationOffset(result, this._frameLocationInScreenshot);
                         break;
 
                     case CoordinatesType.CONTEXT_AS_IS:
-                        result = GeometryUtils.locationOffset(result, {x: -this._scrollPosition.x, y: -this._scrollPosition.y});
+                        result = GeometryUtils.locationOffset(result, {x: -this._currentFrameScrollPosition.x, y: -this._currentFrameScrollPosition.y});
                         break;
 
                     default:
@@ -311,7 +304,7 @@
                             y: -this._frameLocationInScreenshot.y
                         });
                         // Now convert to context-relative.
-                        result = GeometryUtils.locationOffset(result, {x: -this._scrollPosition.x, y: -this._scrollPosition.y});
+                        result = GeometryUtils.locationOffset(result, {x: -this._currentFrameScrollPosition.x, y: -this._currentFrameScrollPosition.y});
                         break;
 
                     case CoordinatesType.CONTEXT_AS_IS:
