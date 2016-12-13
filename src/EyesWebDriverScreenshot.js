@@ -7,7 +7,7 @@
         FrameChain = require('./FrameChain'),
         Frame = require('./Frame');
     var EyesScreenshot = EyesSDK.EyesScreenshot,
-        CoordinatesType = EyesSDK.CoordinatesType,
+        CoordinatesType = EyesUtils.CoordinatesType,
         ArgumentGuard = EyesUtils.ArgumentGuard,
         GeneralUtils = EyesUtils.GeneralUtils,
         GeometryUtils = EyesUtils.GeometryUtils;
@@ -32,8 +32,7 @@
         logger.verbose("Getting first frame..");
         var firstFrame = frameChain.getFrame(0);
         logger.verbose("Done!");
-        var firstFrameLocation = firstFrame.getLocation();
-        var locationInScreenshot = {x: firstFrameLocation.x, y: firstFrameLocation.y};
+        var locationInScreenshot = GeometryUtils.createLocationFromLocation(firstFrame.getLocation());
 
         // We only consider scroll of the default content if this is a viewport screenshot.
         if (screenshotType == ScreenshotType.VIEWPORT) {
@@ -69,6 +68,7 @@
      * @param {EyesWebDriver} driver The web driver used to get the screenshot.
      * @param {Object} image The actual screenshot image.
      * @param {Object} promiseFactory
+     * @augments EyesScreenshot
      */
     function EyesWebDriverScreenshot(logger, driver, image, promiseFactory) {
         EyesScreenshot.call(this, image);
@@ -81,9 +81,11 @@
         this._image = image;
         this._promiseFactory = promiseFactory;
         this._frameChain = driver.getFrameChain();
+
+        EyesScreenshot.call(this._image);
     }
 
-    EyesWebDriverScreenshot.prototype = EyesScreenshot;
+    EyesWebDriverScreenshot.prototype = new EyesScreenshot();
     EyesWebDriverScreenshot.prototype.constructor = EyesWebDriverScreenshot;
 
     /**
@@ -124,9 +126,9 @@
         }).then(function (ppCp) {
             // Getting the scroll position. For native Appium apps we can't get the scroll position, so we use (0,0)
             if (ppCp) {
-                that._scrollPosition = ppCp;
+                that._currentFrameScrollPosition = ppCp;
             } else {
-                that._scrollPosition = {x: 0, y: 0};
+                that._currentFrameScrollPosition = GeometryUtils.createLocation(0, 0);
             }
 
             if (screenshotType == null) {
@@ -144,12 +146,6 @@
                     frameLocationInScreenshot = calcFrameLocationInScreenshot(that._logger, that._frameChain, that._screenshotType);
                 } else {
                     frameLocationInScreenshot = GeometryUtils.createLocation(0, 0);
-                    if (that._screenshotType == ScreenshotType.VIEWPORT) {
-                        frameLocationInScreenshot = GeometryUtils.locationOffset(frameLocationInScreenshot, {
-                            x: -that._scrollPosition.x,
-                            y: -that._scrollPosition.y
-                        });
-                    }
                 }
             }
             that._frameLocationInScreenshot = frameLocationInScreenshot;
@@ -181,6 +177,7 @@
         return new FrameChain(this._logger, this._frameWindow);
     };
 
+    //noinspection JSUnusedGlobalSymbols
     /**
      * Returns a part of the screenshot based on the given region.
      *
@@ -190,7 +187,7 @@
      * @return {Promise<EyesWebDriverScreenshot>} A screenshot instance containing the given region.
      */
     EyesWebDriverScreenshot.prototype.convertLocationFromRegion = function (region, coordinatesType, throwIfClipped) {
-        this._logger.verbose("getSubScreenshot([" + region + "], " + coordinatesType + ", " + throwIfClipped + ")");
+        this._logger.verbose("getSubScreenshot(", region, ", ", coordinatesType, ", ", throwIfClipped, ")");
 
         ArgumentGuard.notNull(region, "region");
         ArgumentGuard.notNull(coordinatesType, "coordinatesType");
@@ -202,7 +199,7 @@
         var sizeFromSubRegion = GeometryUtils.createSizeFromRegion(asIsSubScreenshotRegion);
         if (GeometryUtils.isRegionEmpty(asIsSubScreenshotRegion) || (throwIfClipped &&
             !(sizeFromRegion.height == sizeFromSubRegion.height && sizeFromRegion.width == sizeFromSubRegion.width))) {
-            throw new Error("Region [" + region + ", (" + coordinatesType + ")] is out of screenshot bounds [" + this._frameWindow + "]");
+            throw new Error("Region ", region, ", (", coordinatesType, ") is out of screenshot bounds ", this._frameWindow);
         }
 
         var subScreenshotImage = this._image.cropImage(asIsSubScreenshotRegion);
@@ -220,6 +217,7 @@
         });
     };
 
+    //noinspection JSUnusedGlobalSymbols
     /**
      * Converts a location's coordinates with the {@code from} coordinates type
      * to the {@code to} coordinates type.
@@ -267,7 +265,7 @@
             case CoordinatesType.CONTEXT_AS_IS:
                 switch (to) {
                     case CoordinatesType.CONTEXT_RELATIVE:
-                        result = GeometryUtils.locationOffset(result, this._scrollPosition);
+                        result = GeometryUtils.locationOffset(result, this._currentFrameScrollPosition);
                         break;
 
                     case CoordinatesType.SCREENSHOT_AS_IS:
@@ -283,13 +281,13 @@
                 switch (to) {
                     case CoordinatesType.SCREENSHOT_AS_IS:
                         // First, convert context-relative to context-as-is.
-                        result = GeometryUtils.locationOffset(result, {x: -this._scrollPosition.x, y: -this._scrollPosition.y});
+                        result = GeometryUtils.locationOffset(result, {x: -this._currentFrameScrollPosition.x, y: -this._currentFrameScrollPosition.y});
                         // Now convert context-as-is to screenshot-as-is.
                         result = GeometryUtils.locationOffset(result, this._frameLocationInScreenshot);
                         break;
 
                     case CoordinatesType.CONTEXT_AS_IS:
-                        result = GeometryUtils.locationOffset(result, {x: -this._scrollPosition.x, y: -this._scrollPosition.y});
+                        result = GeometryUtils.locationOffset(result, {x: -this._currentFrameScrollPosition.x, y: -this._currentFrameScrollPosition.y});
                         break;
 
                     default:
@@ -306,7 +304,7 @@
                             y: -this._frameLocationInScreenshot.y
                         });
                         // Now convert to context-relative.
-                        result = GeometryUtils.locationOffset(result, {x: -this._scrollPosition.x, y: -this._scrollPosition.y});
+                        result = GeometryUtils.locationOffset(result, {x: -this._currentFrameScrollPosition.x, y: -this._currentFrameScrollPosition.y});
                         break;
 
                     case CoordinatesType.CONTEXT_AS_IS:
@@ -327,6 +325,7 @@
         return result;
     };
 
+    //noinspection JSUnusedGlobalSymbols
     /**
      * @param {{x: number, y: number}} location
      * @param {CoordinatesType} coordinatesType
@@ -342,6 +341,7 @@
         return this._location;
     };
 
+    //noinspection JSUnusedGlobalSymbols
     /**
      *
      * @param {{top: number, left: number, width: number, height: number}} region
@@ -385,6 +385,7 @@
         return intersectedRegion;
     };
 
+    //noinspection JSUnusedGlobalSymbols
     /**
      * Gets the elements region in the screenshot.
      *

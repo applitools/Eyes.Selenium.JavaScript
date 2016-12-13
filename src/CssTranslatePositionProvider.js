@@ -31,9 +31,11 @@
      */
     CssTranslatePositionProvider.prototype.getCurrentPosition = function () {
         var that = this;
-        that._logger.verbose("getCurrentScrollPosition()");
-        that._logger.verbose("position to return: " + that._lastSetPosition);
-        return that._lastSetPosition;
+        return that._promiseFactory.makePromise(function (resolve) {
+            that._logger.verbose("getCurrentPosition()");
+            that._logger.verbose("position to return: ", that._lastSetPosition);
+            resolve(that._lastSetPosition);
+        });
     };
 
     /**
@@ -56,8 +58,30 @@
     CssTranslatePositionProvider.prototype.getEntireSize = function () {
         var that = this;
         return BrowserUtils.getEntirePageSize(this._driver, this._promiseFactory).then(function (result) {
-            that._logger.verbose("Entire size: [" + result.width + "," + result.height + "]");
+            that._logger.verbose("Entire size: ", result);
             return result;
+        });
+    };
+
+    /**
+     * @returns {Promise<object.<string, string>>}
+     */
+    CssTranslatePositionProvider.prototype.getState = function () {
+        var that = this;
+        return BrowserUtils.getCurrentTransform(this._driver, this._promiseFactory).then(function (transforms) {
+            that._logger.verbose("Current transform", transforms);
+            return transforms;
+        });
+    };
+
+    /**
+     * @param {object.<string, string>} state The initial state of position
+     * @returns {Promise<void>}
+     */
+    CssTranslatePositionProvider.prototype.restoreState = function (state) {
+        var that = this;
+        return BrowserUtils.setTransforms(this._driver, state, this._promiseFactory).then(function () {
+            that._logger.verbose("Transform (position) restored.");
         });
     };
 

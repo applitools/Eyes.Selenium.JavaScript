@@ -23,16 +23,23 @@
         ElementFinderWrappers = require('./ElementFinderWrapper'),
         ScrollPositionProvider = require('./ScrollPositionProvider'),
         CssTranslatePositionProvider = require('./CssTranslatePositionProvider'),
-        ElementPositionProvider = require('./ElementPositionProvider');
+        ElementPositionProvider = require('./ElementPositionProvider'),
+        EyesRegionProvider = require('./EyesRegionProvider');
     var ElementFinderWrapper = ElementFinderWrappers.ElementFinderWrapper,
         ElementArrayFinderWrapper = ElementFinderWrappers.ElementArrayFinderWrapper,
         EyesBase = EyesSDK.EyesBase,
         FixedScaleProvider = EyesSDK.FixedScaleProvider,
-        ContextBasedScaleProvider = EyesSDK.ContextBasedScaleProvider,
+        ContextBasedScaleProviderFactory = EyesSDK.ContextBasedScaleProviderFactory,
+        FixedScaleProviderFactory = EyesSDK.FixedScaleProviderFactory,
+        NullScaleProvider = EyesSDK.NullScaleProvider,
+        CoordinatesType = EyesUtils.CoordinatesType,
         PromiseFactory = EyesUtils.PromiseFactory,
         BrowserUtils = EyesUtils.BrowserUtils,
         ArgumentGuard = EyesUtils.ArgumentGuard,
-        MutableImage = EyesUtils.MutableImage;
+        MutableImage = EyesUtils.MutableImage,
+        SimplePropertyHandler = EyesUtils.SimplePropertyHandler,
+        ScaleProviderIdentityFactory = EyesUtils.ScaleProviderIdentityFactory,
+        GeometryUtils = EyesUtils.GeometryUtils;
     var USE_DEFAULT_MATCH_TIMEOUT = -1,
         RESPONSE_TIME_DEFAULT_DEADLINE = 10,
         RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE = 20,
@@ -155,10 +162,8 @@
                 .then(function () {
                     return EyesBase.prototype.open.call(that, appName, testName, viewportSize);
                 }).then(function () {
-                    return new EyesWebDriver(driver, that, that._logger, that._promiseFactory);
-                }).then(function (driver) {
                     that._devicePixelRatio = Eyes.UNKNOWN_DEVICE_PIXEL_RATIO;
-                    that._driver = driver;
+                    that._driver = new EyesWebDriver(driver, that, that._logger, that._promiseFactory);
 
                     // extend protractor element to return ours
                     if (that._isProtratorLoaded) {
@@ -201,31 +206,17 @@
     };
 
     /**
-     * A helper function for creating region objects to be used in checkWindow
-     * @param {Object} point A point which represents the location of the region (x,y).
-     * @param {Object} size The size of the region (width, height).
-     * @param {boolean} isRelative Whether or not the region coordinates are relative to the image coordinates.
-     * @return {Object} A region object.
-     */
-    var createRegion = function (point, size, isRelative) {
-        return {
-            left: Math.ceil(point.x), top: Math.ceil(point.y), width: Math.ceil(size.width),
-            height: Math.ceil(size.height), relative: isRelative
-        };
-    };
-
-    /**
      * A helper function for calling the checkWindow on {@code EyesBase} and handling the result.
      * @param {Eyes} eyes The Eyes object (a derivative of EyesBase) on which to perform the call.
      * @param {String} tag The tag for the current visual checkpoint.
      * @param {boolean} ignoreMismatch Whether or not the server should ignore a mismatch.
      * @param {int} retryTimeout The timeout. (Milliseconds).
-     * @param {Object} [region] The region to check. Should be of the form  {width, height, left, top}.
+     * @param {RegionProvider} [regionProvider] The region to check. Should be of the form  {width, height, left, top}.
      * @returns {Promise} A promise which resolves to the checkWindow result, or an exception of the result failed
      *                      and failure reports are immediate.
      */
-    var callCheckWindowBase = function (eyes, tag, ignoreMismatch, retryTimeout, region) {
-        return EyesBase.prototype.checkWindow.call(eyes, tag, false, retryTimeout, region)
+    var callCheckWindowBase = function (eyes, tag, ignoreMismatch, retryTimeout, regionProvider) {
+        return EyesBase.prototype.checkWindow.call(eyes, tag, false, retryTimeout, regionProvider)
             .then(function (result) {
                 if (result.asExpected || !eyes._failureReportOverridden) {
                     return result;
@@ -240,7 +231,7 @@
     /**
      * @param {string} tag
      * @param {int} matchTimeout
-     * @return {ManagedPromise}
+     * @return {ManagedPromise<void>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkWindow = function (tag, matchTimeout) {
         var that = this;
@@ -254,9 +245,14 @@
         });
     };
 
+    /**
+     * @param eyes
+     * @returns {ScaleProviderFactory}
+     */
     var updateScalingParams = function (eyes) {
         return eyes._promiseFactory.makePromise(function (resolve) {
-            if (eyes._devicePixelRatio == UNKNOWN_DEVICE_PIXEL_RATIO) {
+            if (eyes._devicePixelRatio == UNKNOWN_DEVICE_PIXEL_RATIO && eyes._scaleProviderHandler.get() instanceof NullScaleProvider) {
+                var factory, enSize, vpSize;
                 eyes._logger.verbose("Trying to extract device pixel ratio...");
 
                 return BrowserUtils.getDevicePixelRatio(eyes._driver, eyes._promiseFactory).then(function (ratio) {
@@ -266,29 +262,27 @@
                     eyes._devicePixelRatio = DEFAULT_DEVICE_PIXEL_RATIO;
                 }).then(function () {
                     eyes._logger.verbose("Device pixel ratio: " + eyes._devicePixelRatio);
-
                     eyes._logger.verbose("Setting scale provider..");
-                    var enSize;
-                    return eyes._positionProvider.getEntireSize().then(function (entireSize) {
-                        enSize = entireSize;
-                        return eyes.getViewportSize();
-                    }).then(function (vpSize) {
-                        return new ContextBasedScaleProvider(enSize, vpSize, eyes._devicePixelRatio, eyes._promiseFactory);
-                    }).then(function(scaleProvider) {
-                        eyes.setScaleProvider(scaleProvider);
-                    }, function (err) {
-                        // This can happen in Appium for example.
-                        eyes._logger.verbose("Failed to set ContextBasedScaleProvider.", err);
-                        eyes._logger.verbose("Using FixedScaleProvider instead...");
-                        eyes.setScaleProvider(new FixedScaleProvider(1 / eyes._devicePixelRatio, eyes._promiseFactory));
-                    }).then(function () {
-                        eyes._logger.verbose("Done!");
-                        resolve();
-                    });
+                    return eyes._positionProvider.getEntireSize();
+                }).then(function (entireSize) {
+                    enSize = entireSize;
+                    return eyes.getViewportSize();
+                }).then(function (viewportSize) {
+                    vpSize = viewportSize;
+                    factory = new ContextBasedScaleProviderFactory(enSize, vpSize, eyes.getScaleMethod(), eyes._devicePixelRatio, eyes._scaleProviderHandler);
+                }, function (err) {
+                    // This can happen in Appium for example.
+                    eyes._logger.verbose("Failed to set ContextBasedScaleProvider.", err);
+                    eyes._logger.verbose("Using FixedScaleProvider instead...");
+                    factory = new FixedScaleProviderFactory(1/eyes._devicePixelRatio, eyes.getScaleMethod(), eyes._scaleProviderHandler);
+                }).then(function () {
+                    eyes._logger.verbose("Done!");
+                    resolve(factory);
                 });
             }
 
-            resolve();
+            // If we already have a scale provider set, we'll just use it, and pass a mock as provider handler.
+            resolve(new ScaleProviderIdentityFactory(eyes._scaleProviderHandler.get(), new SimplePropertyHandler()));
         });
     };
 
@@ -307,17 +301,20 @@
         eyes._checkFrameOrElement = true;
         eyes._logger.verbose("Getting screenshot as base64..");
 
-        var ewds, sHideScrollBars;
+        var ewds, sHideScrollBars, scaleProviderFactory;
 
-        return updateScalingParams(eyes).then(function () {
+        return updateScalingParams(eyes).then(function (factory) {
+            scaleProviderFactory = factory;
             return eyes._driver.takeScreenshot();
         }).then(function (screenshot64) {
             return new MutableImage(new Buffer(screenshot64, 'base64'), eyes._promiseFactory);
         }).then(function (image) {
-            return eyes._scaleProvider.scaleImage(image);
+            return image.getSize();
+        }).then(function (imageSize) {
+            return image.scaleImage(scaleProviderFactory.getScaleProvider(imageSize.width));
         }).then(function (scaledImage) {
             ewds = new EyesWebDriverScreenshot(eyes._logger, eyes._driver, scaledImage, eyes._promiseFactory);
-            return ewds.buildScreenshot();
+            ewds.buildScreenshot();
         }).then(function () {
             eyes._logger.verbose("Done!");
             sHideScrollBars = eyes._hideScrollbars;
@@ -340,6 +337,7 @@
      * would be used in a call to driver.switchTo().frame() ).
      * @param {int} matchTimeout The amount of time to retry matching (milliseconds).
      * @param {string} tag An optional tag to be associated with the match.
+     * @return {ManagedPromise<void>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkFrame = function (element, matchTimeout, tag) {
         var that = this;
@@ -374,9 +372,10 @@
      * Takes a snapshot of the application under test and matches a specific
      * element with the expected region output.
      *
-     * @param {EyesRemoteWebElement} element The element to check.
+     * @param {webdriver.WebElement|EyesRemoteWebElement} element The element to check.
      * @param {int|null} matchTimeout The amount of time to retry matching (milliseconds).
      * @param {string} tag An optional tag to be associated with the match.
+     * @return {ManagedPromise<void>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkElement = function (element, matchTimeout, tag) {
         var that = this;
@@ -392,8 +391,7 @@
         return that._flow.execute(function () {
 
             var originalOverflow, elLocation, elSize,
-                borderLeftWidth, borderRightWidth, borderTopWidth, borderBottomWidth,
-                elementRegion;
+                borderLeftWidth, borderRightWidth, borderTopWidth, borderBottomWidth;
 
             that._checkFrameOrElement = true;
 
@@ -424,10 +422,15 @@
             }).then(function (value) {
                 borderBottomWidth = value;
 
-                elementRegion = createRegion(elLocation, elSize, true);
-                that._logger.verbose("Element region: " + elementRegion);
+                var region = GeometryUtils.createRegion(
+                    elLocation.y + borderTopWidth,
+                    elLocation.x + borderLeftWidth,
+                    elSize.width - borderLeftWidth - borderRightWidth,
+                    elSize.height - borderTopWidth - borderBottomWidth
+                );
+                that._regionToCheck = new EyesRegionProvider(that._logger, that._driver, region, CoordinatesType.CONTEXT_RELATIVE);
 
-                that._regionToCheck = elementRegion;
+                that._logger.verbose("Element region: ", that._regionToCheck.getRegion());
                 return callCheckWindowBase(that, tag, false, matchTimeout);
             }).then(function () {
                 if (originalOverflow != null) {
@@ -443,13 +446,33 @@
 
     //noinspection JSUnusedGlobalSymbols
     /**
+     * Takes a snapshot of the application under test and matches a specific
+     * element with the expected region output.
+     *
+     * @param {webdriver.by} locator The element to check.
+     * @param {int|null} matchTimeout The amount of time to retry matching (milliseconds).
+     * @param {string} tag An optional tag to be associated with the match.
+     * @return {ManagedPromise<void>} A promise which is resolved when the validation is finished.
+     */
+    Eyes.prototype.checkElementBy = function (locator, matchTimeout, tag) {
+        var that = this;
+        ArgumentGuard.notNull(locator, "locator");
+        return that._flow.execute(function () {
+            return that._driver.findElement(locator).then(function (element) {
+                return that.checkElement(element, matchTimeout, tag);
+            });
+        });
+    };
+
+    //noinspection JSUnusedGlobalSymbols
+    /**
      * Visually validates a region in the screenshot.
      *
      * @param {Object} region The region to validate (in screenshot coordinates).
      *                          Object is {width: *, height: *, top: *, left: *}
      * @param {string} tag An optional tag to be associated with the screenshot.
      * @param {int} matchTimeout The amount of time to retry matching.
-     * @return {Promise} A promise which is resolved when the validation is finished.
+     * @return {ManagedPromise<void>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkRegion = function (region, tag, matchTimeout) {
         var that = this;
@@ -459,7 +482,8 @@
         }
         return that._flow.execute(function () {
             that._regionToCheck = null;
-            return callCheckWindowBase(that, tag, false, matchTimeout, region);
+            var regionProvider = new EyesRegionProvider(that._logger, that._driver, region, CoordinatesType.CONTEXT_AS_IS);
+            return callCheckWindowBase(that, tag, false, matchTimeout, regionProvider);
         });
     };
 
@@ -467,10 +491,10 @@
     /**
      * Visually validates a region in the screenshot.
      *
-     * @param {WebElement} element The element defining the region to validate.
+     * @param {webdriver.WebElement|EyesRemoteWebElement} element The element defining the region to validate.
      * @param {string} tag An optional tag to be associated with the screenshot.
      * @param {int} matchTimeout The amount of time to retry matching.
-     * @return {Promise} A promise which is resolved when the validation is finished.
+     * @return {ManagedPromise<void>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkRegionByElement = function (element, tag, matchTimeout) {
         var that = this;
@@ -487,7 +511,9 @@
                 })
                 .then(function (point) {
                     that._regionToCheck = null;
-                    return callCheckWindowBase(that, tag, false, matchTimeout, createRegion(point, size, true));
+                    var region = GeometryUtils.createRegionFromLocationAndSize(point, size);
+                    var regionProvider = new EyesRegionProvider(that._logger, that._driver, region, CoordinatesType.CONTEXT_RELATIVE);
+                    return callCheckWindowBase(that, tag, false, matchTimeout, regionProvider);
                 });
         });
     };
@@ -499,29 +525,58 @@
      * @param {By} by The WebDriver selector used for finding the region to validate.
      * @param {string} tag An optional tag to be associated with the screenshot.
      * @param {int} matchTimeout The amount of time to retry matching.
-     * @return {Promise} A promise which is resolved when the validation is finished.
+     * @return {ManagedPromise<void>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkRegionBy = function (by, tag, matchTimeout) {
         var that = this;
-        var element;
-        var size;
-        if (this._isDisabled) {
+        return that._flow.execute(function () {
+            return that._driver.findElement(by).then(function (elem) {
+                return that.checkRegionByElement(elem, tag, matchTimeout);
+            })
+        });
+    };
+
+    /**
+     * Switches into the given frame, takes a snapshot of the application under
+     * test and matches a region specified by the given selector.
+     *
+     * @param {string} frameNameOrId The name or id of the frame to switch to. (as would be used in a call to driver.switchTo().frame()).
+     * @param {webdriver.By} locator A Selector specifying the region to check.
+     * @param {int|null} matchTimeout  The amount of time to retry matching. (Milliseconds)
+     * @param {string} tag An optional tag to be associated with the snapshot.
+     * @param {boolean} stitchContent If {@code true}, stitch the internal content of the region (i.e., perform
+     *                  {@link #checkElement(By, int, String)} on the region.
+     */
+    Eyes.prototype.checkRegionInFrame = function (frameNameOrId, locator, matchTimeout, tag, stitchContent) {
+        var that = this;
+        if (that._isDisabled) {
+            this._logger.log("checkRegionInFrame(element, selector, ", matchTimeout, ", ", tag, "): Ignored");
             return that._flow.execute(function () {
             });
         }
+
+        this._logger.log("checkRegionInFrame(element, selector, ", matchTimeout, ", ", tag, ")");
+
         return that._flow.execute(function () {
-            return that._driver.findElement(by)
-                .then(function (elem) {
-                    element = elem;
-                    return element.getSize();
+            that._logger.verbose("Switching to frame based on element reference...");
+            return that._driver.switchTo().frame(frameNameOrId)
+                .then(function () {
+                    that._logger.verbose("Done!");
+                    return that._driver.findElement(locator);
                 })
-                .then(function (elementSize) {
-                    size = elementSize;
-                    return element.getLocation();
+                .then(function (element) {
+                    if (stitchContent) {
+                        return that.checkElement(element, matchTimeout, tag);
+                    } else {
+                        return that.checkRegionByElement(element, tag, matchTimeout);
+                    }
                 })
-                .then(function (point) {
-                    that._regionToCheck = null;
-                    return callCheckWindowBase(that, tag, false, matchTimeout, createRegion(point, size, true));
+                .then(function () {
+                    that._logger.verbose("Switching back to parent frame...");
+                    return that._driver.switchTo().parentFrame();
+                })
+                .then(function () {
+                    that._logger.verbose("Done!");
                 });
         });
     };
@@ -538,13 +593,13 @@
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.getScreenShot = function (tag) {
         var that = this;
-        return updateScalingParams(that).then(function () {
+        return updateScalingParams(that).then(function (factory) {
             return BrowserUtils.getScreenshot(
                 that._driver,
                 that._promiseFactory,
                 that._viewportSize,
                 that._positionProvider,
-                that._scaleProvider,
+                factory,
                 that._forceFullPage,
                 that._hideScrollbars,
                 that._stitchMode === Eyes.StitchMode.CSS,

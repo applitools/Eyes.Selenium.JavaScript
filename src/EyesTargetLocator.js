@@ -18,6 +18,7 @@
         DEFAULT_CONTENT: 3
     };
 
+    //noinspection JSUnusedLocalSymbols
     /**
      * A wrapper for an action to be performed before the actual switch is made.
      */
@@ -102,7 +103,7 @@
                     }
                 }
                 that._logger.verbose("Done! Making preparations..");
-                return that._onWillSwitch.willSwitchToFrame(EyesTargetLocator.TargetType.FRAME, frames.get(0));
+                return that._onWillSwitch.willSwitchToFrame(EyesTargetLocator.TargetType.FRAME, frames[0]);
             }).then(function () {
                 that._logger.verbose("Done! Switching to frame...");
                 return that._targetLocator.frame(obj)
@@ -114,7 +115,7 @@
             that._logger.verbose("Making preparations..");
             return that._onWillSwitch.willSwitchToFrame(EyesTargetLocator.TargetType.FRAME, obj).then(function () {
                 that._logger.verbose("Done! Switching to frame...");
-                return that._targetLocator.frame(obj)
+                return that._targetLocator.frame(obj.getRemoteWebElement())
             }).then(function () {
                 that._logger.verbose("Done!");
             });
@@ -203,7 +204,7 @@
     };
 
     function _framesSetPosition(targetLocator, obj, retries, promiseFactory) {
-        return promiseFactory.makePromise(function (resolve, reject) {
+        return promiseFactory.makePromise(function (resolve) {
 
             // TODO: check order, if it make sense
             var frame = obj.getFrames()[retries];
@@ -228,7 +229,7 @@
     }
 
     function _framesSetPositionFromArray(targetLocator, obj, retries, promiseFactory) {
-        return promiseFactory.makePromise(function (resolve, reject) {
+        return promiseFactory.makePromise(function (resolve) {
 
             targetLocator._logger.verbose("Switching to frame...");
             targetLocator._driver.switchTo().frame(obj[retries]).then(function () {

@@ -10,8 +10,7 @@
 
 (function () {
     "use strict";
-
-    var EyesSDK = require('eyes.sdk'),
+    var webdriver = require('selenium-webdriver'),
         EyesUtils = require('eyes.utils'),
         Frame = require('./Frame'),
         FrameChain = require('./FrameChain'),
@@ -19,7 +18,8 @@
         ScrollPositionProvider = require('./ScrollPositionProvider'),
         EyesTargetLocator = require('./EyesTargetLocator');
     var GeneralUtils = EyesUtils.GeneralUtils,
-        BrowserUtils = EyesUtils.BrowserUtils;
+        BrowserUtils = EyesUtils.BrowserUtils,
+        By = webdriver.By;
 
     /**
      *
@@ -56,20 +56,34 @@
         return this._driver;
     };
 
+    //noinspection JSUnusedGlobalSymbols
     EyesWebDriver.prototype.setRemoteWebDriver = function (remoteWebDriver) {
         this._driver = remoteWebDriver;
         GeneralUtils.mixin(this, remoteWebDriver);
     };
 
+    //noinspection JSUnusedGlobalSymbols
     EyesWebDriver.prototype.getUserAgent = function () {
         return this._driver.executeScript('return navigator.userAgent');
     };
 
+    //noinspection JSCheckFunctionSignatures
+    /**
+     * @param {webdriver.By} locator
+     * @return {Promise<EyesRemoteWebElement>}
+     */
     EyesWebDriver.prototype.findElement = function (locator) {
         var that = this;
-        return new EyesRemoteWebElement(that._driver.findElement(locator), that, that._logger);
+        return this._driver.findElement(locator).then(function (element) {
+            return new EyesRemoteWebElement(element, that, that._logger);
+        });
     };
 
+    //noinspection JSCheckFunctionSignatures
+    /**
+     * @param {webdriver.By} locator
+     * @return {Promise.<EyesRemoteWebElement[]>}
+     */
     EyesWebDriver.prototype.findElements = function (locator) {
         var that = this;
         return this._driver.findElements(locator).then(function (elements) {
@@ -79,26 +93,56 @@
         });
     };
 
+    //noinspection JSUnusedGlobalSymbols
+    /**
+     * @param {string} cssSelector
+     * @return {Promise<EyesRemoteWebElement>}
+     */
     EyesWebDriver.prototype.findElementByCssSelector = function (cssSelector) {
         return this.findElement(By.cssSelector(cssSelector));
     };
 
+    //noinspection JSUnusedGlobalSymbols
+    /**
+     * @param {string} cssSelector
+     * @return {Promise.<EyesRemoteWebElement[]>}
+     */
     EyesWebDriver.prototype.findElementsByCssSelector = function (cssSelector) {
         return this.findElements(By.cssSelector(cssSelector));
     };
 
+    //noinspection JSUnusedGlobalSymbols
+    /**
+     * @param {string} name
+     * @return {Promise<EyesRemoteWebElement>}
+     */
     EyesWebDriver.prototype.findElementById = function (name) {
         return this.findElement(By.id(name));
     };
 
+    //noinspection JSUnusedGlobalSymbols
+    /**
+     * @param {string} name
+     * @return {Promise.<EyesRemoteWebElement[]>}
+     */
     EyesWebDriver.prototype.findElementsById = function (name) {
         return this.findElements(By.id(name));
     };
 
+    //noinspection JSUnusedGlobalSymbols
+    /**
+     * @param {string} name
+     * @return {Promise<EyesRemoteWebElement>}
+     */
     EyesWebDriver.prototype.findElementByName = function (name) {
         return this.findElement(By.name(name));
     };
 
+    //noinspection JSUnusedGlobalSymbols
+    /**
+     * @param {string} name
+     * @return {Promise.<EyesRemoteWebElement[]>}
+     */
     EyesWebDriver.prototype.findElementsByName = function (name) {
         return this.findElements(By.name(name));
     };
@@ -107,7 +151,7 @@
 //    return new Promise(function (resolve) {
 //      this._driver.getCapabilities().then(function (capabilities) {
 //        if (!capabilities.has(webdriver.Capability.TAKES_SCREENSHOT)) {
-//          this._screenShotTaker = new ScreenShotTaker();
+//          this._screenshotTaker = new ScreenshotTaker();
 //        }
 //        resolve();
 //      }.bind(this));
@@ -173,6 +217,7 @@
             }
         };
 
+        //noinspection JSUnusedLocalSymbols
         OnWillSwitch.willSwitchToWindow = function (nameOrHandle) {
             that._logger.verbose("willSwitchToWindow()");
             that._frameChain.clear();
@@ -192,7 +237,7 @@
             that._logger.verbose("getDefaultContentViewportSize()");
 
             if (that._defaultContentViewportSize != null && !forceQuery) {
-                that._logger.verbose("Using cached viewport size: [" + that._defaultContentViewportSize.width + "," + that._defaultContentViewportSize.height + "]");
+                that._logger.verbose("Using cached viewport size: ", that._defaultContentViewportSize);
                 resolve(that._defaultContentViewportSize);
                 return;
             }
@@ -205,7 +250,7 @@
                     return BrowserUtils.getViewportSize(that._driver, that._promiseFactory);
                 }).then(function (viewportSize) {
                     that._defaultContentViewportSize = viewportSize;
-                    that._logger.verbose("Done! Viewport size: [" + that._defaultContentViewportSize.width + "," + that._defaultContentViewportSize.height + "]");
+                    that._logger.verbose("Done! Viewport size: ", that._defaultContentViewportSize);
                     return that.switchTo().frames(currentFrames);
                 }).then(function () {
                     resolve(that._defaultContentViewportSize);
@@ -214,7 +259,7 @@
 
             return BrowserUtils.getViewportSize(that._driver, that._promiseFactory).then(function (viewportSize) {
                 that._defaultContentViewportSize = viewportSize;
-                that._logger.verbose("Done! Viewport size: [" + that._defaultContentViewportSize.width + "," + that._defaultContentViewportSize.height + "]");
+                that._logger.verbose("Done! Viewport size: ", that._defaultContentViewportSize);
                 resolve(that._defaultContentViewportSize);
             });
         });
