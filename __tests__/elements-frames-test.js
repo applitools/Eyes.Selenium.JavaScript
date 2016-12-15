@@ -13,7 +13,8 @@ let driver = null,
     promise = null;
 
 test.before(() => {
-    const options = new chrome.Options().addArguments("--force-device-scale-factor=1.25");
+    // const options = new chrome.Options().addArguments("--force-device-scale-factor=1.25");
+    const options = new chrome.Options();
     driver = new webdriver.Builder()
         .forBrowser('chrome')
         .setChromeOptions(options)
