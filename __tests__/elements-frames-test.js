@@ -5,8 +5,7 @@ const test = require('ava'),
     until = webdriver.until,
     eyesSelenium = require("../index");
 
-const ScaleMethod = eyesSelenium.ScaleMethod,
-    StitchMode = eyesSelenium.Eyes.StitchMode;
+const StitchMode = eyesSelenium.Eyes.StitchMode;
 
 let driver = null,
     eyes = null,
@@ -25,7 +24,6 @@ test.before(() => {
     eyes.setLogHandler(new eyesSelenium.ConsoleLogHandler(true));
     eyes.setStitchMode(StitchMode.CSS);
     eyes.setForceFullPageScreenshot(true);
-    eyes.setScaleMethod(ScaleMethod.SPEED);
 });
 
 test.beforeEach(t => {
