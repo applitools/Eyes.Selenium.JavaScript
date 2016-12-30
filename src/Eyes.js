@@ -269,12 +269,12 @@
                     return eyes.getViewportSize();
                 }).then(function (viewportSize) {
                     vpSize = viewportSize;
-                    factory = new ContextBasedScaleProviderFactory(enSize, vpSize, eyes.getScaleMethod(), eyes._devicePixelRatio, eyes._scaleProviderHandler);
+                    factory = new ContextBasedScaleProviderFactory(enSize, vpSize, eyes._devicePixelRatio, eyes._scaleProviderHandler);
                 }, function (err) {
                     // This can happen in Appium for example.
                     eyes._logger.verbose("Failed to set ContextBasedScaleProvider.", err);
                     eyes._logger.verbose("Using FixedScaleProvider instead...");
-                    factory = new FixedScaleProviderFactory(1/eyes._devicePixelRatio, eyes.getScaleMethod(), eyes._scaleProviderHandler);
+                    factory = new FixedScaleProviderFactory(1/eyes._devicePixelRatio, eyes._scaleProviderHandler);
                 }).then(function () {
                     eyes._logger.verbose("Done!");
                     resolve(factory);
@@ -311,7 +311,8 @@
         }).then(function (image) {
             return image.getSize();
         }).then(function (imageSize) {
-            return image.scaleImage(scaleProviderFactory.getScaleProvider(imageSize.width));
+            var scaleProvider = scaleProviderFactory.getScaleProvider(imageSize.width);
+            return image.scaleImage(scaleProvider.getScaleRatio());
         }).then(function (scaledImage) {
             ewds = new EyesWebDriverScreenshot(eyes._logger, eyes._driver, scaledImage, eyes._promiseFactory);
             ewds.buildScreenshot();
