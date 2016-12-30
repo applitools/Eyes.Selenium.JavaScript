@@ -648,12 +648,12 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.getViewportSize = function () {
-        return BrowserUtils.getViewportSize(this._driver, this._promiseFactory);
+        return BrowserUtils.getViewportSizeOrDisplaySize(this._logger, this._driver, this._promiseFactory);
     };
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.setViewportSize = function (size) {
-        return BrowserUtils.setViewportSize(this._driver, size, this._promiseFactory, this._logger, false);
+        return BrowserUtils.setViewportSize(this._logger, this._driver, size, this._promiseFactory);
     };
 
     //noinspection JSUnusedGlobalSymbols

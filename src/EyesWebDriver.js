@@ -243,23 +243,32 @@
             }
 
             var currentFrames = that.getFrameChain();
+            var promise = that._promiseFactory.makePromise(function (resolve) {
+                resolve();
+            });
+
             // Optimization
             if (currentFrames.size() > 0) {
-                return that.switchTo().defaultContent().then(function () {
-                    that._logger.verbose("Extracting viewport size...");
-                    return BrowserUtils.getViewportSize(that._driver, that._promiseFactory);
-                }).then(function (viewportSize) {
-                    that._defaultContentViewportSize = viewportSize;
-                    that._logger.verbose("Done! Viewport size: ", that._defaultContentViewportSize);
-                    return that.switchTo().frames(currentFrames);
-                }).then(function () {
-                    resolve(that._defaultContentViewportSize);
+                promise.then(function () {
+                    return that.switchTo().defaultContent();
                 });
             }
 
-            return BrowserUtils.getViewportSize(that._driver, that._promiseFactory).then(function (viewportSize) {
+            promise.then(function () {
+                that._logger.verbose("Extracting viewport size...");
+                return BrowserUtils.getViewportSizeOrDisplaySize(that._logger, that._driver, that._promiseFactory);
+            }).then(function (viewportSize) {
                 that._defaultContentViewportSize = viewportSize;
                 that._logger.verbose("Done! Viewport size: ", that._defaultContentViewportSize);
+            });
+
+            if (currentFrames.size() > 0) {
+                promise.then(function () {
+                    return that.switchTo().frames(currentFrames);
+                });
+            }
+
+            promise.then(function () {
                 resolve(that._defaultContentViewportSize);
             });
         });
