@@ -28,7 +28,7 @@ test.before(() => {
 
 test.beforeEach(t => {
     const testTitle = t.title.replace('beforeEach for ', '');
-    promise = eyes.open(driver, "Eyes Selenium SDK", testTitle);
+    promise = eyes.open(driver, "Eyes Selenium SDK", testTitle, {width: 1000, height: 700});
     return promise;
 });
 
