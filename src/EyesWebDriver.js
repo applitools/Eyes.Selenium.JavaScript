@@ -222,6 +222,9 @@
             that._logger.verbose("willSwitchToWindow()");
             that._frameChain.clear();
             that._logger.verbose("Done!");
+            return that._promiseFactory.makePromise(function (resolve) {
+                resolve();
+            });
         };
 
         return new EyesTargetLocator(this._logger, this, this._driver.switchTo(), OnWillSwitch, this._promiseFactory);
