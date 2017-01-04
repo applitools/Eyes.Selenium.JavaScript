@@ -14,7 +14,8 @@
     var EyesSDK = require('eyes.sdk'),
         EyesUtils = require('eyes.utils');
     var MouseAction = EyesSDK.Triggers.MouseAction,
-        GeneralUtils = EyesUtils.GeneralUtils;
+        GeneralUtils = EyesUtils.GeneralUtils,
+        GeometryUtils = EyesUtils.GeometryUtils;
 
     var JS_GET_SCROLL_LEFT = "return arguments[0].scrollLeft;";
 
@@ -242,6 +243,24 @@
      */
     EyesRemoteWebElement.prototype.getBorderBottomWidth = function () {
         return this.getComputedStyleInteger("border-bottom-width");
+    };
+
+    /**
+     * @return {!promise.Thenable<{width: number, height: number}>} element's size
+     */
+    EyesRemoteWebElement.prototype.getSize = function () {
+        return this._element.getSize().then(function (value) {
+            return GeometryUtils.createSize(value.width, value.height);
+        });
+    };
+
+    /**
+     * @return {!promise.Thenable<{x: number, y: number}>} element's location
+     */
+    EyesRemoteWebElement.prototype.getLocation = function () {
+        return this._element.getLocation().then(function (value) {
+            return GeometryUtils.createLocation(value.x, value.y);
+        });
     };
 
     /**

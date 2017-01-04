@@ -37,6 +37,12 @@
     "scripts": {
         "test": "ava"
     },
+    "ava": {
+        "files": [
+            "__tests__/*.js"
+        ],
+        "concurrency": 1
+    },
     "engines": {
         "node": ">=6.9.0"
     }
