@@ -32,6 +32,7 @@
         ContextBasedScaleProviderFactory = EyesSDK.ContextBasedScaleProviderFactory,
         FixedScaleProviderFactory = EyesSDK.FixedScaleProviderFactory,
         NullScaleProvider = EyesSDK.NullScaleProvider,
+        Logger = EyesSDK.Logger,
         CoordinatesType = EyesUtils.CoordinatesType,
         PromiseFactory = EyesUtils.PromiseFactory,
         BrowserUtils = EyesUtils.BrowserUtils,
@@ -655,6 +656,28 @@
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.setViewportSize = function (size) {
         return BrowserUtils.setViewportSize(this._logger, this._driver, size, this._promiseFactory);
+    };
+
+    //noinspection JSUnusedGlobalSymbols
+    /**
+     * Set the viewport size using the driver. Call this method if for some reason
+     * you don't want to call {@link #open(WebDriver, String, String)} (or one of its variants) yet.
+     *
+     * @param {WebDriver} driver The driver to use for setting the viewport.
+     * @param {{width: number, height: number}} size The required viewport size.
+     * @return {Promise<void>}
+     */
+    Eyes.setViewportSize = function (driver, size) {
+        var promiseFactory = new PromiseFactory();
+        promiseFactory.setFactoryMethods(function (asyncAction) {
+            var deferred = promise.defer();
+            asyncAction(deferred.fulfill, deferred.reject);
+            return deferred.promise;
+        }, function () {
+            return promise.defer();
+        });
+
+        return BrowserUtils.setViewportSize(new Logger(), driver, size, promiseFactory);
     };
 
     //noinspection JSUnusedGlobalSymbols
