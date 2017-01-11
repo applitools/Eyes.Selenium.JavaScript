@@ -588,11 +588,10 @@
     };
 
     /**
-     * @param {string} tag
      * @returns {Promise.<MutableImage>}
      */
     //noinspection JSUnusedGlobalSymbols
-    Eyes.prototype.getScreenShot = function (tag) {
+    Eyes.prototype.getScreenShot = function () {
         var that = this;
         return updateScalingParams(that).then(function (factory) {
             return BrowserUtils.getScreenshot(
@@ -612,7 +611,7 @@
                 that._checkFrameOrElement,
                 that._regionToCheck,
                 that._saveDebugScreenshots,
-                tag
+                that._debugScreenshotsPath
             );
         });
     };
@@ -744,22 +743,6 @@
      */
     Eyes.prototype.getWaitBeforeScreenshots = function () {
         return this._waitBeforeScreenshots;
-    };
-
-    //noinspection JSUnusedGlobalSymbols
-    /**
-     * @param {boolean} saveDebugScreenshots If true, will save all screenshots to local directory
-     */
-    Eyes.prototype.setSaveDebugScreenshots = function (saveDebugScreenshots) {
-        this._saveDebugScreenshots = saveDebugScreenshots;
-    };
-
-    //noinspection JSUnusedGlobalSymbols
-    /**
-     * @returns {boolean}
-     */
-    Eyes.prototype.getSaveDebugScreenshots = function () {
-        return this._saveDebugScreenshots;
     };
 
     //noinspection JSUnusedGlobalSymbols
