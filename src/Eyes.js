@@ -594,13 +594,14 @@
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.getScreenShot = function () {
         var that = this;
-        return updateScalingParams(that).then(function (factory) {
+        return updateScalingParams(that).then(function (scaleProviderFactory) {
             return BrowserUtils.getScreenshot(
                 that._driver,
                 that._promiseFactory,
                 that._viewportSize,
                 that._positionProvider,
-                factory,
+                scaleProviderFactory,
+                that._cutProviderHandler.get(),
                 that._forceFullPage,
                 that._hideScrollbars,
                 that._stitchMode === Eyes.StitchMode.CSS,
