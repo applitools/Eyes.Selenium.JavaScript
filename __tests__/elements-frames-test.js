@@ -39,7 +39,7 @@ test.afterEach(() => {
     });
 });
 
-test.after(() => {
+test.after.always(() => {
     return promise.then(function (driver) {
         driver.quit();
         eyes.abortIfNotClosed();
