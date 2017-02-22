@@ -1,6 +1,8 @@
 const test = require('ava'),
     webdriver = require('selenium-webdriver'),
-    eyesSelenium = require("../index");
+    Eyes = require("../index").Eyes,
+    ConsoleLogHandler = require("../index").ConsoleLogHandler,
+    FixedCutProvider = require("../index").FixedCutProvider;
 
 let driver = null, eyes = null, promise = null;
 
@@ -10,9 +12,9 @@ test.before(() => {
         .usingServer('http://localhost:4444/wd/hub')
         .build();
 
-    eyes = new eyesSelenium.Eyes();
+    eyes = new Eyes();
     eyes.setApiKey(process.env.APPLITOOLS_API_KEY);
-    eyes.setLogHandler(new eyesSelenium.ConsoleLogHandler(true));
+    eyes.setLogHandler(new ConsoleLogHandler(true));
 });
 
 test.beforeEach(t => {
@@ -38,7 +40,7 @@ test.after.always(() => {
 test('test1', t => {
     return promise.then(function (driver) {
         driver.get('https://github.com');
-        eyes.setImageCut(new eyesSelenium.FixedCutProvider(20, 20, 20, 20));
+        eyes.setImageCut(new FixedCutProvider(20, 20, 20, 20)); // cut params: header, footer, left, right.
         eyes.checkWindow("Full window without 20px border");
         t.pass();
         return driver;
