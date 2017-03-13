@@ -104,6 +104,13 @@
     }
 
     //noinspection JSUnusedGlobalSymbols
+    /**
+     * @param {WebDriver} driver
+     * @param {string} appName
+     * @param {string} testName
+     * @param {{width: number, height: number}} viewportSize
+     * @return {Promise<WebDriver>}
+     */
     Eyes.prototype.open = function (driver, appName, testName, viewportSize) {
         var that = this;
 
@@ -425,8 +432,8 @@
                 borderBottomWidth = value;
 
                 var region = GeometryUtils.createRegion(
-                    elLocation.y + borderTopWidth,
                     elLocation.x + borderLeftWidth,
+                    elLocation.y + borderTopWidth,
                     elSize.width - borderLeftWidth - borderRightWidth,
                     elSize.height - borderTopWidth - borderBottomWidth
                 );
@@ -470,8 +477,7 @@
     /**
      * Visually validates a region in the screenshot.
      *
-     * @param {Object} region The region to validate (in screenshot coordinates).
-     *                          Object is {width: *, height: *, top: *, left: *}
+     * @param {{left: number, top: number, width: number, height: number}} region The region to validate (in screenshot coordinates).
      * @param {string} tag An optional tag to be associated with the screenshot.
      * @param {int} matchTimeout The amount of time to retry matching.
      * @return {ManagedPromise<void>} A promise which is resolved when the validation is finished.
@@ -681,11 +687,18 @@
     };
 
     //noinspection JSUnusedGlobalSymbols
+    /**
+     * @param {boolean} force
+     * @return {void}
+     */
     Eyes.prototype.setForceFullPageScreenshot = function (force) {
         this._forceFullPage = force;
     };
 
     //noinspection JSUnusedGlobalSymbols
+    /**
+     * @return {boolean}
+     */
     Eyes.prototype.getForceFullPageScreenshot = function () {
         return this._forceFullPage;
     };

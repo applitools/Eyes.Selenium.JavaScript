@@ -10,7 +10,7 @@
     /**
      * @param {Logger} logger
      * @param driver
-     * @param {{top: number, left: number, width: number, height: number}} region
+     * @param {{left: number, top: number, width: number, height: number}} region
      * @param {CoordinatesType} coordinatesType
      * @augments RegionProvider
      * @constructor
@@ -26,7 +26,7 @@
     EyesRegionProvider.prototype.constructor = EyesRegionProvider;
 
     /**
-     * @return {{top: number, left: number, width: number, height: number}} A region with "as is" viewport coordinates.
+     * @return {{left: number, top: number, width: number, height: number}} A region with "as is" viewport coordinates.
      */
     EyesRegionProvider.prototype.getRegion = function () {
         return this._region;
@@ -36,7 +36,7 @@
      * @param {MutableImage} image
      * @param {CoordinatesType} toCoordinatesType
      * @param {PromiseFactory} promiseFactory
-     * @return {Promise<{top: number, left: number, width: number, height: number}>} A region in selected viewport coordinates.
+     * @return {Promise<{left: number, top: number, width: number, height: number}>} A region in selected viewport coordinates.
      */
     EyesRegionProvider.prototype.getRegionInLocation = function (image, toCoordinatesType, promiseFactory) {
         var that = this;
