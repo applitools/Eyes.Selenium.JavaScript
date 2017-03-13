@@ -38,9 +38,6 @@
         "test": "ava"
     },
     "ava": {
-        "files": [
-            "__tests__/*.js"
-        ],
         "concurrency": 1
     },
     "engines": {
