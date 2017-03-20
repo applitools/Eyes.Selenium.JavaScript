@@ -108,10 +108,10 @@
         var that = this;
 
         if (typeof protractor !== 'undefined') {
-            that._isProtratorLoaded = true;
+            that._isProtractorLoaded = true;
             that._logger.verbose("Running using Protractor module");
         } else {
-            that._isProtratorLoaded = false;
+            that._isProtractorLoaded = false;
             that._logger.verbose("Running using Selenium module");
         }
 
@@ -167,7 +167,7 @@
                     that._driver = new EyesWebDriver(driver, that, that._logger, that._promiseFactory);
 
                     // extend protractor element to return ours
-                    if (that._isProtratorLoaded) {
+                    if (that._isProtractorLoaded) {
                         var originalElementFn = global.element;
                         global.element = function (locator) {
                             return new ElementFinderWrapper(originalElementFn(locator), that._driver, that._logger);
