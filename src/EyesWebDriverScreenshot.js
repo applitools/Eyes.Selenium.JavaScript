@@ -162,7 +162,7 @@
     };
 
     /**
-     * @return {{top: number, left: number, width: number, height: number}} The region of the frame which is available in the screenshot,
+     * @return {{left: number, top: number, width: number, height: number}} The region of the frame which is available in the screenshot,
      * in screenshot coordinates.
      */
     EyesWebDriverScreenshot.prototype.getFrameWindow = function () {
@@ -181,7 +181,7 @@
     /**
      * Returns a part of the screenshot based on the given region.
      *
-     * @param {{top: number, left: number, width: number, height: number}} region The region for which we should get the sub screenshot.
+     * @param {{left: number, top: number, width: number, height: number}} region The region for which we should get the sub screenshot.
      * @param {CoordinatesType} coordinatesType How should the region be calculated on the screenshot image.
      * @param {boolean} throwIfClipped Throw an EyesException if the region is not fully contained in the screenshot.
      * @return {Promise<EyesWebDriverScreenshot>} A screenshot instance containing the given region.
@@ -344,10 +344,10 @@
     //noinspection JSUnusedGlobalSymbols
     /**
      *
-     * @param {{top: number, left: number, width: number, height: number}} region
+     * @param {{left: number, top: number, width: number, height: number}} region
      * @param {CoordinatesType} originalCoordinatesType
      * @param {CoordinatesType} resultCoordinatesType
-     * @returns {{top: number, left: number, width: number, height: number}}
+     * @returns {{left: number, top: number, width: number, height: number}}
      */
     EyesWebDriverScreenshot.prototype.getIntersectedRegion = function (region, originalCoordinatesType, resultCoordinatesType) {
         if (GeometryUtils.isRegionEmpty(region)) {
@@ -390,7 +390,7 @@
      * Gets the elements region in the screenshot.
      *
      * @param {WebElement} element The element which region we want to intersect.
-     * @return {Promise.<{top: number, left: number, width: number, height: number}>} The intersected region, in {@code SCREENSHOT_AS_IS} coordinates
+     * @return {Promise.<{left: number, top: number, width: number, height: number}>} The intersected region, in {@code SCREENSHOT_AS_IS} coordinates
      * type.
      */
     EyesWebDriverScreenshot.prototype.getIntersectedRegionFromElement = function (element) {
