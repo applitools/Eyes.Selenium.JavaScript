@@ -69,6 +69,7 @@
      * @param {Object} image The actual screenshot image.
      * @param {Object} promiseFactory
      * @augments EyesScreenshot
+     * @constructor
      */
     function EyesWebDriverScreenshot(logger, driver, image, promiseFactory) {
         EyesScreenshot.call(this, image);
@@ -108,7 +109,7 @@
             // If we're inside a frame, then the frame size is given by the frame
             // chain. Otherwise, it's the size of the entire page.
             if (!frameSize) {
-                if (that._frameChain.size() != 0) {
+                if (that._frameChain.size() !== 0) {
                     frameSize = that._frameChain.getCurrentFrameSize();
                 } else {
                     // get entire page size might throw an exception for applications

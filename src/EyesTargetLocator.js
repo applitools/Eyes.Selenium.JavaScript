@@ -72,13 +72,13 @@
     EyesTargetLocator.prototype.frame = function (obj) {
         var that = this, frames;
         if (typeof obj === 'string' || obj instanceof String) {
-            this._logger.verbose("EyesTargetLocator.frame('" + obj + "')");
+            this._logger.verbose("EyesTargetLocator.frame('", obj, "')");
             // Finding the target element so we can report it.
             // We use find elements(plural) to avoid exception when the element
             // is not found.
             this._logger.verbose("Getting frames by name...");
             return this._driver.findElementsByName(obj).then(function(elements) {
-                if (elements.length == 0) {
+                if (elements.length === 0) {
                     that._logger.verbose("No frames Found! Trying by id...");
                     // If there are no frames by that name, we'll try the id
                     return that._driver.findElementsById(obj);
@@ -86,18 +86,18 @@
 
                 return elements;
             }).then(function(elements) {
-                if (elements.length == 0) {
+                if (elements.length === 0) {
                     // No such frame, bummer
                     throw new Error("No frame with name or id '" + obj + "' exists!");
                 }
 
                 return elements;
             }).then(function (frames) {
-                if (frames.length == 0) {
+                if (frames.length === 0) {
                     that._logger.verbose("No frames Found! Trying by id...");
                     // If there are no frames by that name, we'll try the id
                     frames = that._driver.findElementsById(obj);
-                    if (frames.length == 0) {
+                    if (frames.length === 0) {
                         // No such frame, bummer
                         throw new Error("No frame with name or id '" + obj + "' exists!");
                     }
@@ -120,7 +120,7 @@
                 that._logger.verbose("Done!");
             });
         } else {
-            that._logger.verbose("EyesTargetLocator.frame(" + obj + ")");
+            that._logger.verbose("EyesTargetLocator.frame(", typeof obj, ")");
             // Finding the target element so and reporting it using onWillSwitch.
             that._logger.verbose("Getting frames list...");
             return that._driver.findElementsByCssSelector("frame, iframe").then(function (elements) {
