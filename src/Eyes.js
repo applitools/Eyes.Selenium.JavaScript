@@ -474,7 +474,7 @@
      * @return {ManagedPromise} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkElement = function (element, matchTimeout, tag) {
-        return this.check(tag, Target.Region(element).timeout(matchTimeout).stitchContent(true));
+        return this.check(tag, Target.Region(element).timeout(matchTimeout).fully());
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -489,7 +489,7 @@
      * @return {ManagedPromise} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkElementBy = function (locator, matchTimeout, tag) {
-        return this.check(tag, Target.Region(locator).timeout(matchTimeout).stitchContent(true));
+        return this.check(tag, Target.Region(locator).timeout(matchTimeout).fully());
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -549,7 +549,7 @@
      * @return {ManagedPromise} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkRegionInFrame = function (frameNameOrId, locator, matchTimeout, tag, stitchContent) {
-        return this.check(tag, Target.Region(locator, frameNameOrId).timeout(matchTimeout).stitchContent(stitchContent));
+        return this.check(tag, Target.Region(locator, frameNameOrId).timeout(matchTimeout).fully(stitchContent));
     };
 
     /**
