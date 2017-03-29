@@ -34,10 +34,10 @@ test('CheckInterface test - example', t => {
         eyes.check("Region by element", Target.Region(driver.findElement(webdriver.By.id("overflowing-div"))));
 
         // Entire content of element
-        eyes.check("Entire element", Target.Region(webdriver.By.id("overflowing-div")).stitchContent(true));
+        eyes.check("Entire element", Target.Region(webdriver.By.id("overflowing-div")).fully());
 
         // Entire region in frame
-        eyes.check("Entire region in frame", Target.Region(webdriver.By.id("inner-frame-div"), "frame1").stitchContent(true));
+        eyes.check("Entire region in frame", Target.Region(webdriver.By.id("inner-frame-div"), "frame1").fully());
 
         // Entire frame content
         eyes.check("Entire frame", Target.Frame("frame1"));
