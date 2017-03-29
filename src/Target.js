@@ -30,10 +30,14 @@
 
     //noinspection JSUnusedGlobalSymbols
     /**
-     * @param {boolean} stitchContent
+     * @param {boolean} [stitchContent=true]
      * @return {Target}
      */
-    Target.prototype.stitchContent = function (stitchContent) {
+    Target.prototype.fully = function (stitchContent) {
+        if (stitchContent !== false) {
+            stitchContent = true;
+        }
+
         this._stitchContent = stitchContent;
         return this;
     };
@@ -85,38 +89,66 @@
         return this;
     };
 
+    /**
+     * @returns {{left: number, top: number, width: number, height: number}|webdriver.WebElement|EyesRemoteWebElement|webdriver.By|null}
+     */
     Target.prototype.getRegion = function () {
         return this._region;
     };
 
+    /**
+     * @returns {boolean}
+     */
     Target.prototype.isUsingRegion = function () {
         return !!this._region;
     };
 
+    /**
+     * @returns {webdriver.WebElement|EyesRemoteWebElement|String|null}
+     */
     Target.prototype.getFrame = function () {
         return this._frame;
     };
 
+    /**
+     * @returns {boolean}
+     */
     Target.prototype.isUsingFrame = function () {
         return !!this._frame;
     };
 
+    /**
+     * @returns {int|null}
+     */
     Target.prototype.getTimeout = function () {
         return this._timeout;
     };
 
+    /**
+     * @returns {boolean}
+     */
     Target.prototype.getStitchContent = function () {
         return this._stitchContent;
     };
 
+    /**
+     * @returns {boolean}
+     */
     Target.prototype.getIgnoreMismatch = function () {
         return this._ignoreMismatch;
     };
 
+    /**
+     * @returns {{left: number, top: number, width: number, height: number}[]}
+     */
     Target.prototype.getIgnoreRegions = function () {
         return this._ignoreRegions;
     };
 
+    /**
+     * @returns {{left: number, top: number, width: number, height: number,
+     *          maxLeftOffset: number, maxRightOffset: number, maxUpOffset: number, maxDownOffset: number}[]}
+     */
     Target.prototype.getFloatingRegions = function () {
         return this._floatingRegions;
     };
