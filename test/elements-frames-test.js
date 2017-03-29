@@ -18,8 +18,8 @@ test.before(() => {
     eyes.setForceFullPageScreenshot(true);
 });
 
-test('home1', t => {
-    return eyes.open(driver, "Eyes Selenium SDK - black lines", t.title, {width: 1000, height: 700}).then(function (driver) {
+test('ElementsFramesTest - example', t => {
+    return eyes.open(driver, "Eyes Selenium SDK - elements-frames", t.title, {width: 1000, height: 700}).then(function (driver) {
         driver.get('https://astappev.github.io/test-html-pages/');
 
         eyes.checkWindow("Initial");

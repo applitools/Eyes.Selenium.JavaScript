@@ -16,7 +16,7 @@ test.before(() => {
 });
 
 test('CutProvider test - GitHub', t => {
-    return eyes.open(driver, "CutProvider test", t.title, {width: 1000, height: 700}).then(function (driver) {
+    return eyes.open(driver, "Eyes Selenium SDK - cutprovider", t.title, {width: 1000, height: 700}).then(function (driver) {
         driver.get('https://github.com');
 
         eyes.setImageCut(new FixedCutProvider(60, 100, 50, 10)); // cut params: header, footer, left, right.

@@ -16,12 +16,12 @@ test.before(() => {
     resultsFormatter = new TestResultsFormatter();
 });
 
-test('JS Selenium SDK Test - github - 106', t => {
-    return eyes.open(driver, "JavaScript SDK", t.title, {width: 800, height: 560}).then(function (driver) {
+test('Simple Test - GitHub', t => {
+    return eyes.open(driver, "Eyes Selenium SDK - simple", t.title, {width: 800, height: 560}).then(function (driver) {
         driver.get('https://github.com');
 
         eyes.checkWindow("github");
-        eyes.checkRegionByElement(driver.findElement(webdriver.By.className('btn-primary')), 'signup section');
+        eyes.checkRegionByElement(driver.findElement(webdriver.By.className('btn btn-orange')), 'signup section');
 
         return eyes.close();
     }).catch(function (err) {

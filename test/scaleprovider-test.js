@@ -19,8 +19,8 @@ test.before(() => {
     eyes.setForceFullPageScreenshot(true);
 });
 
-test('CutProvider test - GitHub', t => {
-    return eyes.open(driver, "CutProvider test", t.title, {width: 1000, height: 700}).then(function (driver) {
+test('ScaleProvider test - GitHub', t => {
+    return eyes.open(driver, "Eyes Selenium SDK - scaleprovider", t.title, {width: 1000, height: 700}).then(function (driver) {
         driver.get('https://astappev.github.io/test-html-pages/');
 
         eyes.checkWindow("Initial");
