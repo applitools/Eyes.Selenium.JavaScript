@@ -231,6 +231,56 @@
             return promise;
         }
 
+        if (target.getIgnoreObjects().length) {
+            target.getIgnoreObjects().forEach(function (obj) {
+                var ignoreObject = obj.element;
+                if (ignoreObject instanceof EyesRemoteWebElement || ignoreObject instanceof webdriver.WebElement || ignoreObject instanceof webdriver.By) {
+                    promise = promise.then(function () {
+                        // if ignoreObject is 'By' locator we need to findElement first
+                        if (ignoreObject instanceof webdriver.By) {
+                            that._logger.verbose("Trying to find element...", ignoreObject);
+                            return that._driver.findElement(ignoreObject);
+                        }
+
+                        return ignoreObject;
+                    }).then(function (element) {
+                        return getRegionFromWebElement(element);
+                    }).then(function (region) {
+                        target.ignore(region);
+                    });
+                } else {
+                    throw new Error("Unsupported ignore region type: " + typeof ignoreObject);
+                }
+            });
+        }
+
+        if (target.getFloatingObjects().length) {
+            target.getFloatingObjects().forEach(function (obj) {
+                var floatingObject = obj.element;
+                if (floatingObject instanceof EyesRemoteWebElement || floatingObject instanceof webdriver.WebElement || floatingObject instanceof webdriver.By) {
+                    promise = promise.then(function () {
+                        // if floatingObject is 'By' locator we need to findElement first
+                        if (floatingObject instanceof webdriver.By) {
+                            that._logger.verbose("Trying to find element...", floatingObject);
+                            return that._driver.findElement(floatingObject);
+                        }
+
+                        return floatingObject;
+                    }).then(function (element) {
+                        return getRegionFromWebElement(element);
+                    }).then(function (region) {
+                        region.maxLeftOffset = obj.maxLeftOffset;
+                        region.maxRightOffset = obj.maxRightOffset;
+                        region.maxUpOffset = obj.maxUpOffset;
+                        region.maxDownOffset = obj.maxDownOffset;
+                        target.floating(region);
+                    });
+                } else {
+                    throw new Error("Unsupported floating region type: " + typeof floatingObject);
+                }
+            });
+        }
+
         that._logger.verbose("match starting with params", name, target.getStitchContent(), target.getTimeout());
         var frameObject, regionObject,
             regionProvider,
@@ -307,7 +357,7 @@
         return promise.then(function () {
             that._logger.verbose("Call to checkWindowBase...");
             return EyesBase.prototype.checkWindow.call(that, name, target.getIgnoreMismatch(), target.getTimeout(),
-                regionProvider, target.getIgnoreRegions(), target.getFloatingRegions());
+                regionProvider, target.getIgnoreCaret(), target.getIgnoreRegions(), target.getFloatingRegions());
         }).then(function (result) {
             that._logger.verbose("Processing results...");
             if (result.asExpected || !that._failureReportOverridden) {
@@ -443,7 +493,7 @@
      * @return {ManagedPromise} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkWindow = function (tag, matchTimeout) {
-        return this.check(tag, Target.Window().timeout(matchTimeout));
+        return this.check(tag, Target.window().timeout(matchTimeout));
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -459,7 +509,7 @@
      * @return {ManagedPromise} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkFrame = function (element, matchTimeout, tag) {
-        return this.check(tag, Target.Frame(element).timeout(matchTimeout));
+        return this.check(tag, Target.frame(element).timeout(matchTimeout));
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -474,7 +524,7 @@
      * @return {ManagedPromise} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkElement = function (element, matchTimeout, tag) {
-        return this.check(tag, Target.Region(element).timeout(matchTimeout).fully());
+        return this.check(tag, Target.region(element).timeout(matchTimeout).fully());
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -489,7 +539,7 @@
      * @return {ManagedPromise} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkElementBy = function (locator, matchTimeout, tag) {
-        return this.check(tag, Target.Region(locator).timeout(matchTimeout).fully());
+        return this.check(tag, Target.region(locator).timeout(matchTimeout).fully());
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -503,7 +553,7 @@
      * @return {ManagedPromise} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkRegion = function (region, tag, matchTimeout) {
-        return this.check(tag, Target.Region(region).timeout(matchTimeout));
+        return this.check(tag, Target.region(region).timeout(matchTimeout));
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -517,7 +567,7 @@
      * @return {ManagedPromise} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkRegionByElement = function (element, tag, matchTimeout) {
-        return this.check(tag, Target.Region(element).timeout(matchTimeout));
+        return this.check(tag, Target.region(element).timeout(matchTimeout));
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -531,7 +581,7 @@
      * @return {ManagedPromise} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkRegionBy = function (by, tag, matchTimeout) {
-        return this.check(tag, Target.Region(by).timeout(matchTimeout));
+        return this.check(tag, Target.region(by).timeout(matchTimeout));
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -549,7 +599,7 @@
      * @return {ManagedPromise} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkRegionInFrame = function (frameNameOrId, locator, matchTimeout, tag, stitchContent) {
-        return this.check(tag, Target.Region(locator, frameNameOrId).timeout(matchTimeout).fully(stitchContent));
+        return this.check(tag, Target.region(locator, frameNameOrId).timeout(matchTimeout).fully(stitchContent));
     };
 
     /**
