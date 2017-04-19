@@ -487,7 +487,6 @@
 
     //noinspection JSUnusedGlobalSymbols
     /**
-     * @deprecated
      * @param {string} tag
      * @param {int} matchTimeout
      * @return {ManagedPromise} A promise which is resolved when the validation is finished.
@@ -501,7 +500,6 @@
      * Matches the frame given as parameter, by switching into the frame and
      * using stitching to get an image of the frame.
      *
-     * @deprecated
      * @param {EyesRemoteWebElement} element The element which is the frame to switch to. (as
      * would be used in a call to driver.switchTo().frame() ).
      * @param {int} matchTimeout The amount of time to retry matching (milliseconds).
@@ -517,7 +515,6 @@
      * Takes a snapshot of the application under test and matches a specific
      * element with the expected region output.
      *
-     * @deprecated
      * @param {webdriver.WebElement|EyesRemoteWebElement} element The element to check.
      * @param {int|null} matchTimeout The amount of time to retry matching (milliseconds).
      * @param {string} tag An optional tag to be associated with the match.
@@ -532,7 +529,6 @@
      * Takes a snapshot of the application under test and matches a specific
      * element with the expected region output.
      *
-     * @deprecated
      * @param {webdriver.By} locator The element to check.
      * @param {int|null} matchTimeout The amount of time to retry matching (milliseconds).
      * @param {string} tag An optional tag to be associated with the match.
@@ -546,7 +542,6 @@
     /**
      * Visually validates a region in the screenshot.
      *
-     * @deprecated
      * @param {{left: number, top: number, width: number, height: number}} region The region to validate (in screenshot coordinates).
      * @param {string} tag An optional tag to be associated with the screenshot.
      * @param {int} matchTimeout The amount of time to retry matching.
@@ -560,7 +555,6 @@
     /**
      * Visually validates a region in the screenshot.
      *
-     * @deprecated
      * @param {webdriver.WebElement|EyesRemoteWebElement} element The element defining the region to validate.
      * @param {string} tag An optional tag to be associated with the screenshot.
      * @param {int} matchTimeout The amount of time to retry matching.
@@ -574,7 +568,6 @@
     /**
      * Visually validates a region in the screenshot.
      *
-     * @deprecated
      * @param {webdriver.By} by The WebDriver selector used for finding the region to validate.
      * @param {string} tag An optional tag to be associated with the screenshot.
      * @param {int} matchTimeout The amount of time to retry matching.
@@ -589,7 +582,6 @@
      * Switches into the given frame, takes a snapshot of the application under
      * test and matches a region specified by the given selector.
      *
-     * @deprecated
      * @param {string} frameNameOrId The name or id of the frame to switch to. (as would be used in a call to driver.switchTo().frame()).
      * @param {webdriver.By} locator A Selector specifying the region to check.
      * @param {int|null} matchTimeout  The amount of time to retry matching. (Milliseconds)
