@@ -2,10 +2,10 @@
     "use strict";
 
     var EyesUtils = require('eyes.utils'),
+        EyesSDK = require('eyes.sdk'),
         EyesWebDriverScreenshot = require('./EyesWebDriverScreenshot');
-    var RegionProvider = EyesUtils.RegionProvider,
-        GeometryUtils = EyesUtils.GeometryUtils,
-        ArgumentGuard = EyesUtils.ArgumentGuard;
+    var RegionProvider = EyesSDK.RegionProvider,
+        GeometryUtils = EyesUtils.GeometryUtils;
 
     /**
      * @param {Logger} logger

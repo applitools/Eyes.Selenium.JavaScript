@@ -13,6 +13,10 @@ test.before(() => {
     eyes = new Eyes();
     eyes.setApiKey(process.env.APPLITOOLS_API_KEY);
     eyes.setLogHandler(new ConsoleLogHandler(true));
+    eyes.addProperty("propertyName1", "propValue1");
+    eyes.addProperty("propertyName2", "propValue2");
+    eyes.addProperty("propertyName3", "propValue3");
+    eyes.addProperty("propertyName4", "propValue4");
     resultsFormatter = new TestResultsFormatter();
 });
 

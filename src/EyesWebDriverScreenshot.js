@@ -7,7 +7,7 @@
         FrameChain = require('./FrameChain'),
         Frame = require('./Frame');
     var EyesScreenshot = EyesSDK.EyesScreenshot,
-        CoordinatesType = EyesUtils.CoordinatesType,
+        CoordinatesType = EyesSDK.CoordinatesType,
         ArgumentGuard = EyesUtils.ArgumentGuard,
         GeneralUtils = EyesUtils.GeneralUtils,
         GeometryUtils = EyesUtils.GeometryUtils;
