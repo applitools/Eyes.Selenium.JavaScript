@@ -27,6 +27,8 @@
 
     var JS_GET_OVERFLOW = "return arguments[0].style.overflow;";
 
+    var JS_GET_LOCATION = "var rect = arguments[0].getBoundingClientRect(); return [rect.left, rect.top]";
+
     /**
      * @param {string} styleProp
      * @return {string}
@@ -258,8 +260,16 @@
      * @return {!promise.Thenable<{x: number, y: number}>} element's location
      */
     EyesRemoteWebElement.prototype.getLocation = function () {
-        return this._element.getLocation().then(function (value) {
-            return GeometryUtils.createLocation(value.x, value.y);
+        // The workaround is similar to Java one,
+        // https://github.com/applitools/eyes.sdk.java3/blob/master/eyes.selenium.java/src/main/java/com/applitools/eyes/selenium/EyesRemoteWebElement.java#L453
+        // but we can't get raw data (including decimal values) from remote Selenium webdriver
+        // and therefore we should use our own client-side script for retrieving exact values and rounding up them
+
+        // this._element.getLocation()
+        return this._eyesDriver.executeScript(JS_GET_LOCATION, this._element).then(function (value) {
+            var x = Math.ceil(value[0]) || 0;
+            var y = Math.ceil(value[1]) || 0;
+            return GeometryUtils.createLocation(x, y);
         });
     };
 
