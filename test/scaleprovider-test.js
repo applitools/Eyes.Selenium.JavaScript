@@ -3,6 +3,7 @@ import webdriver from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome';
 import {Eyes, ConsoleLogHandler} from '../index';
 
+const testName = "Eyes.Selenium.JavaScript - scaleprovider";
 let driver = null, eyes = null;
 
 test.before(() => {
@@ -19,8 +20,8 @@ test.before(() => {
     eyes.setForceFullPageScreenshot(true);
 });
 
-test('ScaleProvider test - GitHub', t => {
-    return eyes.open(driver, "Eyes Selenium SDK - scaleprovider", t.title, {width: 1000, height: 700}).then(function (driver) {
+test('GitHub with scaling', t => {
+    return eyes.open(driver, testName, t.title, {width: 1000, height: 700}).then(function (driver) {
         driver.get('https://astappev.github.io/test-html-pages/');
 
         eyes.checkWindow("Initial");

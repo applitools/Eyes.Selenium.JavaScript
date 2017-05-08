@@ -3,6 +3,7 @@ import webdriver from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome';
 import {Eyes, ConsoleLogHandler, Target} from '../index';
 
+const testName = "Eyes.Selenium.JavaScript - check-interface";
 let driver = null, eyes = null;
 
 test.before(() => {
@@ -18,8 +19,8 @@ test.before(() => {
     eyes.setForceFullPageScreenshot(true);
 });
 
-test('CheckInterface test - example', t => {
-    return eyes.open(driver, "Eyes Selenium SDK - check-interface", t.title, {width: 1000, height: 700}).then(function (driver) {
+test('TestHtmlPages using new check interface', t => {
+    return eyes.open(driver, testName, t.title, {width: 1000, height: 700}).then(function (driver) {
         driver.get('https://astappev.github.io/test-html-pages/');
 
         // Entire window
