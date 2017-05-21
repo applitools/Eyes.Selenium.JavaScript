@@ -2,6 +2,7 @@ import test from 'ava';
 import webdriver from 'selenium-webdriver';
 import {Eyes, ConsoleLogHandler, FixedCutProvider} from '../index';
 
+const testName = "Eyes.Selenium.JavaScript - cutprovider";
 let driver = null, eyes = null;
 
 test.before(() => {
@@ -15,8 +16,8 @@ test.before(() => {
     eyes.setLogHandler(new ConsoleLogHandler(true));
 });
 
-test('CutProvider test - GitHub', t => {
-    return eyes.open(driver, "Eyes Selenium SDK - cutprovider", t.title, {width: 1000, height: 700}).then(function (driver) {
+test('GitHub with ImageCut', t => {
+    return eyes.open(driver, testName, t.title, {width: 1000, height: 700}).then(function (driver) {
         driver.get('https://github.com');
 
         eyes.setImageCut(new FixedCutProvider(60, 100, 50, 10)); // cut params: header, footer, left, right.
