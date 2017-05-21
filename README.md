@@ -1,5 +1,5 @@
-
 eyes.selenium
+=============
 
 Applitools Eyes SDK For Selenium JavaScript WebDriver
 [![Build Status](https://travis-ci.org/applitools/Eyes.Selenium.JavaScript.svg?branch=master)](https://travis-ci.org/applitools/Eyes.Selenium.JavaScript)
@@ -19,7 +19,5 @@ Please check the applitools website for usage instructions:
 - JavaScript Appium native example: https://applitools.com/resources/tutorial/appium/native_javascript#step-2
 
 - JavaScript Appium web example: https://applitools.com/resources/tutorial/appium/javascript#step-2
-
-- JavaScript Screenshot example: https://applitools.com/resources/tutorial/screenshots/javascript#step-2
 
 - Protractor example: https://applitools.com/resources/tutorial/selenium/protractor#step-2
