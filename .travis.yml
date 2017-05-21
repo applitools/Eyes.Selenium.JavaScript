@@ -1,0 +1,25 @@
+sudo: required
+dist: trusty
+addons:
+   apt:
+      sources:
+         - google-chrome
+      packages:
+         - google-chrome-stable
+         # latest version of firefox already installed by default
+language: node_js
+node_js:
+   - "6"
+before_install:
+   - npm config set spin false
+install:
+   - npm install -g webdriver-manager
+   - webdriver-manager update
+   - npm install
+before_script:
+   - export DISPLAY=:99.0
+   - sh -e /etc/init.d/xvfb start
+   - nohup webdriver-manager start &
+   - sleep 10 # give webdriver some time to start
+script:
+   - npm run test

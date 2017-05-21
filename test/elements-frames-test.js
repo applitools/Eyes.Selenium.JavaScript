@@ -1,8 +1,8 @@
 import test from 'ava';
 import webdriver from 'selenium-webdriver';
-import chrome from 'selenium-webdriver/chrome';
 import {Eyes, ConsoleLogHandler} from '../index';
 
+const testName = "Eyes.Selenium.JavaScript - elements-frames";
 let driver = null, eyes = null;
 
 test.before(() => {
@@ -18,8 +18,8 @@ test.before(() => {
     eyes.setForceFullPageScreenshot(true);
 });
 
-test('ElementsFramesTest - example', t => {
-    return eyes.open(driver, "Eyes Selenium SDK - elements-frames", t.title, {width: 1000, height: 700}).then(function (driver) {
+test('TestHtmlPages with frames', t => {
+    return eyes.open(driver, testName, t.title, {width: 1000, height: 700}).then(function (driver) {
         driver.get('https://astappev.github.io/test-html-pages/');
 
         eyes.checkWindow("Initial");
