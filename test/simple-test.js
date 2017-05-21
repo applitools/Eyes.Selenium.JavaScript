@@ -18,6 +18,7 @@ test.before(() => {
 
 test('GitHub simple', t => {
     return eyes.open(driver, testName, t.title, {width: 800, height: 560}).then(function (driver) {
+        eyes.addProperty("MyProp", "I'm correct!");
         driver.get('https://github.com');
 
         eyes.checkWindow("github");
