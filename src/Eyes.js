@@ -48,9 +48,21 @@
         DEFAULT_DEVICE_PIXEL_RATIO = 1;
 
     /**
+     * @readonly
+     * @enum {string}
+     */
+    var StitchMode = {
+        // Uses scrolling to get to the different parts of the page.
+        Scroll: 'Scroll',
+
+        // Uses CSS transitions to get to the different parts of the page.
+        CSS: 'CSS'
+    };
+
+    /**
      * Initializes an Eyes instance.
-     * @param {String} serverUrl - The Eyes server URL.
-     * @param {Boolean} isDisabled - set to true to disable Applitools Eyes and use the webdriver directly.
+     * @param {String} [serverUrl] - The Eyes server URL.
+     * @param {Boolean} [isDisabled] - set to true to disable Applitools Eyes and use the webdriver directly.
      * @augments EyesBase
      * @constructor
      **/
@@ -61,7 +73,7 @@
         this._isLandscape = false;
         this._hideScrollbars = null;
         this._checkFrameOrElement = false;
-        this._stitchMode = Eyes.StitchMode.Scroll;
+        this._stitchMode = StitchMode.Scroll;
         this._promiseFactory = new PromiseFactory();
         this._waitBeforeScreenshots = DEFAULT_WAIT_BEFORE_SCREENSHOTS;
 
@@ -70,17 +82,6 @@
 
     Eyes.prototype = new EyesBase();
     Eyes.prototype.constructor = Eyes;
-
-    /**
-     * @readonly
-     * @enum {string}
-     */
-    Eyes.StitchMode = Object.freeze({
-        // Uses scrolling to get to the different parts of the page.
-        Scroll: 'Scroll',
-        // Uses CSS transitions to get to the different parts of the page.
-        CSS: 'CSS'
-    });
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype._getBaseAgentId = function () {
@@ -364,8 +365,14 @@
 
         return promise.then(function () {
             that._logger.verbose("Call to checkWindowBase...");
-            return EyesBase.prototype.checkWindow.call(that, name, target.getIgnoreMismatch(), target.getTimeout(),
-                regionProvider, target.getIgnoreCaret(), target.getIgnoreRegions(), target.getFloatingRegions());
+            var imageMatchSettings = {
+                matchLevel: target.getMatchLevel(),
+                ignoreCaret: target.getIgnoreCaret(),
+                ignore: target.getIgnoreRegions(),
+                floating: target.getFloatingRegions(),
+                exact: null
+            };
+            return EyesBase.prototype.checkWindow.call(that, name, target.getIgnoreMismatch(), target.getTimeout(), regionProvider, imageMatchSettings);
         }).then(function (result) {
             that._logger.verbose("Processing results...");
             if (result.asExpected || !that._failureReportOverridden) {
@@ -660,7 +667,7 @@
                 that._cutProviderHandler.get(),
                 that._forceFullPage,
                 that._hideScrollbars,
-                that._stitchMode === Eyes.StitchMode.CSS,
+                that._stitchMode === StitchMode.CSS,
                 that._imageRotationDegrees,
                 that._automaticRotation,
                 that._os === 'Android' ? 90 : 270,
@@ -806,13 +813,13 @@
     //noinspection JSUnusedGlobalSymbols
     /**
      * Set the stitch mode.
-     * @param {Eyes.StitchMode} mode - The desired stitch mode settings.
+     * @param {StitchMode} mode - The desired stitch mode settings.
      */
     Eyes.prototype.setStitchMode = function (mode) {
         this._stitchMode = mode;
         if (this._driver) {
             switch (mode) {
-                case Eyes.StitchMode.CSS:
+                case StitchMode.CSS:
                     this.setPositionProvider(new CssTranslatePositionProvider(this._logger, this._driver, this._promiseFactory));
                     break;
                 default:
@@ -824,7 +831,7 @@
     //noinspection JSUnusedGlobalSymbols
     /**
      * Get the stitch mode.
-     * @return {Eyes.StitchMode} The currently set StitchMode.
+     * @return {StitchMode} The currently set StitchMode.
      */
     Eyes.prototype.getStitchMode = function () {
         return this._stitchMode;
@@ -871,5 +878,10 @@
         }.bind(this));
     };
 
+    /**
+     * @readonly
+     * @enum {string}
+     */
+    Eyes.StitchMode = Object.freeze(StitchMode);
     module.exports = Eyes;
 }());

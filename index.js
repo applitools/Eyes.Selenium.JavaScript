@@ -1,4 +1,5 @@
 exports.Eyes = require('./src/Eyes');
+exports.StitchMode = exports.Eyes.StitchMode;
 exports.EyesRemoteWebElement = require('./src/EyesRemoteWebElement');
 exports.EyesTargetLocator = require('./src/EyesTargetLocator');
 exports.EyesWebDriver = require('./src/EyesWebDriver');

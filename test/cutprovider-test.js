@@ -20,7 +20,7 @@ test('GitHub with ImageCut', t => {
     return eyes.open(driver, testName, t.title, {width: 1000, height: 700}).then(function (driver) {
         driver.get('https://github.com');
 
-        eyes.setImageCut(new FixedCutProvider(60, 100, 50, 10)); // cut params: header, footer, left, right.
+        eyes.setImageCut(new FixedCutProvider(60, 100, 50, 120)); // cut params: header, footer, left, right.
         eyes.checkWindow("Full window without 20px border");
 
         return eyes.close();
