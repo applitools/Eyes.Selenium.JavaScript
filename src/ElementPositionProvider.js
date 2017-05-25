@@ -1,8 +1,9 @@
 (function() {
     'use strict';
 
-    var EyesUtils = require('eyes.utils');
-    var PositionProvider = EyesUtils.PositionProvider,
+    var EyesSDK = require('eyes.sdk'),
+        EyesUtils = require('eyes.utils');
+    var PositionProvider = EyesSDK.PositionProvider,
         ArgumentGuard = EyesUtils.ArgumentGuard;
 
     /**
