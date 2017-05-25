@@ -14,11 +14,11 @@
         EyesUtils = require('eyes.utils'),
         Frame = require('./Frame'),
         FrameChain = require('./FrameChain'),
+        EyesSeleniumUtils = require('./EyesSeleniumUtils'),
         EyesRemoteWebElement = require('./EyesRemoteWebElement'),
         ScrollPositionProvider = require('./ScrollPositionProvider'),
         EyesTargetLocator = require('./EyesTargetLocator');
     var GeneralUtils = EyesUtils.GeneralUtils,
-        BrowserUtils = EyesUtils.BrowserUtils,
         By = webdriver.By;
 
     /**
@@ -209,7 +209,7 @@
                             sp = _scrollPosition;
 
                             // Get the frame's content location.
-                            return BrowserUtils.getLocationWithBordersAddition(that._logger, targetFrame, pl, that._promiseFactory);
+                            return EyesSeleniumUtils.getLocationWithBordersAddition(that._logger, targetFrame, pl, that._promiseFactory);
                         }).then(function (contentLocation) {
                             that._frameChain.push(new Frame(that._logger, targetFrame, frameId, contentLocation, size, sp));
                             that._logger.verbose("Done!");
@@ -259,7 +259,7 @@
 
             promise.then(function () {
                 that._logger.verbose("Extracting viewport size...");
-                return BrowserUtils.getViewportSizeOrDisplaySize(that._logger, that._driver, that._promiseFactory);
+                return EyesSeleniumUtils.getViewportSizeOrDisplaySize(that._logger, that._driver, that._promiseFactory);
             }).then(function (viewportSize) {
                 that._defaultContentViewportSize = viewportSize;
                 that._logger.verbose("Done! Viewport size: ", that._defaultContentViewportSize);

@@ -2,8 +2,9 @@
     'use strict';
 
     var EyesUtils = require('eyes.utils');
-    var PositionProvider = EyesUtils.PositionProvider,
-        BrowserUtils = EyesUtils.BrowserUtils,
+    var EyesSDK = require('eyes.sdk');
+    var EyesSeleniumUtils = require('./EyesSeleniumUtils');
+    var PositionProvider = EyesSDK.PositionProvider,
         ArgumentGuard = EyesUtils.ArgumentGuard;
 
     /**
@@ -31,7 +32,7 @@
     ScrollPositionProvider.prototype.getCurrentPosition = function () {
         var that = this;
         that._logger.verbose("getCurrentScrollPosition()");
-        return BrowserUtils.getCurrentScrollPosition(this._driver, this._promiseFactory).then(function (result) {
+        return EyesSeleniumUtils.getCurrentScrollPosition(this._driver, this._promiseFactory).then(function (result) {
             that._logger.verbose("Current position: ", result);
             return result;
         });
@@ -45,7 +46,7 @@
     ScrollPositionProvider.prototype.setPosition = function (location) {
         var that = this;
         that._logger.verbose("Scrolling to:", location);
-        return BrowserUtils.scrollTo(this._driver, location, this._promiseFactory).then(function () {
+        return EyesSeleniumUtils.scrollTo(this._driver, location, this._promiseFactory).then(function () {
             that._logger.verbose("Done scrolling!");
         });
     };
@@ -55,7 +56,7 @@
      */
     ScrollPositionProvider.prototype.getEntireSize = function () {
         var that = this;
-        return BrowserUtils.getEntirePageSize(this._driver, this._promiseFactory).then(function (result) {
+        return EyesSeleniumUtils.getEntirePageSize(this._driver, this._promiseFactory).then(function (result) {
             that._logger.verbose("Entire size: ", result);
             return result;
         });

@@ -14,11 +14,12 @@
 (function () {
     'use strict';
 
-    var EyesSDK = require('eyes.sdk'),
-        EyesUtils = require('eyes.utils'),
-        promise = require('q'),
+    var promise = require('q'),
         webdriver = require('selenium-webdriver'),
+        EyesSDK = require('eyes.sdk'),
+        EyesUtils = require('eyes.utils'),
         EyesWebDriver = require('./EyesWebDriver'),
+        EyesSeleniumUtils = require('./EyesSeleniumUtils'),
         EyesRemoteWebElement = require('./EyesRemoteWebElement'),
         EyesWebDriverScreenshot = require('./EyesWebDriverScreenshot'),
         ElementFinderWrapper = require('./ElementFinderWrappers').ElementFinderWrapper,
@@ -34,13 +35,12 @@
         FixedScaleProviderFactory = EyesSDK.FixedScaleProviderFactory,
         NullScaleProvider = EyesSDK.NullScaleProvider,
         Logger = EyesSDK.Logger,
-        CoordinatesType = EyesUtils.CoordinatesType,
+        CoordinatesType = EyesSDK.CoordinatesType,
+        MutableImage = EyesSDK.MutableImage,
+        ScaleProviderIdentityFactory = EyesSDK.ScaleProviderIdentityFactory,
         PromiseFactory = EyesUtils.PromiseFactory,
-        BrowserUtils = EyesUtils.BrowserUtils,
         ArgumentGuard = EyesUtils.ArgumentGuard,
-        MutableImage = EyesUtils.MutableImage,
         SimplePropertyHandler = EyesUtils.SimplePropertyHandler,
-        ScaleProviderIdentityFactory = EyesUtils.ScaleProviderIdentityFactory,
         GeometryUtils = EyesUtils.GeometryUtils;
 
     var DEFAULT_WAIT_BEFORE_SCREENSHOTS = 100, // ms
@@ -619,7 +619,7 @@
                 var factory, enSize, vpSize;
                 that._logger.verbose("Trying to extract device pixel ratio...");
 
-                return BrowserUtils.getDevicePixelRatio(that._driver, that._promiseFactory).then(function (ratio) {
+                return EyesSeleniumUtils.getDevicePixelRatio(that._driver, that._promiseFactory).then(function (ratio) {
                     that._devicePixelRatio = ratio;
                 }, function (err) {
                     that._logger.verbose("Failed to extract device pixel ratio! Using default.", err);
@@ -658,7 +658,7 @@
     Eyes.prototype.getScreenShot = function () {
         var that = this;
         return that.updateScalingParams().then(function (scaleProviderFactory) {
-            return BrowserUtils.getScreenshot(
+            return EyesSeleniumUtils.getScreenshot(
                 that._driver,
                 that._promiseFactory,
                 that._viewportSize,
@@ -722,12 +722,12 @@
      * @returns {*} The viewport size.
      */
     Eyes.prototype.getViewportSize = function () {
-        return BrowserUtils.getViewportSizeOrDisplaySize(this._logger, this._driver, this._promiseFactory);
+        return EyesSeleniumUtils.getViewportSizeOrDisplaySize(this._logger, this._driver, this._promiseFactory);
     };
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.setViewportSize = function (size) {
-        return BrowserUtils.setViewportSize(this._logger, this._driver, size, this._promiseFactory);
+        return EyesSeleniumUtils.setViewportSize(this._logger, this._driver, size, this._promiseFactory);
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -748,7 +748,7 @@
             return promise.defer();
         });
 
-        return BrowserUtils.setViewportSize(new Logger(), driver, size, promiseFactory);
+        return EyesSeleniumUtils.setViewportSize(new Logger(), driver, size, promiseFactory);
     };
 
     //noinspection JSUnusedGlobalSymbols
