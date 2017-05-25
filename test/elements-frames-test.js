@@ -1,6 +1,6 @@
 import test from 'ava';
 import webdriver from 'selenium-webdriver';
-import {Eyes, ConsoleLogHandler} from '../index';
+import {Eyes, ConsoleLogHandler, StitchMode} from '../index';
 
 const testName = "Eyes.Selenium.JavaScript - elements-frames";
 let driver = null, eyes = null;
@@ -14,7 +14,7 @@ test.before(() => {
     eyes = new Eyes();
     eyes.setApiKey(process.env.APPLITOOLS_API_KEY);
     eyes.setLogHandler(new ConsoleLogHandler(true));
-    eyes.setStitchMode(Eyes.StitchMode.CSS);
+    eyes.setStitchMode(StitchMode.CSS);
     eyes.setForceFullPageScreenshot(true);
 });
 

@@ -1,6 +1,7 @@
 exports.CssTranslatePositionProvider = require('./src/CssTranslatePositionProvider');
 exports.ElementPositionProvider = require('./src/ElementPositionProvider');
 exports.Eyes = require('./src/Eyes');
+exports.StitchMode = exports.Eyes.StitchMode;
 exports.EyesRegionProvider = require('./src/EyesRegionProvider');
 exports.EyesRemoteWebElement = require('./src/EyesRemoteWebElement');
 exports.EyesTargetLocator = require('./src/EyesTargetLocator');

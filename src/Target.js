@@ -22,6 +22,7 @@
         this._timeout = null;
         this._stitchContent = false;
         this._ignoreMismatch = false;
+        this._matchLevel = null;
         this._ignoreCaret = null;
         this._ignoreRegions = [];
         this._floatingRegions = [];
@@ -65,6 +66,16 @@
         }
 
         this._ignoreMismatch = ignoreMismatch;
+        return this;
+    };
+
+    //noinspection JSUnusedGlobalSymbols
+    /**
+     * @param {MatchLevel} matchLevel
+     * @return {Target}
+     */
+    Target.prototype.matchLevel = function (matchLevel) {
+        this._matchLevel = matchLevel;
         return this;
     };
 
@@ -173,6 +184,13 @@
      */
     Target.prototype.getIgnoreMismatch = function () {
         return this._ignoreMismatch;
+    };
+
+    /**
+     * @returns {boolean}
+     */
+    Target.prototype.getMatchLevel = function () {
+        return this._matchLevel;
     };
 
     /**
