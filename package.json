@@ -1,6 +1,6 @@
 {
     "name": "eyes.selenium",
-    "version": "0.0.66",
+    "version": "0.0.67",
     "description": "Applitools Eyes SDK For Selenium JavaScript WebDriver",
     "author": "Applitools Team <team@applitools.com> (http://www.applitools.com/)",
     "keywords": [
@@ -26,8 +26,8 @@
     "license": "Apache-2.0",
     "main": "index",
     "dependencies": {
-        "eyes.utils": "0.0.24",
-        "eyes.sdk": "0.0.60",
+        "eyes.utils": "0.0.25",
+        "eyes.sdk": "0.0.61",
         "q": "^1.4.1"
     },
     "devDependencies": {
