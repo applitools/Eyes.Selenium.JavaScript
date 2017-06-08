@@ -115,16 +115,30 @@
     Eyes.prototype.open = function (driver, appName, testName, viewportSize) {
         var that = this;
 
+        that._flow = driver.controlFlow();
+        _init(that, that._flow);
+
+        that._devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
+        that._driver = new EyesWebDriver(driver, that, that._logger, that._promiseFactory);
+        that.setStitchMode(that._stitchMode);
+
         if (typeof protractor !== 'undefined') {
             that._isProtractorLoaded = true;
             that._logger.verbose("Running using Protractor module");
+
+            // extend protractor element to return ours
+            var originalElementFn = global.element;
+            global.element = function (locator) {
+                return new ElementFinderWrapper(originalElementFn(locator), that._driver, that._logger);
+            };
+
+            global.element.all = function (locator) {
+                return new ElementArrayFinderWrapper(originalElementFn.all(locator), that._driver, that._logger);
+            };
         } else {
             that._isProtractorLoaded = false;
             that._logger.verbose("Running using Selenium module");
         }
-
-        that._flow = driver.controlFlow();
-        _init(that, that._flow);
 
         if (this._isDisabled) {
             return that._flow.execute(function () {
@@ -133,70 +147,53 @@
         }
 
         return that._flow.execute(function () {
-            return driver.getCapabilities()
-                .then(function (capabilities) {
-                    var platformName, platformVersion, orientation;
-                    if (capabilities.caps_) {
-                        platformName = capabilities.caps_.platformName;
-                        platformVersion = capabilities.caps_.platformVersion;
-                        orientation = capabilities.caps_.orientation || capabilities.caps_.deviceOrientation;
-                    } else {
-                        platformName = capabilities.get('platform');
-                        platformVersion = capabilities.get('version');
-                        orientation = capabilities.get('orientation') || capabilities.get('deviceOrientation');
-                    }
+            return driver.getCapabilities().then(function (capabilities) {
+                var platformName, platformVersion, orientation;
+                if (capabilities.caps_) {
+                    platformName = capabilities.caps_.platformName;
+                    platformVersion = capabilities.caps_.platformVersion;
+                    orientation = capabilities.caps_.orientation || capabilities.caps_.deviceOrientation;
+                } else {
+                    platformName = capabilities.get('platform');
+                    platformVersion = capabilities.get('version');
+                    orientation = capabilities.get('orientation') || capabilities.get('deviceOrientation');
+                }
 
-                    var majorVersion;
-                    if (!platformVersion || platformVersion.length < 1) {
-                        return;
+                var majorVersion;
+                if (!platformVersion || platformVersion.length < 1) {
+                    return;
+                }
+                majorVersion = platformVersion.split('.', 2)[0];
+                if (platformName.toUpperCase() === 'ANDROID') {
+                    // We only automatically set the OS, if the user hadn't manually set it previously.
+                    if (!that.getHostOS()) {
+                        that.setHostOS('Android ' + majorVersion);
                     }
-                    majorVersion = platformVersion.split('.', 2)[0];
-                    if (platformName.toUpperCase() === 'ANDROID') {
-                        // We only automatically set the OS, if the user hadn't manually set it previously.
-                        if (!that.getHostOS()) {
-                            that.setHostOS('Android ' + majorVersion);
-                        }
-                    } else if (platformName.toUpperCase() === 'IOS') {
-                        if (!that.getHostOS()) {
-                            that.setHostOS('iOS ' + majorVersion);
-                        }
-                    } else {
-                        return;
+                } else if (platformName.toUpperCase() === 'IOS') {
+                    if (!that.getHostOS()) {
+                        that.setHostOS('iOS ' + majorVersion);
                     }
+                } else {
+                    return;
+                }
 
-                    if (orientation && orientation.toUpperCase() === 'LANDSCAPE') {
-                        that._isLandscape = true;
-                    }
-                }).then(function () {
-                    return EyesBase.prototype.open.call(that, appName, testName, viewportSize);
-                }).then(function () {
-                    that._devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
-                    that._driver = new EyesWebDriver(driver, that, that._logger, that._promiseFactory);
-
-                    // extend protractor element to return ours
-                    if (that._isProtractorLoaded) {
-                        var originalElementFn = global.element;
-                        global.element = function (locator) {
-                            return new ElementFinderWrapper(originalElementFn(locator), that._driver, that._logger);
-                        };
-
-                        global.element.all = function (locator) {
-                            return new ElementArrayFinderWrapper(originalElementFn.all(locator), that._driver, that._logger);
-                        };
-                    }
-
-                    that.setStitchMode(that._stitchMode);
-                    return that._driver;
-                });
+                if (orientation && orientation.toUpperCase() === 'LANDSCAPE') {
+                    that._isLandscape = true;
+                }
+            }).then(function () {
+                return EyesBase.prototype.open.call(that, appName, testName, viewportSize);
+            }).then(function () {
+                return that._driver;
+            });
         });
     };
 
     //noinspection JSUnusedGlobalSymbols
-  /**
-   * Ends the test.
-   * @param throwEx - If true, an exception will be thrown for failed/new tests.
-   * @returns {*} The test results.
-   */
+    /**
+     * Ends the test.
+     * @param throwEx - If true, an exception will be thrown for failed/new tests.
+     * @returns {*} The test results.
+     */
     Eyes.prototype.close = function (throwEx) {
         var that = this;
 
@@ -243,10 +240,10 @@
         if (target.getIgnoreObjects().length) {
             target.getIgnoreObjects().forEach(function (obj) {
                 var ignoreObject = obj.element;
-                if (ignoreObject instanceof EyesRemoteWebElement || ignoreObject instanceof webdriver.WebElement || ignoreObject instanceof webdriver.By) {
+                if (isElementObject(ignoreObject) || isLocatorObject(ignoreObject)) {
                     promise = promise.then(function () {
                         // if ignoreObject is 'By' locator we need to findElement first
-                        if (ignoreObject instanceof webdriver.By) {
+                        if (isLocatorObject(ignoreObject)) {
                             that._logger.verbose("Trying to find element...", ignoreObject);
                             return that._driver.findElement(ignoreObject);
                         }
@@ -266,10 +263,10 @@
         if (target.getFloatingObjects().length) {
             target.getFloatingObjects().forEach(function (obj) {
                 var floatingObject = obj.element;
-                if (floatingObject instanceof EyesRemoteWebElement || floatingObject instanceof webdriver.WebElement || floatingObject instanceof webdriver.By) {
+                if (isElementObject(floatingObject) || isLocatorObject(floatingObject)) {
                     promise = promise.then(function () {
                         // if floatingObject is 'By' locator we need to findElement first
-                        if (floatingObject instanceof webdriver.By) {
+                        if (isLocatorObject(floatingObject)) {
                             that._logger.verbose("Trying to find element...", floatingObject);
                             return that._driver.findElement(floatingObject);
                         }
@@ -323,10 +320,10 @@
         if (target.isUsingRegion()) {
             regionObject = target.getRegion();
 
-            if (regionObject instanceof EyesRemoteWebElement || regionObject instanceof webdriver.WebElement || regionObject instanceof webdriver.By) {
+            if (isElementObject(regionObject) || isLocatorObject(regionObject)) {
                 promise = promise.then(function () {
                     // if regionObject is 'By' locator we need to findElement first
-                    if (regionObject instanceof webdriver.By) {
+                    if (isLocatorObject(regionObject)) {
                         that._logger.verbose("Trying to find element...", regionObject);
                         return that._driver.findElement(regionObject);
                     }
@@ -415,6 +412,14 @@
                 });
             }
         });
+    };
+
+    var isElementObject = function (o) {
+        return o instanceof EyesRemoteWebElement || o instanceof webdriver.WebElement || o instanceof ElementFinderWrapper;
+    };
+
+    var isLocatorObject = function (o) {
+        return o instanceof webdriver.By || o.findElementsOverride !== undefined || (o.using !== undefined && o.value !== undefined);
     };
 
     /**
@@ -771,10 +776,10 @@
     };
 
     //noinspection JSUnusedGlobalSymbols
-  /**
-   * Set the image rotation degrees.
-   * @param degrees - The amount of degrees to set the rotation to.
-   */
+    /**
+     * Set the image rotation degrees.
+     * @param degrees - The amount of degrees to set the rotation to.
+     */
     Eyes.prototype.setForcedImageRotation = function (degrees) {
         if (typeof degrees !== 'number') {
             throw new TypeError('degrees must be a number! set to 0 to clear');
@@ -784,10 +789,10 @@
     };
 
     //noinspection JSUnusedGlobalSymbols
-  /**
-   * Get the rotation degrees.
-   * @returns {*|number} - The rotation degrees.
-   */
+    /**
+     * Get the rotation degrees.
+     * @returns {*|number} - The rotation degrees.
+     */
     Eyes.prototype.getForcedImageRotation = function () {
         return this._imageRotationDegrees || 0;
     };
