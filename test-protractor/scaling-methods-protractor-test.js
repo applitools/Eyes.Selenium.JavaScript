@@ -1,15 +1,17 @@
 var Eyes = require('../index').Eyes;
 var ConsoleLogHandler = require('../index').ConsoleLogHandler;
-var FixedCutProvider = require('../index').FixedCutProvider;
+var StitchMode = require('../index').StitchMode;
 
 var eyes;
 
-describe("Eyes.Selenium.JavaScript - cutprovider", function() {
+describe("Eyes.Selenium.JavaScript - scaling methods", function() {
 
     beforeAll(function(){
         eyes = new Eyes();
         eyes.setApiKey(process.env.APPLITOOLS_API_KEY);
         eyes.setLogHandler(new ConsoleLogHandler(true));
+        eyes.setStitchMode(StitchMode.CSS);
+        eyes.setForceFullPageScreenshot(true);
     });
 
     beforeEach(function(done){
@@ -18,13 +20,14 @@ describe("Eyes.Selenium.JavaScript - cutprovider", function() {
         });
     });
 
-    it("TestHtmlPages with ImageCut", function(done) {
-        browser.get('https://astappev.github.io/test-html-pages/');
+    it("Using scaling methods on TestHtmlPages", function(done) {
+        browser.get("https://astappev.github.io/test-html-pages/");
 
-        // cut params: header, footer, left, right.
-        eyes.setImageCut(new FixedCutProvider(60, 100, 50, 120));
+        eyes.checkWindow("Initial");
 
-        eyes.checkWindow("Entire window with cut borders");
+        eyes.checkElementBy(by.id("overflowing-div"), null, "Text block");
+
+        eyes.checkElementBy(by.id("overflowing-div-image"), null, "Minions");
 
         eyes.close().then(function () {
             done();

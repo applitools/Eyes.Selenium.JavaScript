@@ -1,12 +1,12 @@
 import test from 'ava';
-import webdriver from 'selenium-webdriver';
-import {Eyes, ConsoleLogHandler} from '../index';
+import {Builder as WebDriverBuilder} from 'selenium-webdriver';
+import {Eyes, ConsoleLogHandler, FixedCutProvider} from '../index';
 
 const appName = "Eyes.Selenium.JavaScript - simple";
 let driver = null, eyes = null;
 
 test.before(() => {
-    driver = new webdriver.Builder()
+    driver = new WebDriverBuilder()
         .forBrowser('chrome')
         .usingServer('http://localhost:4444/wd/hub')
         .build();
@@ -23,16 +23,17 @@ test.beforeEach(t => {
     });
 });
 
-test('TestHtmlPages simple', () => {
+test("Simple methods on TestHtmlPages", () => {
     driver.get('https://astappev.github.io/test-html-pages/');
 
     eyes.addProperty("MyProp", "I'm correct!");
 
     eyes.checkWindow("Entire window");
 
-    eyes.checkRegionByElement(driver.findElement(webdriver.By.css('body > h1')), 'logo heading');
+    // cut params: header, footer, left, right.
+    eyes.setImageCut(new FixedCutProvider(60, 100, 50, 120));
 
-    eyes.checkRegionBy(webdriver.By.id('overflowing-div-image'), 'single part of image');
+    eyes.checkWindow("Entire window with cut borders");
 
     return eyes.close();
 });

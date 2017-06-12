@@ -1,14 +1,14 @@
 import test from 'ava';
-import webdriver from 'selenium-webdriver';
+import {Builder as WebDriverBuilder, By} from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome';
 import {Eyes, ConsoleLogHandler} from '../index';
 
-const appName = "Eyes.Selenium.JavaScript - scaleprovider";
+const appName = "Eyes.Selenium.JavaScript - scaling methods";
 let driver = null, eyes = null;
 
 test.before(() => {
     const options = new chrome.Options().addArguments("--force-device-scale-factor=1.25");
-    driver = new webdriver.Builder()
+    driver = new WebDriverBuilder()
         .forBrowser('chrome')
         .setChromeOptions(options)
         .usingServer('http://localhost:4444/wd/hub')
@@ -27,12 +27,14 @@ test.beforeEach(t => {
     });
 });
 
-test('TestHtmlPages with scaling', () => {
-    driver.get('https://astappev.github.io/test-html-pages/');
+test("Using scaling methods on TestHtmlPages", () => {
+    driver.get("https://astappev.github.io/test-html-pages/");
 
     eyes.checkWindow("Initial");
 
-    eyes.checkElementBy(webdriver.By.id("overflowing-div"), null, "Text block");
+    eyes.checkElementBy(By.id("overflowing-div"), null, "Text block");
+
+    eyes.checkElementBy(By.id("overflowing-div-image"), null, "Minions");
 
     return eyes.close();
 });

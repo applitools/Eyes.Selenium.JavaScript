@@ -22,10 +22,10 @@ describe("Eyes.Selenium.JavaScript - check-interface", function() {
         });
     });
 
-    it("TestHtmlPages using check interface", function(done) {
-        browser.get('https://astappev.github.io/test-html-pages/');
+    it("Different check methods on TestHtmlPages", function(done) {
+        browser.get("https://astappev.github.io/test-html-pages/");
 
-        // Entire window
+        // Entire window, equivalent to eyes.checkWindow()
         eyes.check("Entire window", Target.window()
                 .matchLevel(MatchLevel.Layout)
                 .ignore(by.id("overflowing-div"))
@@ -36,23 +36,29 @@ describe("Eyes.Selenium.JavaScript - check-interface", function() {
             // .floating({element: element(by.tagName("h1")), maxLeftOffset: 10, maxRightOffset: 10, maxUpOffset: 10, maxDownOffset: 10})
         );
 
-        // Region by rect
+        // Region by rect, equivalent to eyes.checkFrame()
         eyes.check("Region by rect", Target.region({left: 50, top: 50, width: 200, height: 200})
             // .floating({left: 50, top: 50, width: 60, height: 50, maxLeftOffset: 10, maxRightOffset: 10, maxUpOffset: 10, maxDownOffset: 10})
             // .floating({left: 150, top: 75, width: 60, height: 50, maxLeftOffset: 10, maxRightOffset: 10, maxUpOffset: 10, maxDownOffset: 10})
         );
 
-        // Region by element
-        eyes.check("Region by element", Target.region(element(by.id("overflowing-div"))));
+        // Region by element, equivalent to eyes.checkRegionByElement()
+        eyes.check("Region by element", Target.region(element(by.css("body > h1"))));
 
-        // Entire content of element
-        eyes.check("Entire element", Target.region(by.id("overflowing-div")).fully().matchLevel(MatchLevel.Exact));
+        // Region by locator, equivalent to eyes.checkRegionBy()
+        eyes.check("Region by locator", Target.region(by.id("overflowing-div-image")));
 
-        // Entire region in frame
-        eyes.check("Entire region in frame", Target.region(by.id("inner-frame-div"), "frame1").fully());
+        // Entire element by element, equivalent to eyes.checkElement()
+        eyes.check("Entire element by element", Target.region(element(by.id("overflowing-div-image"))).fully());
 
-        // Entire frame content
-        eyes.check("Entire frame", Target.frame("frame1").matchLevel(MatchLevel.None));
+        // Entire element by locator, equivalent to eyes.checkElementBy()
+        eyes.check("Entire element by locator", Target.region(by.id("overflowing-div")).fully().matchLevel(MatchLevel.Exact));
+
+        // Entire frame by locator, equivalent to eyes.checkFrame()
+        eyes.check("Entire frame by locator", Target.frame(by.name("frame1")).matchLevel(MatchLevel.None));
+
+        // Entire region in frame by frame name and region locator, equivalent to eyes.checkRegionInFrame()
+        eyes.check("Entire region in frame by frame name and region locator", Target.region(by.id("inner-frame-div"), "frame1").fully());
 
         eyes.close().then(function () {
             done();

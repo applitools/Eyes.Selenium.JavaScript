@@ -1,5 +1,6 @@
 var Eyes = require('../index').Eyes;
 var ConsoleLogHandler = require('../index').ConsoleLogHandler;
+var FixedCutProvider = require('../index').FixedCutProvider;
 
 var eyes;
 
@@ -17,16 +18,17 @@ describe("Eyes.Selenium.JavaScript - simple", function() {
         });
     });
 
-    it("TestHtmlPages simple", function(done) {
-        browser.get('https://astappev.github.io/test-html-pages/');
+    it("Simple methods on TestHtmlPages", function(done) {
+        browser.get("https://astappev.github.io/test-html-pages/");
 
         eyes.addProperty("MyProp", "I'm correct!");
 
         eyes.checkWindow("Entire window");
 
-        eyes.checkRegionByElement(element(by.css('body > h1')), 'logo heading');
+        // cut params: header, footer, left, right.
+        eyes.setImageCut(new FixedCutProvider(60, 100, 50, 120));
 
-        eyes.checkRegionBy(by.id('overflowing-div-image'), 'single part of image');
+        eyes.checkWindow("Entire window with cut borders");
 
         eyes.close().then(function () {
             done();
