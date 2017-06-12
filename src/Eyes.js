@@ -118,10 +118,6 @@
         that._flow = driver.controlFlow();
         _init(that, that._flow);
 
-        that._devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
-        that._driver = new EyesWebDriver(driver, that, that._logger, that._promiseFactory);
-        that.setStitchMode(that._stitchMode);
-
         if (typeof protractor !== 'undefined') {
             that._isProtractorLoaded = true;
             that._logger.verbose("Running using Protractor module");
@@ -139,6 +135,10 @@
             that._isProtractorLoaded = false;
             that._logger.verbose("Running using Selenium module");
         }
+
+        that._devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
+        that._driver = new EyesWebDriver(driver, that, that._logger, that._promiseFactory);
+        that.setStitchMode(that._stitchMode);
 
         if (this._isDisabled) {
             return that._flow.execute(function () {

@@ -32,10 +32,12 @@
     },
     "devDependencies": {
         "selenium-webdriver": "^3.0.0",
+        "protractor": "^5.1.2",
         "ava": "^0.18.0"
     },
     "scripts": {
-        "test": "ava"
+        "test": "ava",
+        "test-protractor": "protractor protractor.conf.js"
     },
     "ava": {
         "concurrency": 1

@@ -3,7 +3,7 @@ import webdriver from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome';
 import {Eyes, ConsoleLogHandler} from '../index';
 
-const testName = "Eyes.Selenium.JavaScript - scaleprovider";
+const appName = "Eyes.Selenium.JavaScript - scaleprovider";
 let driver = null, eyes = null;
 
 test.before(() => {
@@ -20,17 +20,21 @@ test.before(() => {
     eyes.setForceFullPageScreenshot(true);
 });
 
-test('GitHub with scaling', t => {
-    return eyes.open(driver, testName, t.title, {width: 1000, height: 700}).then(function (driver) {
-        driver.get('https://astappev.github.io/test-html-pages/');
-
-        eyes.checkWindow("Initial");
-        eyes.checkElementBy(webdriver.By.id("overflowing-div"), null, "Text block");
-
-        return eyes.close();
-    }).catch(function (err) {
-        t.fail(err.message);
+test.beforeEach(t => {
+    const testName = t.title.replace("beforeEach for ", "");
+    return eyes.open(driver, appName, testName, {width: 1000, height: 700}).then(function (browser) {
+        driver = browser;
     });
+});
+
+test('TestHtmlPages with scaling', () => {
+    driver.get('https://astappev.github.io/test-html-pages/');
+
+    eyes.checkWindow("Initial");
+
+    eyes.checkElementBy(webdriver.By.id("overflowing-div"), null, "Text block");
+
+    return eyes.close();
 });
 
 test.after.always(() => {

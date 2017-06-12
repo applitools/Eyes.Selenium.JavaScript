@@ -2,7 +2,7 @@ import test from 'ava';
 import webdriver from 'selenium-webdriver';
 import {Eyes, ConsoleLogHandler, FixedCutProvider} from '../index';
 
-const testName = "Eyes.Selenium.JavaScript - cutprovider";
+const appName = "Eyes.Selenium.JavaScript - cutprovider";
 let driver = null, eyes = null;
 
 test.before(() => {
@@ -16,17 +16,22 @@ test.before(() => {
     eyes.setLogHandler(new ConsoleLogHandler(true));
 });
 
-test('GitHub with ImageCut', t => {
-    return eyes.open(driver, testName, t.title, {width: 1000, height: 700}).then(function (driver) {
-        driver.get('https://github.com');
-
-        eyes.setImageCut(new FixedCutProvider(60, 100, 50, 120)); // cut params: header, footer, left, right.
-        eyes.checkWindow("Full window without 20px border");
-
-        return eyes.close();
-    }).catch(function (err) {
-        t.fail(err.message);
+test.beforeEach(t => {
+    const testName = t.title.replace("beforeEach for ", "");
+    return eyes.open(driver, appName, testName, {width: 1000, height: 700}).then(function (browser) {
+        driver = browser;
     });
+});
+
+test('TestHtmlPages with ImageCut', () => {
+    driver.get('https://astappev.github.io/test-html-pages/');
+
+    // cut params: header, footer, left, right.
+    eyes.setImageCut(new FixedCutProvider(60, 100, 50, 120));
+
+    eyes.checkWindow("Full window without 20px border");
+
+    return eyes.close();
 });
 
 test.after.always(() => {

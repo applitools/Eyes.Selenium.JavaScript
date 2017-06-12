@@ -18,8 +18,7 @@
         EyesRemoteWebElement = require('./EyesRemoteWebElement'),
         ScrollPositionProvider = require('./ScrollPositionProvider'),
         EyesTargetLocator = require('./EyesTargetLocator');
-    var GeneralUtils = EyesUtils.GeneralUtils,
-        By = webdriver.By;
+    var GeneralUtils = EyesUtils.GeneralUtils;
 
     /**
      *
@@ -38,6 +37,8 @@
         this._promiseFactory = promiseFactory;
         this._defaultContentViewportSize = null;
         this._frameChain = new FrameChain(this._logger, null);
+        /** @type webdriver.By|By */
+        this._byFunctions = eyes._isProtractorLoaded ? global.by : webdriver.By;
         this.setRemoteWebDriver(remoteWebDriver);
     }
 
@@ -69,7 +70,7 @@
 
     //noinspection JSCheckFunctionSignatures
     /**
-     * @param {webdriver.By} locator
+     * @param {webdriver.By|By} locator
      * @return {Promise<EyesRemoteWebElement>}
      */
     EyesWebDriver.prototype.findElement = function (locator) {
@@ -81,7 +82,7 @@
 
     //noinspection JSCheckFunctionSignatures
     /**
-     * @param {webdriver.By} locator
+     * @param {webdriver.By|By} locator
      * @return {Promise.<EyesRemoteWebElement[]>}
      */
     EyesWebDriver.prototype.findElements = function (locator) {
@@ -99,7 +100,7 @@
      * @return {Promise<EyesRemoteWebElement>}
      */
     EyesWebDriver.prototype.findElementByCssSelector = function (cssSelector) {
-        return this.findElement(By.cssSelector(cssSelector));
+        return this.findElement(this._byFunctions.cssSelector(cssSelector));
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -108,7 +109,7 @@
      * @return {Promise.<EyesRemoteWebElement[]>}
      */
     EyesWebDriver.prototype.findElementsByCssSelector = function (cssSelector) {
-        return this.findElements(By.cssSelector(cssSelector));
+        return this.findElements(this._byFunctions.cssSelector(cssSelector));
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -117,7 +118,7 @@
      * @return {Promise<EyesRemoteWebElement>}
      */
     EyesWebDriver.prototype.findElementById = function (name) {
-        return this.findElement(By.id(name));
+        return this.findElement(this._byFunctions.id(name));
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -126,7 +127,7 @@
      * @return {Promise.<EyesRemoteWebElement[]>}
      */
     EyesWebDriver.prototype.findElementsById = function (name) {
-        return this.findElements(By.id(name));
+        return this.findElements(this._byFunctions.id(name));
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -135,7 +136,7 @@
      * @return {Promise<EyesRemoteWebElement>}
      */
     EyesWebDriver.prototype.findElementByName = function (name) {
-        return this.findElement(By.name(name));
+        return this.findElement(this._byFunctions.name(name));
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -144,7 +145,7 @@
      * @return {Promise.<EyesRemoteWebElement[]>}
      */
     EyesWebDriver.prototype.findElementsByName = function (name) {
-        return this.findElements(By.name(name));
+        return this.findElements(this._byFunctions.name(name));
     };
 
 //  EyesWebDriver.prototype.init = function () {
@@ -239,7 +240,7 @@
         return this._promiseFactory.makePromise(function (resolve) {
             that._logger.verbose("getDefaultContentViewportSize()");
 
-            if (that._defaultContentViewportSize != null && !forceQuery) {
+            if (that._defaultContentViewportSize !== null && !forceQuery) {
                 that._logger.verbose("Using cached viewport size: ", that._defaultContentViewportSize);
                 resolve(that._defaultContentViewportSize);
                 return;

@@ -2,7 +2,7 @@ import test from 'ava';
 import webdriver from 'selenium-webdriver';
 import {Eyes, ConsoleLogHandler} from '../index';
 
-const testName = "Eyes.Selenium.JavaScript - simple";
+const appName = "Eyes.Selenium.JavaScript - simple";
 let driver = null, eyes = null;
 
 test.before(() => {
@@ -16,18 +16,25 @@ test.before(() => {
     eyes.setLogHandler(new ConsoleLogHandler(true));
 });
 
-test('GitHub simple', t => {
-    return eyes.open(driver, testName, t.title, {width: 800, height: 560}).then(function (driver) {
-        eyes.addProperty("MyProp", "I'm correct!");
-        driver.get('https://github.com');
-
-        eyes.checkWindow("github");
-        eyes.checkRegionByElement(driver.findElement(webdriver.By.css('form.home-hero-signup button')), 'signup section');
-
-        return eyes.close();
-    }).catch(function (err) {
-        t.fail(err.message);
+test.beforeEach(t => {
+    const testName = t.title.replace("beforeEach for ", "");
+    return eyes.open(driver, appName, testName, {width: 800, height: 560}).then(function (browser) {
+        driver = browser;
     });
+});
+
+test('TestHtmlPages simple', () => {
+    driver.get('https://astappev.github.io/test-html-pages/');
+
+    eyes.addProperty("MyProp", "I'm correct!");
+
+    eyes.checkWindow("Entire window");
+
+    eyes.checkRegionByElement(driver.findElement(webdriver.By.css('body > h1')), 'logo heading');
+
+    eyes.checkRegionBy(webdriver.By.id('overflowing-div-image'), 'single part of image');
+
+    return eyes.close();
 });
 
 test.after.always(() => {
