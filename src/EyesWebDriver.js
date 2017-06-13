@@ -37,7 +37,7 @@
         this._promiseFactory = promiseFactory;
         this._defaultContentViewportSize = null;
         this._frameChain = new FrameChain(this._logger, null);
-        /** @type webdriver.By|By */
+        /** @type webdriver.By|ProtractorBy */
         this._byFunctions = eyes._isProtractorLoaded ? global.by : webdriver.By;
         this.setRemoteWebDriver(remoteWebDriver);
     }
@@ -61,6 +61,9 @@
     EyesWebDriver.prototype.setRemoteWebDriver = function (remoteWebDriver) {
         this._driver = remoteWebDriver;
         GeneralUtils.mixin(this, remoteWebDriver);
+
+        // remove then method, which comes from thenableWebDriver (Selenium 3+)
+        delete this.then;
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -70,8 +73,8 @@
 
     //noinspection JSCheckFunctionSignatures
     /**
-     * @param {webdriver.By|By} locator
-     * @return {Promise<EyesRemoteWebElement>}
+     * @param {webdriver.By|ProtractorBy} locator
+     * @return {Promise.<EyesRemoteWebElement>}
      */
     EyesWebDriver.prototype.findElement = function (locator) {
         var that = this;
@@ -82,7 +85,7 @@
 
     //noinspection JSCheckFunctionSignatures
     /**
-     * @param {webdriver.By|By} locator
+     * @param {webdriver.By|ProtractorBy} locator
      * @return {Promise.<EyesRemoteWebElement[]>}
      */
     EyesWebDriver.prototype.findElements = function (locator) {
@@ -100,7 +103,7 @@
      * @return {Promise<EyesRemoteWebElement>}
      */
     EyesWebDriver.prototype.findElementByCssSelector = function (cssSelector) {
-        return this.findElement(this._byFunctions.cssSelector(cssSelector));
+        return this.findElement(this._byFunctions.css(cssSelector));
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -109,7 +112,7 @@
      * @return {Promise.<EyesRemoteWebElement[]>}
      */
     EyesWebDriver.prototype.findElementsByCssSelector = function (cssSelector) {
-        return this.findElements(this._byFunctions.cssSelector(cssSelector));
+        return this.findElements(this._byFunctions.css(cssSelector));
     };
 
     //noinspection JSUnusedGlobalSymbols
