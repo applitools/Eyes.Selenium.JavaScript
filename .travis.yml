@@ -23,4 +23,4 @@ before_script:
    - sleep 10 # give webdriver some time to start
 script:
    - npm run test
-   - travis_wait npm run test-protractor
+   - npm run test-protractor

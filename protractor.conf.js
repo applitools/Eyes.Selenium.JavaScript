@@ -3,21 +3,14 @@
 
 exports.config = {
     seleniumAddress: 'http://localhost:4444/wd/hub',
-    specs: [
-        'test-protractor/**/*.js'
-    ],
-    multiCapabilities: [{
+    suites: {
+        checkInterface: 'test-protractor/check-interface-protractor-test.js',
+        scalingMethods: 'test-protractor/scaling-methods-protractor-test.js',
+        simple: 'test-protractor/simple-protractor-protractor-test.js'
+    },
+    capabilities: {
         browserName: 'chrome'
-    }, {
-        browserName: 'chrome',
-        specs: [
-            'test-protractor/scaleprovider-protractor-test.js'
-        ],
-        chromeOptions: {
-            'args':['--force-device-scale-factor=1.25']
-        }
-    }],
-    maxSessions: 1,
+    },
     restartBrowserBetweenTests: true,
     framework: 'jasmine2',
     jasmineNodeOpts: {
