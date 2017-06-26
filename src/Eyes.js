@@ -154,8 +154,8 @@
                     platformVersion = capabilities.caps_.platformVersion;
                     orientation = capabilities.caps_.orientation || capabilities.caps_.deviceOrientation;
                 } else {
-                    platformName = capabilities.get('platform');
-                    platformVersion = capabilities.get('version');
+                    platformName = capabilities.get('platform') || capabilities.get('platformName');
+                    platformVersion = capabilities.get('version') || capabilities.get('platformVersion');
                     orientation = capabilities.get('orientation') || capabilities.get('deviceOrientation');
                 }
 
