@@ -32,10 +32,14 @@
     },
     "devDependencies": {
         "selenium-webdriver": "^3.0.0",
+        "protractor": "^5.1.2",
         "ava": "^0.18.0"
     },
     "scripts": {
-        "test": "ava"
+        "test": "ava",
+        "test-protractor": "npm run test-protractor-default && npm run test-protractor-scaling",
+        "test-protractor-default": "protractor protractor.conf.js --suite=simple,checkInterface",
+        "test-protractor-scaling": "protractor protractor.conf.js --suite=scalingMethods --capabilities.chromeOptions.args='--force-device-scale-factor=1.25'"
     },
     "ava": {
         "concurrency": 1

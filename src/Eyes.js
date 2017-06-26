@@ -118,10 +118,6 @@
         that._flow = driver.controlFlow();
         _init(that, that._flow);
 
-        that._devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
-        that._driver = new EyesWebDriver(driver, that, that._logger, that._promiseFactory);
-        that.setStitchMode(that._stitchMode);
-
         if (typeof protractor !== 'undefined') {
             that._isProtractorLoaded = true;
             that._logger.verbose("Running using Protractor module");
@@ -140,6 +136,10 @@
             that._logger.verbose("Running using Selenium module");
         }
 
+        that._devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
+        that._driver = new EyesWebDriver(driver, that, that._logger, that._promiseFactory);
+        that.setStitchMode(that._stitchMode);
+
         if (this._isDisabled) {
             return that._flow.execute(function () {
                 return driver;
@@ -154,8 +154,8 @@
                     platformVersion = capabilities.caps_.platformVersion;
                     orientation = capabilities.caps_.orientation || capabilities.caps_.deviceOrientation;
                 } else {
-                    platformName = capabilities.get('platform');
-                    platformVersion = capabilities.get('version');
+                    platformName = capabilities.get('platform') || capabilities.get('platformName');
+                    platformVersion = capabilities.get('version') || capabilities.get('platformVersion');
                     orientation = capabilities.get('orientation') || capabilities.get('deviceOrientation');
                 }
 
@@ -239,67 +239,53 @@
 
         if (target.getIgnoreObjects().length) {
             target.getIgnoreObjects().forEach(function (obj) {
-                var ignoreObject = obj.element;
-                if (isElementObject(ignoreObject) || isLocatorObject(ignoreObject)) {
-                    promise = promise.then(function () {
-                        // if ignoreObject is 'By' locator we need to findElement first
-                        if (isLocatorObject(ignoreObject)) {
-                            that._logger.verbose("Trying to find element...", ignoreObject);
-                            return that._driver.findElement(ignoreObject);
-                        }
+                promise = promise.then(function() {
+                    return findElementByLocator(that, obj.element);
+                }).then(function (element) {
+                    if (!isElementObject(element)) {
+                        throw new Error("Unsupported ignore region type: " + typeof element);
+                    }
 
-                        return ignoreObject;
-                    }).then(function (element) {
-                        return getRegionFromWebElement(element);
-                    }).then(function (region) {
-                        target.ignore(region);
-                    });
-                } else {
-                    throw new Error("Unsupported ignore region type: " + typeof ignoreObject);
-                }
+                    return getRegionFromWebElement(element);
+                }).then(function (region) {
+                    target.ignore(region);
+                });
             });
         }
 
         if (target.getFloatingObjects().length) {
             target.getFloatingObjects().forEach(function (obj) {
-                var floatingObject = obj.element;
-                if (isElementObject(floatingObject) || isLocatorObject(floatingObject)) {
-                    promise = promise.then(function () {
-                        // if floatingObject is 'By' locator we need to findElement first
-                        if (isLocatorObject(floatingObject)) {
-                            that._logger.verbose("Trying to find element...", floatingObject);
-                            return that._driver.findElement(floatingObject);
-                        }
+                promise = promise.then(function() {
+                    return findElementByLocator(that, obj.element);
+                }).then(function (element) {
+                    if (!isElementObject(element)) {
+                        throw new Error("Unsupported floating region type: " + typeof element);
+                    }
 
-                        return floatingObject;
-                    }).then(function (element) {
-                        return getRegionFromWebElement(element);
-                    }).then(function (region) {
-                        region.maxLeftOffset = obj.maxLeftOffset;
-                        region.maxRightOffset = obj.maxRightOffset;
-                        region.maxUpOffset = obj.maxUpOffset;
-                        region.maxDownOffset = obj.maxDownOffset;
-                        target.floating(region);
-                    });
-                } else {
-                    throw new Error("Unsupported floating region type: " + typeof floatingObject);
-                }
+                    return getRegionFromWebElement(element);
+                }).then(function (region) {
+                    region.maxLeftOffset = obj.maxLeftOffset;
+                    region.maxRightOffset = obj.maxRightOffset;
+                    region.maxUpOffset = obj.maxUpOffset;
+                    region.maxDownOffset = obj.maxDownOffset;
+                    target.floating(region);
+                });
             });
         }
 
         that._logger.verbose("match starting with params", name, target.getStitchContent(), target.getTimeout());
-        var frameObject, regionObject,
+        var regionObject,
             regionProvider,
             isFrameSwitched = false, // if we will switch frame then we need to restore parent
             originalOverflow, originalPositionProvider, originalHideScrollBars;
 
         // If frame specified
         if (target.isUsingFrame()) {
-            frameObject = target.getFrame();
-
             promise = promise.then(function () {
+                return findElementByLocator(that, target.getFrame());
+            }).then(function (frame) {
                 that._logger.verbose("Switching to frame...");
-                return that._driver.switchTo().frame(frameObject);
+                return that._driver.switchTo().frame(frame);
             }).then(function () {
                 isFrameSwitched = true;
                 that._logger.verbose("Done!");
@@ -318,46 +304,42 @@
 
         // if region specified
         if (target.isUsingRegion()) {
-            regionObject = target.getRegion();
+            promise = promise.then(function () {
+                return findElementByLocator(that, target.getRegion());
+            }).then(function (region) {
+                regionObject = region;
 
-            if (isElementObject(regionObject) || isLocatorObject(regionObject)) {
-                promise = promise.then(function () {
-                    // if regionObject is 'By' locator we need to findElement first
-                    if (isLocatorObject(regionObject)) {
-                        that._logger.verbose("Trying to find element...", regionObject);
-                        return that._driver.findElement(regionObject);
-                    }
-
-                    return regionObject;
-                }).then(function (element) {
-                    regionObject = element;
+                if (isElementObject(regionObject)) {
+                    var regionPromise;
                     if (target.getStitchContent()) {
                         that._checkFrameOrElement = true;
 
                         originalPositionProvider = that.getPositionProvider();
-                        that.setPositionProvider(new ElementPositionProvider(that._logger, that._driver, element, that._promiseFactory));
+                        that.setPositionProvider(new ElementPositionProvider(that._logger, that._driver, regionObject, that._promiseFactory));
 
                         // Set overflow to "hidden".
-                        return element.getOverflow().then(function (value) {
+                        regionPromise = regionObject.getOverflow().then(function (value) {
                             originalOverflow = value;
-                            return element.setOverflow("hidden");
+                            return regionObject.setOverflow("hidden");
                         }).then(function () {
-                            return getRegionProviderForElement(that, element);
+                            return getRegionProviderForElement(that, regionObject);
                         }).then(function (regionProvider) {
                             that._regionToCheck = regionProvider;
                         });
+                    } else {
+                        regionPromise = getRegionFromWebElement(regionObject);
                     }
 
-                    return getRegionFromWebElement(element);
-                }).then(function (region) {
-                    regionProvider = new EyesRegionProvider(that._logger, that._driver, region, CoordinatesType.CONTEXT_RELATIVE);
-                });
-            } else if (GeometryUtils.isRegion(regionObject)) {
-                // if regionObject is simple region
-                regionProvider = new EyesRegionProvider(that._logger, that._driver, regionObject, CoordinatesType.CONTEXT_AS_IS);
-            } else {
-                throw new Error("Unsupported region type: " + typeof regionObject);
-            }
+                    return regionPromise.then(function (region) {
+                        regionProvider = new EyesRegionProvider(that._logger, that._driver, region, CoordinatesType.CONTEXT_RELATIVE);
+                    });
+                } else if (GeometryUtils.isRegion(regionObject)) {
+                    // if regionObject is simple region
+                    regionProvider = new EyesRegionProvider(that._logger, that._driver, regionObject, CoordinatesType.CONTEXT_AS_IS);
+                } else {
+                    throw new Error("Unsupported region type: " + typeof regionObject);
+                }
+            });
         }
 
         return promise.then(function () {
@@ -414,8 +396,23 @@
         });
     };
 
+    var findElementByLocator = function (that, elementObject) {
+        return that._promiseFactory.makePromise(function (resolve) {
+            if (isLocatorObject(elementObject)) {
+                that._logger.verbose("Trying to find element...", elementObject);
+                return that._driver.findElement(elementObject).then(function (element) {
+                    resolve(element);
+                });
+            } else if (elementObject instanceof ElementFinderWrapper) {
+                resolve(elementObject.getWebElement());
+            }
+
+            resolve(elementObject);
+        });
+    };
+
     var isElementObject = function (o) {
-        return o instanceof EyesRemoteWebElement || o instanceof webdriver.WebElement || o instanceof ElementFinderWrapper;
+        return o instanceof EyesRemoteWebElement;
     };
 
     var isLocatorObject = function (o) {
