@@ -1,12 +1,12 @@
 import test from 'ava';
-import webdriver from 'selenium-webdriver';
-import {Eyes, ConsoleLogHandler} from '../index';
+import {Builder as WebDriverBuilder} from 'selenium-webdriver';
+import {Eyes, ConsoleLogHandler, FixedCutProvider} from '../index';
 
-const testName = "Eyes.Selenium.JavaScript - simple";
+const appName = "Eyes.Selenium.JavaScript - simple";
 let driver = null, eyes = null;
 
 test.before(() => {
-    driver = new webdriver.Builder()
+    driver = new WebDriverBuilder()
         .forBrowser('chrome')
         .usingServer('http://localhost:4444/wd/hub')
         .build();
@@ -16,18 +16,26 @@ test.before(() => {
     eyes.setLogHandler(new ConsoleLogHandler(true));
 });
 
-test('GitHub simple', t => {
-    return eyes.open(driver, testName, t.title, {width: 800, height: 560}).then(function (driver) {
-        eyes.addProperty("MyProp", "I'm correct!");
-        driver.get('https://github.com');
-
-        eyes.checkWindow("github");
-        eyes.checkRegionByElement(driver.findElement(webdriver.By.css('form.home-hero-signup button')), 'signup section');
-
-        return eyes.close();
-    }).catch(function (err) {
-        t.fail(err.message);
+test.beforeEach(t => {
+    const testName = t.title.replace("beforeEach for ", "");
+    return eyes.open(driver, appName, testName, {width: 800, height: 560}).then(function (browser) {
+        driver = browser;
     });
+});
+
+test("Simple methods on TestHtmlPages", () => {
+    driver.get('https://astappev.github.io/test-html-pages/');
+
+    eyes.addProperty("MyProp", "I'm correct!");
+
+    eyes.checkWindow("Entire window");
+
+    // cut params: header, footer, left, right.
+    eyes.setImageCut(new FixedCutProvider(60, 100, 50, 120));
+
+    eyes.checkWindow("Entire window with cut borders");
+
+    return eyes.close();
 });
 
 test.after.always(() => {
