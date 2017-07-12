@@ -6,7 +6,7 @@ exports.config = {
     suites: {
         checkInterface: 'test-protractor/check-interface-protractor-test.js',
         scalingMethods: 'test-protractor/scaling-methods-protractor-test.js',
-        simple: 'test-protractor/simple-protractor-protractor-test.js'
+        simple: 'test-protractor/simple-protractor-test.js',
     },
     capabilities: {
         browserName: 'chrome'
