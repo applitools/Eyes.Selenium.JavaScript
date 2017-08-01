@@ -132,7 +132,7 @@
     EyesRemoteWebElement.prototype.sendKeys = function () {
         var that = this, args = Array.prototype.slice.call(arguments, 0);
         return EyesRemoteWebElement.registerSendKeys(that._element, that._eyesDriver, that._logger, args).then(function () {
-            return that._element.sendKeys.call(that._element, args);
+            return that._element.sendKeys.apply(that._element, args);
         });
     };
 
