@@ -54,11 +54,14 @@
     /**
      * Wrap the getWebElement function
      *
-     * @returns {EyesRemoteWebElement}
+     * @returns {Promise.<EyesRemoteWebElement>}
      */
     ElementFinderWrapper.prototype.getWebElement = function () {
-        this._logger.verbose("ElementFinderWrapper:getWebElement - called");
-        return new EyesRemoteWebElement(this._finder.getWebElement.apply(this._finder), this._eyesDriver, this._logger);
+        var that = this;
+        that._logger.verbose("ElementFinderWrapper:getWebElement - called");
+        return that._finder.getWebElement.apply(that._finder).then(function (element) {
+            return new EyesRemoteWebElement(element, that._eyesDriver, that._logger);
+        });
     };
 
     /**
@@ -67,12 +70,9 @@
      * @returns {Promise.<EyesRemoteWebElement>}
      */
     ElementFinderWrapper.prototype.click = function () {
-        var that = this;
-        that._logger.verbose("ElementFinderWrapper:click - called");
-        return that._finder.getWebElement().then(function (element) {
-            return EyesRemoteWebElement.registerClick(element, that._eyesDriver, that._logger);
-        }).then(function () {
-            return new EyesRemoteWebElement(that._finder.click.apply(that._finder), that._eyesDriver, that._logger);
+        this._logger.verbose("ElementFinderWrapper:click - called");
+        return this.getWebElement().then(function (element) {
+            return element.click.apply(element);
         });
     };
 
@@ -82,12 +82,10 @@
      * @returns {Promise.<EyesRemoteWebElement>}
      */
     ElementFinderWrapper.prototype.sendKeys = function () {
-        var that = this, args = Array.prototype.slice.call(arguments, 0);
-        that._logger.verbose("ElementFinderWrapper:sendKeys - called");
-        return that._finder.getWebElement().then(function (element) {
-            return EyesRemoteWebElement.registerSendKeys(element, that._eyesDriver, that._logger, args);
-        }).then(function () {
-            return new EyesRemoteWebElement(that._finder.sendKeys.apply(that._finder, args), that._eyesDriver, that._logger);
+        var args = arguments;
+        this._logger.verbose("ElementFinderWrapper:sendKeys - called");
+        return this.getWebElement().then(function (element) {
+            element.sendKeys.apply(element, args);
         });
     };
 
@@ -130,16 +128,18 @@
     /**
      * Wrap the getWebElements function
      *
-     * @returns {EyesRemoteWebElement[]}
+     * @returns {Promise.<EyesRemoteWebElement[]>}
      */
     ElementArrayFinderWrapper.prototype.getWebElements = function () {
         var that = this;
         that._logger.verbose("ElementArrayFinderWrapper:getWebElements - called");
-        var res = [];
-        that._arrayFinder.getWebElements.apply(that._arrayFinder).forEach(function (el) {
-            res.push(new EyesRemoteWebElement(el, that._eyesDriver, that._logger));
+        return that._arrayFinder.getWebElements.apply(that._arrayFinder).then(function (elements) {
+            var res = [];
+            elements.forEach(function (el) {
+                res.push(new EyesRemoteWebElement(el, that._eyesDriver, that._logger));
+            });
+            return res;
         });
-        return res;
     };
 
     module.exports.ElementFinderWrapper = ElementFinderWrapper;

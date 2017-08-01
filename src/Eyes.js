@@ -404,7 +404,9 @@
                     resolve(element);
                 });
             } else if (elementObject instanceof ElementFinderWrapper) {
-                resolve(elementObject.getWebElement());
+                return elementObject.getWebElement().then(function (element) {
+                    resolve(element);
+                });
             }
 
             resolve(elementObject);
