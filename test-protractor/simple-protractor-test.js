@@ -23,10 +23,14 @@ describe("Eyes.Selenium.JavaScript - simple", function() {
 
         eyes.addProperty("MyProp", "I'm correct!");
 
-        eyes.checkWindow("Entire window");
-
         // cut params: header, footer, left, right.
         eyes.setImageCut(new FixedCutProvider(60, 100, 50, 120));
+
+        eyes.checkWindow("Entire window");
+
+        element(by.name("name")).sendKeys("Test User");
+        element(by.name("email")).sendKeys("username@example.com");
+        element(by.id("submit-form")).click();
 
         eyes.checkWindow("Entire window with cut borders");
 
