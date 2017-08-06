@@ -277,7 +277,12 @@
         var regionObject,
             regionProvider,
             isFrameSwitched = false, // if we will switch frame then we need to restore parent
-            originalOverflow, originalPositionProvider, originalHideScrollBars;
+            originalForceFullPage, originalOverflow, originalPositionProvider, originalHideScrollBars;
+
+        if (target.getStitchContent()) {
+            originalForceFullPage = that._forceFullPage;
+            that._forceFullPage = true;
+        }
 
         // If frame specified
         if (target.isUsingFrame()) {
@@ -372,6 +377,10 @@
             }
 
             // restore initial values
+            if (originalForceFullPage !== undefined) {
+                that._forceFullPage = originalForceFullPage;
+            }
+
             if (originalHideScrollBars !== undefined) {
                 that._hideScrollbars = originalHideScrollBars;
             }
