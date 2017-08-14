@@ -54,14 +54,11 @@
     /**
      * Wrap the getWebElement function
      *
-     * @returns {Promise.<EyesRemoteWebElement>}
+     * @returns {EyesRemoteWebElement}
      */
     ElementFinderWrapper.prototype.getWebElement = function () {
-        var that = this;
-        that._logger.verbose("ElementFinderWrapper:getWebElement - called");
-        return that._finder.getWebElement.apply(that._finder).then(function (element) {
-            return new EyesRemoteWebElement(element, that._eyesDriver, that._logger);
-        });
+        this._logger.verbose("ElementFinderWrapper:getWebElement - called");
+        return new EyesRemoteWebElement(this._finder.getWebElement.apply(this._finder), this._eyesDriver, this._logger);
     };
 
     /**

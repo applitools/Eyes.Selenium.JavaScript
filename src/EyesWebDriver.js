@@ -74,13 +74,11 @@
     //noinspection JSCheckFunctionSignatures
     /**
      * @param {webdriver.By|ProtractorBy} locator
-     * @return {Promise.<EyesRemoteWebElement>}
+     * @return {EyesRemoteWebElement}
      */
     EyesWebDriver.prototype.findElement = function (locator) {
         var that = this;
-        return this._driver.findElement(locator).then(function (element) {
-            return new EyesRemoteWebElement(element, that, that._logger);
-        });
+        return new EyesRemoteWebElement(that._driver.findElement(locator), that, that._logger);
     };
 
     //noinspection JSCheckFunctionSignatures
@@ -100,7 +98,7 @@
     //noinspection JSUnusedGlobalSymbols
     /**
      * @param {string} cssSelector
-     * @return {Promise<EyesRemoteWebElement>}
+     * @return {EyesRemoteWebElement}
      */
     EyesWebDriver.prototype.findElementByCssSelector = function (cssSelector) {
         return this.findElement(this._byFunctions.css(cssSelector));
@@ -118,7 +116,7 @@
     //noinspection JSUnusedGlobalSymbols
     /**
      * @param {string} name
-     * @return {Promise<EyesRemoteWebElement>}
+     * @return {EyesRemoteWebElement}
      */
     EyesWebDriver.prototype.findElementById = function (name) {
         return this.findElement(this._byFunctions.id(name));
@@ -136,7 +134,7 @@
     //noinspection JSUnusedGlobalSymbols
     /**
      * @param {string} name
-     * @return {Promise<EyesRemoteWebElement>}
+     * @return {EyesRemoteWebElement}
      */
     EyesWebDriver.prototype.findElementByName = function (name) {
         return this.findElement(this._byFunctions.name(name));
