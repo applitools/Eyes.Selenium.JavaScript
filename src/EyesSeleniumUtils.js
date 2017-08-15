@@ -78,6 +78,16 @@
     };
 
     /**
+     * @return {string}
+     */
+    var JS_GET_IS_BODY_OVERFLOW_HIDDEN =
+        "var styles = window.getComputedStyle(document.body, null);" +
+        "var overflow = styles.getPropertyValue('overflow');" +
+        "var overflowX = styles.getPropertyValue('overflow-x');" +
+        "var overflowY = styles.getPropertyValue('overflow-y');" +
+        "return overflow == 'hidden' || overflowX == 'hidden' || overflowY == 'hidden'";
+
+    /**
      * @private
      * @type {string[]}
      */
@@ -359,6 +369,31 @@
             script =
                 "var origOverflow = document.documentElement.style.overflow; " +
                 "document.documentElement.style.overflow = \"" + overflowValue + "\"; " +
+                "return origOverflow";
+        }
+
+        return EyesSeleniumUtils.executeScript(browser, script, promiseFactory, 100);
+    };
+
+    /**
+     * Updates the document's body "overflow" value
+     *
+     * @param {WebDriver} browser The driver used to update the web page.
+     * @param {string} overflowValue The values of the overflow to set.
+     * @param {PromiseFactory} promiseFactory
+     * @return {Promise<string>} A promise which resolves to the original overflow of the document.
+     */
+    EyesSeleniumUtils.setBodyOverflow = function setOverflow(browser, overflowValue, promiseFactory) {
+        var script;
+        if (overflowValue === null) {
+            script =
+                "var origOverflow = document.body.style.overflow; " +
+                "document.body.style.overflow = undefined; " +
+                "return origOverflow";
+        } else {
+            script =
+                "var origOverflow = document.body.style.overflow; " +
+                "document.body.style.overflow = \"" + overflowValue + "\"; " +
                 "return origOverflow";
         }
 
@@ -891,6 +926,7 @@
             MAX_SCROLLBAR_SIZE = 50;
         var originalPosition,
             originalOverflow,
+            originalBodyOverflow,
             entirePageSize,
             regionInScreenshot,
             pixelRatio,
@@ -918,6 +954,16 @@
             if (hideScrollbars) {
                 return EyesSeleniumUtils.setOverflow(browser, "hidden", promiseFactory).then(function (originalVal) {
                     originalOverflow = originalVal;
+
+                    if (useCssTransition) {
+                        return EyesSeleniumUtils.executeScript(browser, JS_GET_IS_BODY_OVERFLOW_HIDDEN, promiseFactory).then(function (isBodyOverflowHidden) {
+                            if (isBodyOverflowHidden) {
+                                return EyesSeleniumUtils.setBodyOverflow(browser, "initial", promiseFactory).then(function (originalBodyVal) {
+                                    originalBodyOverflow = originalBodyVal;
+                                });
+                            }
+                        });
+                    }
                 });
             }
         }).then(function () {
@@ -999,6 +1045,10 @@
         }).then(function () {
             if (hideScrollbars) {
                 return EyesSeleniumUtils.setOverflow(browser, originalOverflow, promiseFactory);
+            }
+        }).then(function () {
+            if (originalBodyOverflow) {
+                return EyesSeleniumUtils.setBodyOverflow(browser, originalBodyOverflow, promiseFactory);
             }
         }).then(function () {
             if (fullPage) {
