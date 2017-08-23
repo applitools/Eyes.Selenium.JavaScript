@@ -400,9 +400,7 @@
         return that._promiseFactory.makePromise(function (resolve) {
             if (isLocatorObject(elementObject)) {
                 that._logger.verbose("Trying to find element...", elementObject);
-                return that._driver.findElement(elementObject).then(function (element) {
-                    resolve(element);
-                });
+                resolve(that._driver.findElement(elementObject));
             } else if (elementObject instanceof ElementFinderWrapper) {
                 return elementObject.getWebElement().then(function (element) {
                     resolve(element);
