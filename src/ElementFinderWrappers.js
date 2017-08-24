@@ -68,9 +68,8 @@
      */
     ElementFinderWrapper.prototype.click = function () {
         this._logger.verbose("ElementFinderWrapper:click - called");
-        return this.getWebElement().then(function (element) {
-            return element.click.apply(element);
-        });
+        var element = this.getWebElement();
+        return element.click.apply(element);
     };
 
     /**
@@ -79,11 +78,9 @@
      * @returns {Promise.<EyesRemoteWebElement>}
      */
     ElementFinderWrapper.prototype.sendKeys = function () {
-        var args = arguments;
         this._logger.verbose("ElementFinderWrapper:sendKeys - called");
-        return this.getWebElement().then(function (element) {
-            element.sendKeys.apply(element, args);
-        });
+        var element = this.getWebElement();
+        return element.sendKeys.apply(element, arguments);
     };
 
     /**
