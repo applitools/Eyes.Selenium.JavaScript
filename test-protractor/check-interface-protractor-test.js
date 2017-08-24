@@ -55,7 +55,7 @@ describe("Eyes.Selenium.JavaScript - check-interface", function() {
         eyes.check("Entire element by locator", Target.region(by.id("overflowing-div")).fully().matchLevel(MatchLevel.Exact));
 
         // Entire frame by locator, equivalent to eyes.checkFrame()
-        eyes.check("Entire frame by locator", Target.frame(by.name("frame1")).matchLevel(MatchLevel.None));
+        eyes.check("Entire frame by locator", Target.frame(by.name("frame1")));
 
         // Entire region in frame by frame name and region locator, equivalent to eyes.checkRegionInFrame()
         eyes.check("Entire region in frame by frame name and region locator", Target.region(by.id("inner-frame-div"), "frame1").fully());
