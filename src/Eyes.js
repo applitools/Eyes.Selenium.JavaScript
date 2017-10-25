@@ -419,7 +419,7 @@
     };
 
     var isElementObject = function (o) {
-        return o instanceof EyesRemoteWebElement;
+        return (o instanceof EyesRemoteWebElement || o instanceof webdriver.WebElement);
     };
 
     var isLocatorObject = function (o) {
