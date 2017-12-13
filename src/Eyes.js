@@ -123,14 +123,18 @@
             that._logger.verbose("Running using Protractor module");
 
             // extend protractor element to return ours
-            var originalElementFn = global.element;
-            global.element = function (locator) {
-                return new ElementFinderWrapper(originalElementFn(locator), that._driver, that._logger);
-            };
+            if (!global.isEyesOverrodeProtractor) {
+                var originalElementFn = global.element;
+                global.element = function (locator) {
+                    return new ElementFinderWrapper(originalElementFn(locator), that._driver, that._logger);
+                };
 
-            global.element.all = function (locator) {
-                return new ElementArrayFinderWrapper(originalElementFn.all(locator), that._driver, that._logger);
-            };
+                global.element.all = function (locator) {
+                    return new ElementArrayFinderWrapper(originalElementFn.all(locator), that._driver, that._logger);
+                };
+
+                global.isEyesOverrodeProtractor = true;
+            }
         } else {
             that._isProtractorLoaded = false;
             that._logger.verbose("Running using Selenium module");
