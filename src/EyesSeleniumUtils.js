@@ -450,7 +450,7 @@
             // If we failed to extract the viewport size using JS, will use the window size instead.
             logger.verbose("Using window size as viewport size.");
             return browser.manage().window().getSize().then(function (size) {
-                logger.verbose(String.format("Done! Size is", size));
+                logger.verbose("Done! Size is", size);
                 return size;
             });
         });
