@@ -33,7 +33,7 @@
     "devDependencies": {
         "selenium-webdriver": "^3.0.0",
         "protractor": "^5.1.2",
-        "ava": "^0.18.0"
+        "ava": "^0.25.0"
     },
     "scripts": {
         "test": "ava",
@@ -42,7 +42,13 @@
         "test-protractor-scaling": "protractor protractor.conf.js --suite=scalingMethods --capabilities.chromeOptions.args='--force-device-scale-factor=1.25'"
     },
     "ava": {
-        "concurrency": 1
+        "concurrency": 1,
+        "failWithoutAssertions": false,
+        "files": [
+            "test/*.js",
+            "!**/simple-appium-test.js",
+            "!**/simple-sause-test.js"
+        ]
     },
     "engines": {
         "node": ">=6.9.0"
