@@ -787,12 +787,6 @@
                     return mutableImage.saveImage(debugScreenshotsPath + filename.replace(/ /g, '_'));
                 }
             }).then(function () {
-                if (cutProvider) {
-                    return cutProvider.cut(mutableImage, promiseFactory).then(function (image) {
-                        mutableImage = image;
-                    });
-                }
-            }).then(function () {
                 return mutableImage.getSize();
             }).then(function (imageSize) {
                 if (isLandscape && automaticRotation && imageSize.height > imageSize.width) {
@@ -804,6 +798,13 @@
                     scaleRatio = scaleProvider.getScaleRatio();
                 }
 
+                if (cutProvider) {
+                    cutProvider = cutProvider.scale(1 / scaleRatio);
+                    return cutProvider.cut(mutableImage, promiseFactory).then(function (image) {
+                        mutableImage = image;
+                    });
+                }
+            }).then(function () {
                 if (regionInScreenshot) {
                     var scaledRegion = GeometryUtils.scaleRegion(regionInScreenshot, 1 / scaleRatio);
                     return mutableImage.cropImage(scaledRegion);
