@@ -132,7 +132,8 @@
     EyesRemoteWebElement.prototype.sendKeys = function () {
         var that = this, args = Array.prototype.slice.call(arguments, 0);
         return EyesRemoteWebElement.registerSendKeys(that._element, that._eyesDriver, that._logger, args).then(function () {
-            return that._element.sendKeys.apply(that._element, args);
+            var element = that.getRemoteWebElement();
+            return element.sendKeys.apply(element, args);
         });
     };
 
@@ -148,7 +149,8 @@
         var that = this;
         that._logger.verbose("click on element");
         return EyesRemoteWebElement.registerClick(that._element, that._eyesDriver, that._logger).then(function () {
-            return that._element.click();
+            var element = that.getRemoteWebElement();
+            return element.click.apply(element);
         });
     };
 
