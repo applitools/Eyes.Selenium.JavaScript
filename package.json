@@ -1,46 +1,48 @@
 {
-    "name": "eyes.selenium",
-    "version": "0.0.68",
-    "description": "Applitools Eyes SDK For Selenium JavaScript WebDriver",
-    "author": "Applitools Team <team@applitools.com> (http://www.applitools.com/)",
-    "keywords": [
-        "eyes.selenium",
-        "Test Automation",
-        "Visual Regression",
-        "tests",
-        "SDK",
-        "Applitools",
-        "Eyes",
-        "automation",
-        "selenium",
-        "testing",
-        "webdriver",
-        "webdriverjs",
-        "protractor"
-    ],
-    "homepage": "http://www.applitools.com/",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/applitools/Eyes.Selenium.JavaScript.git"
-    },
-    "license": "Apache-2.0",
-    "main": "index",
-    "dependencies": {
-        "eyes.utils": "0.0.25",
-        "eyes.sdk": "0.0.62",
-        "q": "^1.4.1"
-    },
-    "devDependencies": {
-        "selenium-webdriver": "^3.0.0",
-        "ava": "^0.18.0"
-    },
-    "scripts": {
-        "test": "ava"
-    },
-    "ava": {
-        "concurrency": 1
-    },
-    "engines": {
-        "node": ">=6.9.0"
-    }
+  "name": "eyes.selenium",
+  "version": "0.0.68",
+  "description": "Applitools Eyes SDK For Selenium JavaScript WebDriver",
+  "author": "Applitools Team <team@applitools.com> (http://www.applitools.com/)",
+  "keywords": [
+    "eyes.selenium",
+    "Test Automation",
+    "Visual Regression",
+    "tests",
+    "SDK",
+    "Applitools",
+    "Eyes",
+    "automation",
+    "selenium",
+    "testing",
+    "webdriver",
+    "webdriverjs",
+    "protractor"
+  ],
+  "homepage": "http://www.applitools.com/",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/applitools/Eyes.Selenium.JavaScript.git"
+  },
+  "license": "Apache-2.0",
+  "main": "index",
+  "dependencies": {
+    "eyes.utils": "0.0.25",
+    "eyes.sdk": "0.0.62",
+    "q": "~1.4.1"
+  },
+  "devDependencies": {
+    "mocha": "^5.0.1",
+    "selenium-webdriver": "^3.6.0",
+    "chromedriver": "^2.35.0",
+    "protractor": "^5.1.2"
+  },
+  "scripts": {
+    "test": "npm run test-selenium && npm run test-protractor",
+    "test-appium": "mocha ./test/appium/**/*.js",
+    "test-selenium": "mocha ./test/selenium/**/*.js",
+    "test-protractor": "protractor protractor.conf.js"
+  },
+  "engines": {
+    "node": ">=6.4.0"
+  }
 }
