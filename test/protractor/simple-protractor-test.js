@@ -1,10 +1,10 @@
-var Eyes = require('../index').Eyes;
-var ConsoleLogHandler = require('../index').ConsoleLogHandler;
-var FixedCutProvider = require('../index').FixedCutProvider;
+var Eyes = require('../../index').Eyes;
+var ConsoleLogHandler = require('../../index').ConsoleLogHandler;
+var FixedCutProvider = require('../../index').FixedCutProvider;
 
 var eyes;
 
-describe("Eyes.Selenium.JavaScript - simple", function() {
+describe("Eyes.Selenium.JavaScript - Protractor", function() {
 
     beforeAll(function(){
         eyes = new Eyes();
@@ -18,7 +18,7 @@ describe("Eyes.Selenium.JavaScript - simple", function() {
         });
     });
 
-    it("Simple methods on TestHtmlPages", function(done) {
+    it("simple protractor", function(done) {
         browser.get("https://astappev.github.io/test-html-pages/");
 
         eyes.addProperty("MyProp", "I'm correct!");
