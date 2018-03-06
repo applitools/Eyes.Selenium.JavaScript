@@ -77,6 +77,9 @@
         this._logger = logger;
         this._eyesDriver = eyesDriver;
         GeneralUtils.mixin(this, remoteWebElement);
+
+        // remove then method, which comes from thenableWebElement (Selenium 3+)
+        delete this.then;
     }
 
     function _getRectangle(location, size) {
