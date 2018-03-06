@@ -60,6 +60,9 @@
     EyesWebDriver.prototype.setRemoteWebDriver = function (remoteWebDriver) {
         this._driver = remoteWebDriver;
         GeneralUtils.mixin(this, remoteWebDriver);
+
+        // remove then method, which comes from thenableWebDriver (Selenium 3+)
+        delete this.then;
     };
 
     //noinspection JSUnusedGlobalSymbols
