@@ -79,7 +79,7 @@
         GeneralUtils.mixin(this, remoteWebElement);
 
         // remove then method, which comes from thenableWebElement (Selenium 3+)
-        delete this.then;
+        // delete this.then;
     }
 
     function _getRectangle(location, size) {
