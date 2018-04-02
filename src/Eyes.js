@@ -247,6 +247,8 @@
                 promise = promise.then(function() {
                     return findElementByLocator(that, obj.element);
                 }).then(function (element) {
+                    element = unwrapElement(element);
+
                     if (!isElementObject(element)) {
                         throw new Error("Unsupported ignore region type: " + typeof element);
                     }
@@ -263,6 +265,8 @@
                 promise = promise.then(function() {
                     return findElementByLocator(that, obj.element);
                 }).then(function (element) {
+                    element = unwrapElement(element);
+
                     if (!isElementObject(element)) {
                         throw new Error("Unsupported floating region type: " + typeof element);
                     }
@@ -295,7 +299,7 @@
                 return findElementByLocator(that, target.getFrame());
             }).then(function (frame) {
                 that._logger.verbose("Switching to frame...");
-                return that._driver.switchTo().frame(frame);
+                return that._driver.switchTo().frame(unwrapElement(frame));
             }).then(function () {
                 isFrameSwitched = true;
                 that._logger.verbose("Done!");
@@ -317,7 +321,7 @@
             promise = promise.then(function () {
                 return findElementByLocator(that, target.getRegion());
             }).then(function (region) {
-                regionObject = region;
+                regionObject = unwrapElement(region);
 
                 if (isElementObject(regionObject)) {
                     var regionPromise;
@@ -415,12 +419,18 @@
             if (isLocatorObject(elementObject)) {
                 that._logger.verbose("Trying to find element...", elementObject);
                 return resolve(that._driver.findElement(elementObject));
-            } else if (elementObject instanceof ElementFinderWrapper) {
-                return resolve(elementObject.getWebElement());
             }
 
             resolve(elementObject);
         });
+    };
+
+    var unwrapElement = function (elementObject) {
+        if (elementObject instanceof ElementFinderWrapper) {
+            return elementObject.getWebElement();
+        }
+
+        return elementObject;
     };
 
     var isElementObject = function (o) {
