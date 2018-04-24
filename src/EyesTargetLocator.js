@@ -43,7 +43,7 @@
     /**
      * @constructor
      * Initialized a new EyesTargetLocator object.
-     * @param {Object} logger A Logger instance.
+     * @param {Logger} logger A Logger instance.
      * @param {EyesWebDriver} driver The WebDriver from which the targetLocator was received.
      * @param {TargetLocator} targetLocator The actual TargetLocator object.
      * @param {OnWillSwitch} onWillSwitch A delegate to be called whenever a relevant switch
@@ -67,11 +67,11 @@
 
     /**
      * @param {int|string|EyesRemoteWebElement} obj
-     * @returns {Promise<void>}
+     * @return {Promise<void>}
      */
     EyesTargetLocator.prototype.frame = function (obj) {
         var that = this, frames;
-        if (typeof obj === 'string' || obj instanceof String) {
+        if (typeof obj === 'string' || obj instanceof string) {
             this._logger.verbose("EyesTargetLocator.frame('", obj, "')");
             // Finding the target element so we can report it.
             // We use find elements(plural) to avoid exception when the element
@@ -145,7 +145,7 @@
     };
 
     /**
-     * @returns {Promise.<void>}
+     * @return {Promise<void>}
      */
 
     EyesTargetLocator.prototype.parentFrame = function () {
@@ -251,7 +251,7 @@
 
     /**
      * @param {string} nameOrHandle
-     * @returns {Promise.<void>}
+     * @return {Promise<void>}
      */
     EyesTargetLocator.prototype.window = function (nameOrHandle) {
         var that = this;
@@ -269,7 +269,7 @@
     };
 
     /**
-     * @returns {Promise.<void>}
+     * @return {Promise<void>}
      */
     EyesTargetLocator.prototype.defaultContent = function () {
         var that = this;
@@ -291,7 +291,7 @@
     };
 
     /**
-     * @returns {Promise.<EyesRemoteWebElement>}
+     * @return {Promise<EyesRemoteWebElement>}
      */
     EyesTargetLocator.prototype.activeElement = function () {
         var that = this;
@@ -307,7 +307,7 @@
     };
 
     /**
-     * @returns {Promise.<Alert>}
+     * @return {Promise<Alert>}
      */
     EyesTargetLocator.prototype.alert = function () {
         var that = this;

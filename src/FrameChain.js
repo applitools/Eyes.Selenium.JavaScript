@@ -8,7 +8,7 @@
 
     /**
      * Creates a new frame chain.
-     * @param {Object} logger A Logger instance.
+     * @param {Logger} logger A Logger instance.
      * @param {FrameChain} other A frame chain from which the current frame chain will be created.
      */
     function FrameChain(logger, other) {
@@ -59,14 +59,14 @@
     };
 
     /**
-     * @return {Array.<Frame>} frames stored in chain
+     * @return {Frame[]} frames stored in chain
      */
     FrameChain.prototype.getFrames = function () {
         return this._frames;
     };
 
     /**
-     * @param {int} index Index of needed frame
+     * @param {number} index Index of needed frame
      * @return {Frame} frame by index in array
      */
     FrameChain.prototype.getFrame = function (index) {
@@ -79,7 +79,7 @@
 
     /**
      *
-     * @return {int} The number of frames in the chain.
+     * @return {number} The number of frames in the chain.
      */
     FrameChain.prototype.size = function () {
         return this._frames.length;

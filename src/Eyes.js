@@ -1,16 +1,3 @@
-/*
- ---
-
- name: Eyes
-
- description: The main type - to be used by the users of the library to access all functionality.
-
- provides: [Eyes]
- requires: [eyes.sdk, EyesWebDriver, ViewportSize, selenium-webdriver]
-
- ---
- */
-
 (function () {
     'use strict';
 
@@ -30,7 +17,6 @@
         EyesRegionProvider = require('./EyesRegionProvider'),
         Target = require('./Target');
     var EyesBase = EyesSDK.EyesBase,
-        FixedScaleProvider = EyesSDK.FixedScaleProvider,
         ContextBasedScaleProviderFactory = EyesSDK.ContextBasedScaleProviderFactory,
         FixedScaleProviderFactory = EyesSDK.FixedScaleProviderFactory,
         NullScaleProvider = EyesSDK.NullScaleProvider,
@@ -60,9 +46,10 @@
     };
 
     /**
-     * Initializes an Eyes instance.
-     * @param {String} [serverUrl] - The Eyes server URL.
-     * @param {Boolean} [isDisabled] - set to true to disable Applitools Eyes and use the webdriver directly.
+     * The main type - to be used by the users of the library to access all functionality.
+     *
+     * @param {string} [serverUrl] - The Eyes server URL.
+     * @param {boolean} [isDisabled] - set to true to disable Applitools Eyes and use the webdriver directly.
      * @augments EyesBase
      * @constructor
      **/
@@ -196,7 +183,7 @@
     /**
      * Ends the test.
      * @param throwEx - If true, an exception will be thrown for failed/new tests.
-     * @returns {*} The test results.
+     * @return {*} The test results.
      */
     Eyes.prototype.close = function (throwEx) {
         var that = this;
@@ -224,7 +211,7 @@
      * Preform visual validation
      * @param {string} name - A name to be associated with the match
      * @param {Target} target - Target instance which describes whether we want a window/region/frame
-     * @return {ManagedPromise} A promise which is resolved when the validation is finished.
+     * @return {Promise<{asExpected: boolean}>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.check = function (name, target) {
         ArgumentGuard.notNullOrEmpty(name, "Name");
@@ -521,8 +508,8 @@
      * Takes a snapshot of the application under test and matches it with
      * the expected output.
      * @param {string} tag - An optional tag to be associated with the snapshot.
-     * @param {int} matchTimeout - The amount of time to retry matching (Milliseconds).
-     * @return {ManagedPromise} A promise which is resolved when the validation is finished.
+     * @param {number} matchTimeout - The amount of time to retry matching (Milliseconds).
+     * @return {Promise<{asExpected: boolean}>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkWindow = function (tag, matchTimeout) {
         return this.check(tag, Target.window().timeout(matchTimeout));
@@ -534,9 +521,9 @@
      * using stitching to get an image of the frame.
      * @param {EyesRemoteWebElement} - element The element which is the frame to switch to. (as
      * would be used in a call to driver.switchTo().frame() ).
-     * @param {int} matchTimeout - The amount of time to retry matching (milliseconds).
+     * @param {number} matchTimeout - The amount of time to retry matching (milliseconds).
      * @param {string} tag - An optional tag to be associated with the match.
-     * @return {ManagedPromise} A promise which is resolved when the validation is finished.
+     * @return {Promise<{asExpected: boolean}>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkFrame = function (element, matchTimeout, tag) {
         return this.check(tag, Target.frame(element).timeout(matchTimeout));
@@ -549,7 +536,7 @@
      * @param {webdriver.WebElement|EyesRemoteWebElement} element - The element to check.
      * @param {int|null} matchTimeout - The amount of time to retry matching (milliseconds).
      * @param {string} tag - An optional tag to be associated with the match.
-     * @return {ManagedPromise} A promise which is resolved when the validation is finished.
+     * @return {Promise<{asExpected: boolean}>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkElement = function (element, matchTimeout, tag) {
         return this.check(tag, Target.region(element).timeout(matchTimeout).fully());
@@ -562,7 +549,7 @@
      * @param {webdriver.By} locator - The element to check.
      * @param {int|null} matchTimeout - The amount of time to retry matching (milliseconds).
      * @param {string} tag - An optional tag to be associated with the match.
-     * @return {ManagedPromise} A promise which is resolved when the validation is finished.
+     * @return {Promise<{asExpected: boolean}>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkElementBy = function (locator, matchTimeout, tag) {
         return this.check(tag, Target.region(locator).timeout(matchTimeout).fully());
@@ -574,8 +561,8 @@
      * @param {{left: number, top: number, width: number, height: number}} region - The region to
      * validate (in screenshot coordinates).
      * @param {string} tag - An optional tag to be associated with the screenshot.
-     * @param {int} matchTimeout - The amount of time to retry matching.
-     * @return {ManagedPromise} A promise which is resolved when the validation is finished.
+     * @param {number} matchTimeout - The amount of time to retry matching.
+     * @return {Promise<{asExpected: boolean}>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkRegion = function (region, tag, matchTimeout) {
         return this.check(tag, Target.region(region).timeout(matchTimeout));
@@ -586,8 +573,8 @@
      * Visually validates a region in the screenshot.
      * @param {webdriver.WebElement|EyesRemoteWebElement} element - The element defining the region to validate.
      * @param {string} tag - An optional tag to be associated with the screenshot.
-     * @param {int} matchTimeout - The amount of time to retry matching.
-     * @return {ManagedPromise} A promise which is resolved when the validation is finished.
+     * @param {number} matchTimeout - The amount of time to retry matching.
+     * @return {Promise<{asExpected: boolean}>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkRegionByElement = function (element, tag, matchTimeout) {
         return this.check(tag, Target.region(element).timeout(matchTimeout));
@@ -598,8 +585,8 @@
      * Visually validates a region in the screenshot.
      * @param {webdriver.By} by - The WebDriver selector used for finding the region to validate.
      * @param {string} tag - An optional tag to be associated with the screenshot.
-     * @param {int} matchTimeout - The amount of time to retry matching.
-     * @return {ManagedPromise} A promise which is resolved when the validation is finished.
+     * @param {number} matchTimeout - The amount of time to retry matching.
+     * @return {Promise<{asExpected: boolean}>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkRegionBy = function (by, tag, matchTimeout) {
         return this.check(tag, Target.region(by).timeout(matchTimeout));
@@ -614,8 +601,8 @@
      * @param {int|null} matchTimeout - The amount of time to retry matching. (Milliseconds)
      * @param {string} tag - An optional tag to be associated with the snapshot.
      * @param {boolean} stitchContent - If {@code true}, stitch the internal content of the region (i.e., perform
-     *                  {@link #checkElement(By, int, String)} on the region.
-     * @return {ManagedPromise} A promise which is resolved when the validation is finished.
+     *                  {@link #checkElement(By, int, string)} on the region.
+     * @return {Promise<{asExpected: boolean}>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkRegionInFrame = function (frameNameOrId, locator, matchTimeout, tag, stitchContent) {
         return this.check(tag, Target.region(locator, frameNameOrId).timeout(matchTimeout).fully(stitchContent));
@@ -623,7 +610,7 @@
 
     /**
      * @protected
-     * @returns {ScaleProviderFactory}
+     * @return {ScaleProviderFactory}
      */
     Eyes.prototype.updateScalingParams = function () {
         var that = this;
@@ -666,7 +653,7 @@
     //noinspection JSUnusedGlobalSymbols
     /**
      * Get an updated screenshot.
-     * @returns {Promise.<MutableImage>} - The image of the new screenshot.
+     * @return {Promise<MutableImage>} - The image of the new screenshot.
      */
     Eyes.prototype.getScreenShot = function () {
         var that = this;
@@ -732,7 +719,7 @@
     //noinspection JSUnusedGlobalSymbols
     /**
      * Get the viewport size.
-     * @returns {*} The viewport size.
+     * @return {*} The viewport size.
      */
     Eyes.prototype.getViewportSize = function () {
         return EyesSeleniumUtils.getViewportSizeOrDisplaySize(this._logger, this._driver, this._promiseFactory);
@@ -746,7 +733,7 @@
     //noinspection JSUnusedGlobalSymbols
     /**
      * Set the viewport size using the driver. Call this method if for some reason
-     * you don't want to call {@link #open(WebDriver, String, String)} (or one of its variants) yet.
+     * you don't want to call {@link #open(WebDriver, string, string)} (or one of its variants) yet.
      * @param {WebDriver} driver - The driver to use for setting the viewport.
      * @param {{width: number, height: number}} size - The required viewport size.
      * @return {Promise<void>} The viewport size of the browser.
@@ -799,7 +786,7 @@
     //noinspection JSUnusedGlobalSymbols
     /**
      * Get the rotation degrees.
-     * @returns {*|number} - The rotation degrees.
+     * @return {*|number} - The rotation degrees.
      */
     Eyes.prototype.getForcedImageRotation = function () {
         return this._imageRotationDegrees || 0;
@@ -867,7 +854,7 @@
     //noinspection JSUnusedGlobalSymbols
     /**
      * Get the wait time before each screenshot.
-     * @returns {number|*} the wait time between before each screen capture, in milliseconds.
+     * @return {number|*} the wait time between before each screen capture, in milliseconds.
      */
     Eyes.prototype.getWaitBeforeScreenshots = function () {
         return this._waitBeforeScreenshots;
@@ -876,7 +863,7 @@
     //noinspection JSUnusedGlobalSymbols
     /**
      * Get the session id.
-     * @returns {Promise} A promise which resolves to the webdriver's session ID.
+     * @return {Promise<string>} A promise which resolves to the webdriver's session ID.
      */
     Eyes.prototype.getAUTSessionId = function () {
         return this._promiseFactory.makePromise(function (resolve) {

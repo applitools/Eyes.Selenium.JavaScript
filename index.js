@@ -1,3 +1,5 @@
+'use strict';
+
 exports.CssTranslatePositionProvider = require('./src/CssTranslatePositionProvider');
 exports.ElementPositionProvider = require('./src/ElementPositionProvider');
 exports.Eyes = require('./src/Eyes');
@@ -11,6 +13,7 @@ exports.Frame = require('./src/Frame');
 exports.FrameChain = require('./src/FrameChain');
 exports.ScrollPositionProvider = require('./src/ScrollPositionProvider');
 exports.Target = require('./src/Target');
+
 var EyesSDK = require('eyes.sdk');
 exports.ConsoleLogHandler = EyesSDK.ConsoleLogHandler;
 exports.ContextBasedScaleProvider = EyesSDK.ContextBasedScaleProvider;
@@ -40,6 +43,7 @@ exports.SessionEventHandler = EyesSDK.SessionEventHandler;
 exports.TestResultsFormatter = EyesSDK.TestResultsFormatter;
 exports.FailureReport = EyesSDK.EyesBase.FailureReport;
 exports.Triggers = EyesSDK.Triggers;
+
 var EyesUtils = require('eyes.utils');
 exports.ArgumentGuard = EyesUtils.ArgumentGuard;
 exports.GeneralUtils = EyesUtils.GeneralUtils;

@@ -1,15 +1,6 @@
-/*
- ---
-
- name: EyesWebDriver
-
- description: Wraps a Remote Web Driver.
-
- ---
- */
-
 (function () {
-    "use strict";
+    'use strict';
+
     var webdriver = require('selenium-webdriver'),
         EyesUtils = require('eyes.utils'),
         Frame = require('./Frame'),
@@ -21,13 +12,12 @@
     var GeneralUtils = EyesUtils.GeneralUtils;
 
     /**
-     *
-     * C'tor = initializes the module settings
+     * Wraps a Remote Web Driver.
      *
      * @constructor
-     * @param {Object} remoteWebDriver
+     * @param {WebDriver} remoteWebDriver
      * @param {Eyes} eyes An instance of Eyes
-     * @param {Object} logger
+     * @param {Logger} logger
      * @param {PromiseFactory} promiseFactory
      * @augments WebDriver
      **/
@@ -84,7 +74,7 @@
     //noinspection JSCheckFunctionSignatures
     /**
      * @param {webdriver.By|ProtractorBy} locator
-     * @return {Promise.<EyesRemoteWebElement[]>}
+     * @return {Promise<EyesRemoteWebElement[]>}
      */
     EyesWebDriver.prototype.findElements = function (locator) {
         var that = this;
@@ -107,7 +97,7 @@
     //noinspection JSUnusedGlobalSymbols
     /**
      * @param {string} cssSelector
-     * @return {Promise.<EyesRemoteWebElement[]>}
+     * @return {Promise<EyesRemoteWebElement[]>}
      */
     EyesWebDriver.prototype.findElementsByCssSelector = function (cssSelector) {
         return this.findElements(this._byFunctions.css(cssSelector));
@@ -125,7 +115,7 @@
     //noinspection JSUnusedGlobalSymbols
     /**
      * @param {string} name
-     * @return {Promise.<EyesRemoteWebElement[]>}
+     * @return {Promise<EyesRemoteWebElement[]>}
      */
     EyesWebDriver.prototype.findElementsById = function (name) {
         return this.findElements(this._byFunctions.id(name));
@@ -143,7 +133,7 @@
     //noinspection JSUnusedGlobalSymbols
     /**
      * @param {string} name
-     * @return {Promise.<EyesRemoteWebElement[]>}
+     * @return {Promise<EyesRemoteWebElement[]>}
      */
     EyesWebDriver.prototype.findElementsByName = function (name) {
         return this.findElements(this._byFunctions.name(name));
@@ -161,7 +151,7 @@
 //  };
 
     /**
-     * @returns {EyesTargetLocator}
+     * @return {EyesTargetLocator}
      */
     EyesWebDriver.prototype.switchTo = function () {
         var that = this;
@@ -173,7 +163,7 @@
         /**
          * @param {EyesTargetLocator.TargetType} targetType
          * @param {EyesRemoteWebElement|WebElement} targetFrame
-         * @returns {Promise<void>}
+         * @return {Promise<void>}
          */
         OnWillSwitch.willSwitchToFrame = function (targetType, targetFrame) {
             that._logger.verbose("willSwitchToFrame()");

@@ -1,5 +1,5 @@
 (function () {
-    "use strict";
+    'use strict';
 
     var EyesUtils = require('eyes.utils'),
         EyesSDK = require('eyes.sdk'),
@@ -62,5 +62,4 @@
     };
 
     module.exports = EyesRegionProvider;
-
 }());
