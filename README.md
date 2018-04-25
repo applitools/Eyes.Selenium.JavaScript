@@ -1,8 +1,9 @@
 eyes.selenium
 =============
 
+[![npm](https://img.shields.io/npm/v/eyes.selenium.svg?style=for-the-badge)](https://www.npmjs.com/package/eyes.selenium)
+
 Applitools Eyes SDK For Selenium JavaScript WebDriver
-[![Build Status](https://travis-ci.org/applitools/Eyes.Selenium.JavaScript.svg?branch=master)](https://travis-ci.org/applitools/Eyes.Selenium.JavaScript)
 
 ## Installation
 

@@ -2,30 +2,49 @@
   "name": "eyes.selenium",
   "version": "0.0.78",
   "description": "Applitools Eyes SDK For Selenium JavaScript WebDriver",
-  "author": "Applitools Team <team@applitools.com> (http://www.applitools.com/)",
   "keywords": [
     "eyes.selenium",
-    "Test Automation",
-    "Visual Regression",
-    "tests",
-    "SDK",
-    "Applitools",
-    "Eyes",
+    "applitools",
+    "eyes",
+    "test automation",
+    "visual regression",
     "automation",
     "selenium",
+    "tests",
     "testing",
     "webdriver",
     "webdriverjs",
     "protractor"
   ],
-  "homepage": "http://www.applitools.com/",
+  "homepage": "https://applitools.com",
+  "author": {
+    "name": "Applitools Team",
+    "email": "team@applitools.com",
+    "url": "https://www.applitools.com"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/applitools/Eyes.Selenium.JavaScript.git"
   },
-  "license": "SEE LICENSE IN LICENSE",
-  "main": "index",
+  "bugs": {
+    "url": "https://github.com/applitools/Eyes.Selenium.JavaScript/issues"
+  },
+  "directories": {
+    "lib": "./src",
+    "test": "./test"
+  },
+  "files": [
+    "README.md",
+    "LICENSE",
+    "index.js",
+    "src/",
+    "test/",
+    "typings/"
+  ],
+  "main": "./index.js",
+  "types": "./typings/index.d.ts",
   "dependencies": {
+    "@types/node": "^9.6.6",
     "eyes.utils": "0.0.26",
     "eyes.sdk": "0.0.68",
     "q": "^1.4.1"
@@ -42,7 +61,8 @@
     "test-selenium": "mocha ./test/selenium/**/*.js",
     "test-protractor": "protractor protractor.conf.js"
   },
+  "license": "SEE LICENSE IN LICENSE",
   "engines": {
-    "node": ">=6.9.0"
+    "node": ">= 4.2.0"
   }
 }
