@@ -3,7 +3,7 @@
 
     var EyesSDK = require('eyes.sdk'),
         EyesUtils = require('eyes.utils'),
-        EyesSeleniumUtils = require('./EyesSeleniumUtils');
+        EyesSeleniumUtils = require('./EyesSeleniumUtils').EyesSeleniumUtils;
     var PositionProvider = EyesSDK.PositionProvider,
         ArgumentGuard = EyesUtils.ArgumentGuard;
 
@@ -86,5 +86,5 @@
         });
     };
 
-    module.exports = CssTranslatePositionProvider;
+    exports.CssTranslatePositionProvider = CssTranslatePositionProvider;
 }());

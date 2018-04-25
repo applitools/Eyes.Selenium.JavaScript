@@ -2,9 +2,9 @@
     'use strict';
 
     var EyesUtils = require('eyes.utils'),
-        FrameChain = require('./FrameChain'),
-        ScrollPositionProvider = require('./ScrollPositionProvider'),
-        EyesRemoteWebElement = require('./EyesRemoteWebElement');
+        FrameChain = require('./FrameChain').FrameChain,
+        ScrollPositionProvider = require('./ScrollPositionProvider').ScrollPositionProvider,
+        EyesRemoteWebElement = require('./EyesRemoteWebElement').EyesRemoteWebElement;
     var ArgumentGuard = EyesUtils.ArgumentGuard,
         GeneralUtils = EyesUtils.GeneralUtils;
 
@@ -71,7 +71,7 @@
      */
     EyesTargetLocator.prototype.frame = function (obj) {
         var that = this, frames;
-        if (typeof obj === 'string' || obj instanceof string) {
+        if (typeof obj === 'string' || obj instanceof String) {
             this._logger.verbose("EyesTargetLocator.frame('", obj, "')");
             // Finding the target element so we can report it.
             // We use find elements(plural) to avoid exception when the element
@@ -152,7 +152,7 @@
         var that = this;
         this._logger.verbose("EyesTargetLocator.parentFrame()");
         return this._driver._promiseFactory.makePromise(function (resolve) {
-            if (that._driver.getFrameChain().size() != 0) {
+            if (that._driver.getFrameChain().size() !== 0) {
                 that._logger.verbose("Making preparations..");
                 return that._onWillSwitch.willSwitchToFrame(EyesTargetLocator.TargetType.PARENT_FRAME, null).then(function () {
                     return that._targetLocator.defaultContent();
@@ -275,7 +275,7 @@
         var that = this;
         return this._driver._promiseFactory.makePromise(function (resolve) {
             that._logger.verbose("EyesTargetLocator.defaultContent()");
-            if (that._driver.getFrameChain().size() != 0) {
+            if (that._driver.getFrameChain().size() !== 0) {
                 that._logger.verbose("Making preparations..");
                 that._onWillSwitch.willSwitchToFrame(EyesTargetLocator.TargetType.DEFAULT_CONTENT, null).then(function () {
                     that._logger.verbose("Done! Switching to default content..");
@@ -321,5 +321,5 @@
         });
     };
 
-    module.exports = EyesTargetLocator;
+    exports.EyesTargetLocator = EyesTargetLocator;
 }());

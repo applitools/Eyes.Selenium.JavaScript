@@ -1,11 +1,10 @@
 require('chromedriver');
 var webdriver = require('selenium-webdriver');
 var Builder = webdriver.Builder;
-var By = webdriver.By;
 
-var EyesSDK = require('eyes.sdk.javascript/index');
-var ConsoleLogHandler = EyesSDK.ConsoleLogHandler;
-var Eyes = require('../../src/Eyes');
+var SeleniumSDK = require('../../index');
+var Eyes = SeleniumSDK.Eyes;
+var ConsoleLogHandler = SeleniumSDK.ConsoleLogHandler;
 
 var driver = null, eyes = null;
 describe('Eyes.Selenium.JavaScript - Appium', function () {

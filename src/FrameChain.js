@@ -2,7 +2,7 @@
     'use strict';
 
     var EyesUtils = require('eyes.utils'),
-        Frame = require('./Frame');
+        Frame = require('./Frame').Frame;
     var ArgumentGuard = EyesUtils.ArgumentGuard,
         GeometryUtils = EyesUtils.GeometryUtils;
 
@@ -45,12 +45,12 @@
         var lc2 = c2.size();
 
         // different chains size means different frames
-        if (lc1 != lc2) {
+        if (lc1 !== lc2) {
             return false;
         }
 
         for (var i = 0; i < lc1; ++i) {
-            if (c1.getFrames()[i].getId() != c1.getFrames()[i].getId()) {
+            if (c1.getFrames()[i].getId() !== c1.getFrames()[i].getId()) {
                 return false;
             }
         }
@@ -125,7 +125,7 @@
      * @return {{x: number, y: number}} The outermost frame's location, or NoFramesException.
      */
     FrameChain.prototype.getDefaultContentScrollPosition = function () {
-        if (this._frames.length == 0) {
+        if (this._frames.length === 0) {
             throw new Error("No frames in frame chain");
         }
         return this._frames[0].getParentScrollPosition();
@@ -141,5 +141,5 @@
         return result;
     };
 
-    module.exports = FrameChain;
+    exports.FrameChain = FrameChain;
 }());

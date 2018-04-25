@@ -1,11 +1,9 @@
 (function() {
     'use strict';
 
-    var EyesUtils = require('eyes.utils');
-    var EyesSDK = require('eyes.sdk');
-    var EyesSeleniumUtils = require('./EyesSeleniumUtils');
-    var PositionProvider = EyesSDK.PositionProvider,
-        ArgumentGuard = EyesUtils.ArgumentGuard;
+    var ArgumentGuard = require('eyes.utils').ArgumentGuard;
+    var PositionProvider = require('eyes.sdk').PositionProvider;
+    var EyesSeleniumUtils = require('./EyesSeleniumUtils').EyesSeleniumUtils;
 
     /**
      * @constructor
@@ -80,5 +78,5 @@
         });
     };
 
-    module.exports = ScrollPositionProvider;
+    exports.ScrollPositionProvider = ScrollPositionProvider;
 }());

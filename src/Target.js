@@ -1,8 +1,7 @@
 (function () {
     'use strict';
 
-    var EyesUtils = require('eyes.utils');
-    var GeometryUtils = EyesUtils.GeometryUtils;
+    var GeometryUtils = require('eyes.utils').GeometryUtils;
 
     /**
      * @typedef {{left: number, top: number, width: number, height: number}} Region
@@ -261,5 +260,5 @@
         return new Target(null, frame);
     };
 
-    module.exports = Target;
+    exports.Target = Target;
 }());

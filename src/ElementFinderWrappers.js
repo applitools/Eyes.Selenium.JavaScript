@@ -2,7 +2,7 @@
     'use strict';
 
     var EyesUtils = require('eyes.utils'),
-        EyesRemoteWebElement = require('./EyesRemoteWebElement');
+        EyesRemoteWebElement = require('./EyesRemoteWebElement').EyesRemoteWebElement;
     var GeneralUtils = EyesUtils.GeneralUtils;
 
     // functions in ElementFinder that return a new ElementFinder and therefore we must wrap and return our own
@@ -126,6 +126,6 @@
         });
     };
 
-    module.exports.ElementFinderWrapper = ElementFinderWrapper;
-    module.exports.ElementArrayFinderWrapper = ElementArrayFinderWrapper;
+    exports.ElementFinderWrapper = ElementFinderWrapper;
+    exports.ElementArrayFinderWrapper = ElementArrayFinderWrapper;
 }());

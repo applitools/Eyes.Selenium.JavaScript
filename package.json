@@ -30,6 +30,7 @@
     "url": "https://github.com/applitools/Eyes.Selenium.JavaScript/issues"
   },
   "directories": {
+    "example": "./example",
     "lib": "./src",
     "test": "./test"
   },

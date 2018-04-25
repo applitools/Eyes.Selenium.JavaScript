@@ -1,8 +1,7 @@
 (function() {
     'use strict';
 
-    var EyesUtils = require('eyes.utils');
-    var ArgumentGuard = EyesUtils.ArgumentGuard;
+    var ArgumentGuard = require('eyes.utils').ArgumentGuard;
 
     /**
      * @constructor
@@ -66,5 +65,5 @@
         return this._parentScrollPosition;
     };
 
-    module.exports = Frame;
+    exports.Frame = Frame;
 }());

@@ -1,6 +1,7 @@
-var Eyes = require('../../index').Eyes;
-var ConsoleLogHandler = require('../../index').ConsoleLogHandler;
-var FixedCutProvider = require('../../index').FixedCutProvider;
+var SeleniumSDK = require('../../index');
+var Eyes = SeleniumSDK.Eyes;
+var ConsoleLogHandler = SeleniumSDK.ConsoleLogHandler;
+var FixedCutProvider = SeleniumSDK.FixedCutProvider;
 
 var eyes;
 

@@ -4,9 +4,9 @@ var chrome = require('selenium-webdriver/chrome');
 var Builder = webdriver.Builder;
 var By = webdriver.By;
 
-var EyesSDK = require('eyes.sdk');
-var ConsoleLogHandler = EyesSDK.ConsoleLogHandler;
-var Eyes = require('../../src/Eyes');
+var SeleniumSDK = require('../../index');
+var ConsoleLogHandler = SeleniumSDK.ConsoleLogHandler;
+var Eyes = SeleniumSDK.Eyes;
 
 var driver = null, eyes = null;
 describe('Eyes.Selenium.JavaScript - Selenium', function () {

@@ -1,9 +1,9 @@
 var webdriver = require('selenium-webdriver');
 var Builder = webdriver.Builder;
 
-var EyesSDK = require('eyes.sdk.javascript/index');
-var ConsoleLogHandler = EyesSDK.ConsoleLogHandler;
-var Eyes = require('../../src/Eyes');
+var SeleniumSDK = require('../../index');
+var Eyes = SeleniumSDK.Eyes;
+var ConsoleLogHandler = SeleniumSDK.ConsoleLogHandler;
 
 var serverUrl = "http://" + process.env.SAUCE_USERNAME + ":" + process.env.SAUCE_ACCESS_KEY + "@ondemand.saucelabs.com:80/wd/hub";
 

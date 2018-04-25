@@ -3,7 +3,7 @@
 
     var EyesUtils = require('eyes.utils'),
         EyesSDK = require('eyes.sdk'),
-        EyesWebDriverScreenshot = require('./EyesWebDriverScreenshot');
+        EyesWebDriverScreenshot = require('./EyesWebDriverScreenshot').EyesWebDriverScreenshot;
     var RegionProvider = EyesSDK.RegionProvider,
         GeometryUtils = EyesUtils.GeometryUtils;
 
@@ -61,5 +61,5 @@
         return this._coordinatesType;
     };
 
-    module.exports = EyesRegionProvider;
+    exports.EyesRegionProvider = EyesRegionProvider;
 }());

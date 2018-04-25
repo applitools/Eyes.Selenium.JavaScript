@@ -2,14 +2,13 @@
     'use strict';
 
     var webdriver = require('selenium-webdriver'),
-        EyesUtils = require('eyes.utils'),
-        Frame = require('./Frame'),
-        FrameChain = require('./FrameChain'),
-        EyesSeleniumUtils = require('./EyesSeleniumUtils'),
-        EyesRemoteWebElement = require('./EyesRemoteWebElement'),
-        ScrollPositionProvider = require('./ScrollPositionProvider'),
-        EyesTargetLocator = require('./EyesTargetLocator');
-    var GeneralUtils = EyesUtils.GeneralUtils;
+        GeneralUtils = require('eyes.utils').GeneralUtils,
+        Frame = require('./Frame').Frame,
+        FrameChain = require('./FrameChain').FrameChain,
+        EyesSeleniumUtils = require('./EyesSeleniumUtils').EyesSeleniumUtils,
+        EyesRemoteWebElement = require('./EyesRemoteWebElement').EyesRemoteWebElement,
+        ScrollPositionProvider = require('./ScrollPositionProvider').ScrollPositionProvider,
+        EyesTargetLocator = require('./EyesTargetLocator').EyesTargetLocator;
 
     /**
      * Wraps a Remote Web Driver.
@@ -277,5 +276,5 @@
         return new FrameChain(this._logger, this._frameChain);
     };
 
-    module.exports = EyesWebDriver;
+    exports.EyesWebDriver = EyesWebDriver;
 }());

@@ -12,6 +12,14 @@ import { ElementFinder, ElementArrayFinder, ProtractorBy } from 'protractor';
 import { PromiseFactory, Location, Region, RectangleSize } from 'eyes.utils';
 import { PositionProvider, RegionProvider, Logger, CutProvider, ScaleProviderFactory, MatchSettings, CoordinatesType, EyesScreenshot, EyesBase, MutableImage } from 'eyes.sdk';
 
+export { ArgumentGuard, GeneralUtils, GeometryUtils, ImageDeltaCompressor, ImageUtils, PromiseFactory,
+    PropertyHandler, SimplePropertyHandler, ReadOnlyPropertyHandler, StreamUtils } from 'eyes.utils';
+
+export { ConsoleLogHandler, ContextBasedScaleProvider, ContextBasedScaleProviderFactory, CoordinatesType, CutProvider,
+    EyesScreenshot, FileLogHandler, FixedCutProvider, FixedScaleProvider, FixedScaleProviderFactory, Logger, LogHandler,
+    MatchSettings, MutableImage, NullCutProvider, NullLogHandler, NullScaleProvider, PositionProvider, RegionProvider,
+    ScaleProvider, ScaleProviderFactory, ScaleProviderIdentityFactory, ServerConnector, TestResultsFormatter, Triggers } from 'eyes.sdk';
+
 interface FloatingRegion {
     left: number;
     top: number;

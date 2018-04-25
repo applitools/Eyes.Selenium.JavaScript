@@ -1,8 +1,9 @@
-var Eyes = require('../../index').Eyes;
-var ConsoleLogHandler = require('../../index').ConsoleLogHandler;
-var StitchMode = require('../../index').StitchMode;
-var Target = require('../../index').Target;
-var MatchLevel = require('../../index').MatchLevel;
+var SeleniumSDK = require('../../index');
+var Eyes = SeleniumSDK.Eyes;
+var ConsoleLogHandler = SeleniumSDK.ConsoleLogHandler;
+var StitchMode = SeleniumSDK.StitchMode;
+var Target = SeleniumSDK.Target;
+var MatchLevel = SeleniumSDK.MatchLevel;
 
 var eyes;
 

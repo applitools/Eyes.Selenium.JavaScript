@@ -2,10 +2,10 @@ require('chromedriver');
 var webdriver = require('selenium-webdriver');
 var Builder = webdriver.Builder;
 
-var EyesSDK = require('eyes.sdk');
-var ConsoleLogHandler = EyesSDK.ConsoleLogHandler;
-var FixedCutProvider = EyesSDK.FixedCutProvider;
-var Eyes = require('../../src/Eyes');
+var SeleniumSDK = require('../../index');
+var ConsoleLogHandler = SeleniumSDK.ConsoleLogHandler;
+var FixedCutProvider = SeleniumSDK.FixedCutProvider;
+var Eyes = SeleniumSDK.Eyes;
 
 var driver = null, eyes = null;
 describe('Eyes.Selenium.JavaScript - Selenium', function () {

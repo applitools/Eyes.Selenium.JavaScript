@@ -302,5 +302,5 @@
         return this._element;
     };
 
-    module.exports = EyesRemoteWebElement;
+    exports.EyesRemoteWebElement = EyesRemoteWebElement;
 }());

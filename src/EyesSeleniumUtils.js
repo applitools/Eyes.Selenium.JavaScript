@@ -1057,5 +1057,5 @@
         });
     };
 
-    module.exports = EyesSeleniumUtils;
+    exports.EyesSeleniumUtils = EyesSeleniumUtils;
 }());

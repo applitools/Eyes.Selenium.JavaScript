@@ -5,17 +5,17 @@
         webdriver = require('selenium-webdriver'),
         EyesSDK = require('eyes.sdk'),
         EyesUtils = require('eyes.utils'),
-        EyesWebDriver = require('./EyesWebDriver'),
-        EyesSeleniumUtils = require('./EyesSeleniumUtils'),
-        EyesRemoteWebElement = require('./EyesRemoteWebElement'),
-        EyesWebDriverScreenshot = require('./EyesWebDriverScreenshot'),
+        EyesWebDriver = require('./EyesWebDriver').EyesWebDriver,
+        EyesSeleniumUtils = require('./EyesSeleniumUtils').EyesSeleniumUtils,
+        EyesRemoteWebElement = require('./EyesRemoteWebElement').EyesRemoteWebElement,
+        EyesWebDriverScreenshot = require('./EyesWebDriverScreenshot').EyesWebDriverScreenshot,
         ElementFinderWrapper = require('./ElementFinderWrappers').ElementFinderWrapper,
         ElementArrayFinderWrapper = require('./ElementFinderWrappers').ElementArrayFinderWrapper,
-        ScrollPositionProvider = require('./ScrollPositionProvider'),
-        CssTranslatePositionProvider = require('./CssTranslatePositionProvider'),
-        ElementPositionProvider = require('./ElementPositionProvider'),
-        EyesRegionProvider = require('./EyesRegionProvider'),
-        Target = require('./Target');
+        ScrollPositionProvider = require('./ScrollPositionProvider').ScrollPositionProvider,
+        CssTranslatePositionProvider = require('./CssTranslatePositionProvider').CssTranslatePositionProvider,
+        ElementPositionProvider = require('./ElementPositionProvider').ElementPositionProvider,
+        EyesRegionProvider = require('./EyesRegionProvider').EyesRegionProvider,
+        Target = require('./Target').Target;
     var EyesBase = EyesSDK.EyesBase,
         ContextBasedScaleProviderFactory = EyesSDK.ContextBasedScaleProviderFactory,
         FixedScaleProviderFactory = EyesSDK.FixedScaleProviderFactory,
@@ -44,6 +44,7 @@
         // Uses CSS transitions to get to the different parts of the page.
         CSS: 'CSS'
     };
+    Object.freeze(StitchMode);
 
     /**
      * The main type - to be used by the users of the library to access all functionality.
@@ -878,10 +879,6 @@
         }.bind(this));
     };
 
-    /**
-     * @readonly
-     * @enum {string}
-     */
-    Eyes.StitchMode = Object.freeze(StitchMode);
-    module.exports = Eyes;
+    Eyes.StitchMode = StitchMode;
+    exports.Eyes = Eyes;
 }());
