@@ -2,9 +2,9 @@
     'use strict';
 
     var EyesUtils = require('eyes.utils'),
-        FrameChain = require('./FrameChain'),
-        ScrollPositionProvider = require('./ScrollPositionProvider'),
-        EyesRemoteWebElement = require('./EyesRemoteWebElement');
+        FrameChain = require('./FrameChain').FrameChain,
+        ScrollPositionProvider = require('./ScrollPositionProvider').ScrollPositionProvider,
+        EyesRemoteWebElement = require('./EyesRemoteWebElement').EyesRemoteWebElement;
     var ArgumentGuard = EyesUtils.ArgumentGuard,
         GeneralUtils = EyesUtils.GeneralUtils;
 
@@ -43,7 +43,7 @@
     /**
      * @constructor
      * Initialized a new EyesTargetLocator object.
-     * @param {Object} logger A Logger instance.
+     * @param {Logger} logger A Logger instance.
      * @param {EyesWebDriver} driver The WebDriver from which the targetLocator was received.
      * @param {TargetLocator} targetLocator The actual TargetLocator object.
      * @param {OnWillSwitch} onWillSwitch A delegate to be called whenever a relevant switch
@@ -67,7 +67,7 @@
 
     /**
      * @param {int|string|EyesRemoteWebElement} obj
-     * @returns {Promise<void>}
+     * @return {Promise<void>}
      */
     EyesTargetLocator.prototype.frame = function (obj) {
         var that = this, frames;
@@ -145,14 +145,14 @@
     };
 
     /**
-     * @returns {Promise.<void>}
+     * @return {Promise<void>}
      */
 
     EyesTargetLocator.prototype.parentFrame = function () {
         var that = this;
         this._logger.verbose("EyesTargetLocator.parentFrame()");
         return this._driver._promiseFactory.makePromise(function (resolve) {
-            if (that._driver.getFrameChain().size() != 0) {
+            if (that._driver.getFrameChain().size() !== 0) {
                 that._logger.verbose("Making preparations..");
                 return that._onWillSwitch.willSwitchToFrame(EyesTargetLocator.TargetType.PARENT_FRAME, null).then(function () {
                     return that._targetLocator.defaultContent();
@@ -251,7 +251,7 @@
 
     /**
      * @param {string} nameOrHandle
-     * @returns {Promise.<void>}
+     * @return {Promise<void>}
      */
     EyesTargetLocator.prototype.window = function (nameOrHandle) {
         var that = this;
@@ -269,13 +269,13 @@
     };
 
     /**
-     * @returns {Promise.<void>}
+     * @return {Promise<void>}
      */
     EyesTargetLocator.prototype.defaultContent = function () {
         var that = this;
         return this._driver._promiseFactory.makePromise(function (resolve) {
             that._logger.verbose("EyesTargetLocator.defaultContent()");
-            if (that._driver.getFrameChain().size() != 0) {
+            if (that._driver.getFrameChain().size() !== 0) {
                 that._logger.verbose("Making preparations..");
                 that._onWillSwitch.willSwitchToFrame(EyesTargetLocator.TargetType.DEFAULT_CONTENT, null).then(function () {
                     that._logger.verbose("Done! Switching to default content..");
@@ -291,7 +291,7 @@
     };
 
     /**
-     * @returns {Promise.<EyesRemoteWebElement>}
+     * @return {Promise<EyesRemoteWebElement>}
      */
     EyesTargetLocator.prototype.activeElement = function () {
         var that = this;
@@ -307,7 +307,7 @@
     };
 
     /**
-     * @returns {Promise.<Alert>}
+     * @return {Promise<Alert>}
      */
     EyesTargetLocator.prototype.alert = function () {
         var that = this;
@@ -321,5 +321,5 @@
         });
     };
 
-    module.exports = EyesTargetLocator;
+    exports.EyesTargetLocator = EyesTargetLocator;
 }());

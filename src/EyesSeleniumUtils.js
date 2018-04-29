@@ -1,15 +1,5 @@
-/*
- ---
-
- name: EyesSeleniumUtils
-
- description: Handles browser related functionality.
-
- ---
- */
-
 (function () {
-    "use strict";
+    'use strict';
 
     var EyesSDK = require('eyes.sdk'),
         EyesUtils = require('eyes.utils');
@@ -19,6 +9,9 @@
         GeometryUtils = EyesUtils.GeometryUtils,
         ImageUtils = EyesUtils.ImageUtils;
 
+    /**
+     * Handles browser related functionality.
+     */
     var EyesSeleniumUtils = {};
 
     /**
@@ -254,7 +247,7 @@
      * @param {WebDriver} browser The browser to use.
      * @param {object.<string, string>} transforms The transforms to set. Keys are used as style keys and values are the values for those styles.
      * @param {PromiseFactory} promiseFactory
-     * @returns {Promise<void>}
+     * @return {Promise<void>}
      */
     EyesSeleniumUtils.setTransforms = function (browser, transforms, promiseFactory) {
         var script = "";
@@ -526,7 +519,7 @@
      * @param {WebDriver} browser The browser to use.
      * @param {{width: number, height: number}} requiredSize The viewport size.
      * @param {PromiseFactory} promiseFactory
-     * @returns {Promise<void>}
+     * @return {Promise<void>}
      */
     EyesSeleniumUtils.setViewportSize = function (logger, browser, requiredSize, promiseFactory) {
         // First we will set the window size to the required size.
@@ -696,7 +689,7 @@
     /**
      * @private
      * @param {{left: number, top: number, width: number, height: number}} part
-     * @param {Array<{position: {x: number, y: number}, size: {width: number, height: number}, image: Buffer}>} parts
+     * @param {{position: {x: number, y: number}, size: {width: number, height: number}, image: Buffer}[]} parts
      * @param {{imageBuffer: Buffer, width: number, height: number}} imageObj
      * @param {WebDriver} browser
      * @param {Promise<void>} promise
@@ -711,7 +704,7 @@
      * @param {boolean} automaticRotation
      * @param {number} automaticRotationDegrees
      * @param {boolean} isLandscape
-     * @param {int} waitBeforeScreenshots
+     * @param {number} waitBeforeScreenshots
      * @param {{left: number, top: number, width: number, height: number}} regionInScreenshot
      * @param {boolean} [saveDebugScreenshots=false]
      * @param {string} [debugScreenshotsPath=null]
@@ -788,7 +781,7 @@
      * @param {boolean} automaticRotation
      * @param {number} automaticRotationDegrees
      * @param {boolean} isLandscape
-     * @param {int} waitBeforeScreenshots
+     * @param {number} waitBeforeScreenshots
      * @param {{left: number, top: number, width: number, height: number}} [regionInScreenshot]
      * @param {boolean} [saveDebugScreenshots=false]
      * @param {string} [debugScreenshotsPath=null]
@@ -896,12 +889,12 @@
      * @param {boolean} automaticRotation
      * @param {number} automaticRotationDegrees
      * @param {boolean} isLandscape
-     * @param {int} waitBeforeScreenshots
+     * @param {number} waitBeforeScreenshots
      * @param {boolean} checkFrameOrElement
      * @param {RegionProvider} [regionProvider]
      * @param {boolean} [saveDebugScreenshots=false]
      * @param {string} [debugScreenshotsPath=null]
-     * @returns {Promise<MutableImage>}
+     * @return {Promise<MutableImage>}
      */
     EyesSeleniumUtils.getScreenshot = function getScreenshot(
         browser,
@@ -1064,5 +1057,5 @@
         });
     };
 
-    module.exports = EyesSeleniumUtils;
+    exports.EyesSeleniumUtils = EyesSeleniumUtils;
 }());

@@ -3,11 +3,9 @@
 
 exports.config = {
     seleniumAddress: 'http://localhost:4444/wd/hub',
-    suites: {
-        checkInterface: 'test-protractor/check-interface-protractor-test.js',
-        scalingMethods: 'test-protractor/scaling-methods-protractor-test.js',
-        simple: 'test-protractor/simple-protractor-test.js',
-    },
+    specs: [
+        './test/protractor/**/*.js'
+    ],
     capabilities: {
         browserName: 'chrome'
     },

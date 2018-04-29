@@ -1,12 +1,11 @@
 (function() {
     'use strict';
 
-    var EyesUtils = require('eyes.utils');
-    var ArgumentGuard = EyesUtils.ArgumentGuard;
+    var ArgumentGuard = require('eyes.utils').ArgumentGuard;
 
     /**
      * @constructor
-     * @param {Object} logger A Logger instance.
+     * @param {Logger} logger A Logger instance.
      * @param {WebElement} reference The web element for the frame, used as a reference to switch into the frame.
      * @param {string} frameId The id of the frame. Can be used later for comparing two frames.
      * @param {{x: number, y: number}} location The location of the frame within the current frame.
@@ -32,39 +31,39 @@
     }
 
     /**
-     * @returns {WebElement}
+     * @return {WebElement}
      */
     Frame.prototype.getReference = function () {
         return this._reference;
     };
 
     /**
-     * @returns {string}
+     * @return {string}
      */
     Frame.prototype.getId = function () {
         return this._id;
     };
 
     /**
-     * @returns {{x: number, y: number}}
+     * @return {{x: number, y: number}}
      */
     Frame.prototype.getLocation = function () {
         return this._location;
     };
 
     /**
-     * @returns {{width: number, height: number}}
+     * @return {{width: number, height: number}}
      */
     Frame.prototype.getSize = function () {
         return this._size;
     };
 
     /**
-     * @returns {{x: number, y: number}}
+     * @return {{x: number, y: number}}
      */
     Frame.prototype.getParentScrollPosition = function () {
         return this._parentScrollPosition;
     };
 
-    module.exports = Frame;
+    exports.Frame = Frame;
 }());

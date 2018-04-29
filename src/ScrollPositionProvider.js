@@ -1,11 +1,9 @@
 (function() {
     'use strict';
 
-    var EyesUtils = require('eyes.utils');
-    var EyesSDK = require('eyes.sdk');
-    var EyesSeleniumUtils = require('./EyesSeleniumUtils');
-    var PositionProvider = EyesSDK.PositionProvider,
-        ArgumentGuard = EyesUtils.ArgumentGuard;
+    var ArgumentGuard = require('eyes.utils').ArgumentGuard;
+    var PositionProvider = require('eyes.sdk').PositionProvider;
+    var EyesSeleniumUtils = require('./EyesSeleniumUtils').EyesSeleniumUtils;
 
     /**
      * @constructor
@@ -27,7 +25,7 @@
     ScrollPositionProvider.prototype.constructor = ScrollPositionProvider;
 
     /**
-     * @returns {Promise<{x: number, y: number}>} The scroll position of the current frame.
+     * @return {Promise<{x: number, y: number}>} The scroll position of the current frame.
      */
     ScrollPositionProvider.prototype.getCurrentPosition = function () {
         var that = this;
@@ -41,7 +39,7 @@
     /**
      * Go to the specified location.
      * @param {{x: number, y: number}} location The position to scroll to.
-     * @returns {Promise<void>}
+     * @return {Promise<void>}
      */
     ScrollPositionProvider.prototype.setPosition = function (location) {
         var that = this;
@@ -52,7 +50,7 @@
     };
 
     /**
-     * @returns {Promise<{width: number, height: number}>} The entire size of the container which the position is relative to.
+     * @return {Promise<{width: number, height: number}>} The entire size of the container which the position is relative to.
      */
     ScrollPositionProvider.prototype.getEntireSize = function () {
         var that = this;
@@ -63,7 +61,7 @@
     };
 
     /**
-     * @returns {Promise<{x: number, y: number}>}
+     * @return {Promise<{x: number, y: number}>}
      */
     ScrollPositionProvider.prototype.getState = function () {
         return this.getCurrentPosition();
@@ -71,7 +69,7 @@
 
     /**
      * @param {{x: number, y: number}} state The initial state of position
-     * @returns {Promise<void>}
+     * @return {Promise<void>}
      */
     ScrollPositionProvider.prototype.restoreState = function (state) {
         var that = this;
@@ -80,5 +78,5 @@
         });
     };
 
-    module.exports = ScrollPositionProvider;
+    exports.ScrollPositionProvider = ScrollPositionProvider;
 }());

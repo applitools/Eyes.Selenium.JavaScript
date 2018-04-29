@@ -1,18 +1,8 @@
-/*
- ---
-
- name: ElementFinderWrapper
-
- description: Wraps Protractor's ElementFinder to make sure we return our own Web Element.
-
- ---
- */
-
 (function () {
-    "use strict";
+    'use strict';
 
     var EyesUtils = require('eyes.utils'),
-        EyesRemoteWebElement = require('./EyesRemoteWebElement');
+        EyesRemoteWebElement = require('./EyesRemoteWebElement').EyesRemoteWebElement;
     var GeneralUtils = EyesUtils.GeneralUtils;
 
     // functions in ElementFinder that return a new ElementFinder and therefore we must wrap and return our own
@@ -23,7 +13,7 @@
     var ELEMENT_ARRAY_FINDER_TO_ELEMENT_FINDER_FUNCTIONS = ['get', 'first', 'last'];
 
     /**
-     * Wrapper for ElementFinder object from Protractor
+     * Wraps Protractor's ElementFinder to make sure we return our own Web Element.
      *
      * @param {ElementFinder} finder
      * @param {EyesWebDriver} eyesDriver
@@ -54,7 +44,7 @@
     /**
      * Wrap the getWebElement function
      *
-     * @returns {EyesRemoteWebElement}
+     * @return {EyesRemoteWebElement}
      */
     ElementFinderWrapper.prototype.getWebElement = function () {
         this._logger.verbose("ElementFinderWrapper:getWebElement - called");
@@ -64,7 +54,7 @@
     /**
      * Wrap the click function
      *
-     * @returns {Promise.<EyesRemoteWebElement>}
+     * @return {Promise<EyesRemoteWebElement>}
      */
     ElementFinderWrapper.prototype.click = function () {
         this._logger.verbose("ElementFinderWrapper:click - called");
@@ -75,7 +65,7 @@
     /**
      * Wrap the functions that return objects that require pre-wrapping
      *
-     * @returns {Promise.<EyesRemoteWebElement>}
+     * @return {Promise<EyesRemoteWebElement>}
      */
     ElementFinderWrapper.prototype.sendKeys = function () {
         this._logger.verbose("ElementFinderWrapper:sendKeys - called");
@@ -122,7 +112,7 @@
     /**
      * Wrap the getWebElements function
      *
-     * @returns {Promise.<EyesRemoteWebElement[]>}
+     * @return {Promise<EyesRemoteWebElement[]>}
      */
     ElementArrayFinderWrapper.prototype.getWebElements = function () {
         var that = this;
@@ -136,6 +126,6 @@
         });
     };
 
-    module.exports.ElementFinderWrapper = ElementFinderWrapper;
-    module.exports.ElementArrayFinderWrapper = ElementArrayFinderWrapper;
+    exports.ElementFinderWrapper = ElementFinderWrapper;
+    exports.ElementArrayFinderWrapper = ElementArrayFinderWrapper;
 }());

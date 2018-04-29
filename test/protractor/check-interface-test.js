@@ -1,12 +1,13 @@
-var Eyes = require('../index').Eyes;
-var ConsoleLogHandler = require('../index').ConsoleLogHandler;
-var StitchMode = require('../index').StitchMode;
-var Target = require('../index').Target;
-var MatchLevel = require('../index').MatchLevel;
+var SeleniumSDK = require('../../index');
+var Eyes = SeleniumSDK.Eyes;
+var ConsoleLogHandler = SeleniumSDK.ConsoleLogHandler;
+var StitchMode = SeleniumSDK.StitchMode;
+var Target = SeleniumSDK.Target;
+var MatchLevel = SeleniumSDK.MatchLevel;
 
 var eyes;
 
-describe("Eyes.Selenium.JavaScript - check-interface", function() {
+describe("Eyes.Selenium.JavaScript - Protractor", function() {
 
     beforeAll(function(){
         eyes = new Eyes();
@@ -22,7 +23,7 @@ describe("Eyes.Selenium.JavaScript - check-interface", function() {
         });
     });
 
-    it("Different check methods on TestHtmlPages", function(done) {
+    it("check interface", function(done) {
         browser.get("https://astappev.github.io/test-html-pages/");
 
         // Entire window, equivalent to eyes.checkWindow()

@@ -1,8 +1,7 @@
 (function () {
     'use strict';
 
-    var EyesUtils = require('eyes.utils');
-    var GeometryUtils = EyesUtils.GeometryUtils;
+    var GeometryUtils = require('eyes.utils').GeometryUtils;
 
     /**
      * @typedef {{left: number, top: number, width: number, height: number}} Region
@@ -33,7 +32,7 @@
 
     //noinspection JSUnusedGlobalSymbols
     /**
-     * @param {int} ms Milliseconds to wait
+     * @param {number} ms Milliseconds to wait
      * @return {Target}
      */
     Target.prototype.timeout = function (ms) {
@@ -138,91 +137,91 @@
     };
 
     /**
-     * @returns {Region|webdriver.WebElement|EyesRemoteWebElement|webdriver.By|null}
+     * @return {Region|webdriver.WebElement|EyesRemoteWebElement|webdriver.By|null}
      */
     Target.prototype.getRegion = function () {
         return this._region;
     };
 
     /**
-     * @returns {boolean}
+     * @return {boolean}
      */
     Target.prototype.isUsingRegion = function () {
         return !!this._region;
     };
 
     /**
-     * @returns {webdriver.WebElement|EyesRemoteWebElement|String|null}
+     * @return {webdriver.WebElement|EyesRemoteWebElement|string|null}
      */
     Target.prototype.getFrame = function () {
         return this._frame;
     };
 
     /**
-     * @returns {boolean}
+     * @return {boolean}
      */
     Target.prototype.isUsingFrame = function () {
         return !!this._frame;
     };
 
     /**
-     * @returns {int|null}
+     * @return {int|null}
      */
     Target.prototype.getTimeout = function () {
         return this._timeout;
     };
 
     /**
-     * @returns {boolean}
+     * @return {boolean}
      */
     Target.prototype.getStitchContent = function () {
         return this._stitchContent;
     };
 
     /**
-     * @returns {boolean}
+     * @return {boolean}
      */
     Target.prototype.getIgnoreMismatch = function () {
         return this._ignoreMismatch;
     };
 
     /**
-     * @returns {boolean}
+     * @return {boolean}
      */
     Target.prototype.getMatchLevel = function () {
         return this._matchLevel;
     };
 
     /**
-     * @returns {boolean|null}
+     * @return {boolean|null}
      */
     Target.prototype.getIgnoreCaret = function () {
         return this._ignoreCaret;
     };
 
     /**
-     * @returns {Region[]}
+     * @return {Region[]}
      */
     Target.prototype.getIgnoreRegions = function () {
         return this._ignoreRegions;
     };
 
     /**
-     * @returns {{element: (webdriver.WebElement|EyesRemoteWebElement|webdriver.By)}[]}
+     * @return {{element: (webdriver.WebElement|EyesRemoteWebElement|webdriver.By)}[]}
      */
     Target.prototype.getIgnoreObjects = function () {
         return this._ignoreObjects;
     };
 
     /**
-     * @returns {FloatingRegion[]}
+     * @return {FloatingRegion[]}
      */
     Target.prototype.getFloatingRegions = function () {
         return this._floatingRegions;
     };
 
     /**
-     * @returns {FloatingElement[]}
+     * @return {FloatingElement[]}
      */
     Target.prototype.getFloatingObjects = function () {
         return this._floatingObjects;
@@ -242,7 +241,7 @@
      * Validate region (in current window or frame) using region's rect, element or element's locator
      *
      * @param {Region|webdriver.WebElement|EyesRemoteWebElement|webdriver.By} region The region to validate.
-     * @param {webdriver.WebElement|EyesRemoteWebElement|String} [frame] The element which is the frame to switch to.
+     * @param {webdriver.WebElement|EyesRemoteWebElement|string} [frame] The element which is the frame to switch to.
      * @return {Target}
      * @constructor
      */
@@ -253,7 +252,7 @@
     /**
      * Validate frame
      *
-     * @param {EyesRemoteWebElement|webdriver.WebElement|String} frame The element which is the frame to switch to.
+     * @param {EyesRemoteWebElement|webdriver.WebElement|string} frame The element which is the frame to switch to.
      * @return {Target}
      * @constructor
      */
@@ -261,5 +260,5 @@
         return new Target(null, frame);
     };
 
-    module.exports = Target;
+    exports.Target = Target;
 }());

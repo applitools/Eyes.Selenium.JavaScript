@@ -3,9 +3,8 @@
 
     var EyesSDK = require('eyes.sdk'),
         EyesUtils = require('eyes.utils'),
-        ScrollPositionProvider = require('./ScrollPositionProvider'),
-        FrameChain = require('./FrameChain'),
-        Frame = require('./Frame');
+        ScrollPositionProvider = require('./ScrollPositionProvider').ScrollPositionProvider,
+        FrameChain = require('./FrameChain').FrameChain;
     var EyesScreenshot = EyesSDK.EyesScreenshot,
         CoordinatesType = EyesSDK.CoordinatesType,
         ArgumentGuard = EyesUtils.ArgumentGuard,
@@ -23,10 +22,10 @@
 
     /**
      *
-     * @param {Object} logger
+     * @param {Logger} logger
      * @param {FrameChain} frameChain
      * @param {ScreenshotType} screenshotType
-     * @returns {{x: number, y: number}}
+     * @return {{x: number, y: number}}
      */
     var calcFrameLocationInScreenshot = function (logger, frameChain, screenshotType) {
         logger.verbose("Getting first frame..");
@@ -64,10 +63,10 @@
     };
 
     /**
-     * @param {Object} logger A Logger instance.
+     * @param {Logger} logger A Logger instance.
      * @param {EyesWebDriver} driver The web driver used to get the screenshot.
-     * @param {Object} image The actual screenshot image.
-     * @param {Object} promiseFactory
+     * @param {MutableImage} image The actual screenshot image.
+     * @param {PromiseFactory} promiseFactory
      * @augments EyesScreenshot
      * @constructor
      */
@@ -93,7 +92,7 @@
      * @param {ScreenshotType} [screenshotType] The screenshot's type (e.g., viewport/full page).
      * @param {{x: number, y: number}} [frameLocationInScreenshot] The current frame's location in the screenshot.
      * @param {{width: number, height: number}} [frameSize] The full internal size of the frame.
-     * @returns {Promise<void>}
+     * @return {Promise<void>}
      */
     EyesWebDriverScreenshot.prototype.buildScreenshot = function (screenshotType, frameLocationInScreenshot, frameSize) {
         var that = this, viewportSize, imageSize;
@@ -187,7 +186,7 @@
      * @param {boolean} throwIfClipped Throw an EyesException if the region is not fully contained in the screenshot.
      * @return {Promise<EyesWebDriverScreenshot>} A screenshot instance containing the given region.
      */
-    EyesWebDriverScreenshot.prototype.convertLocationFromRegion = function (region, coordinatesType, throwIfClipped) {
+    EyesWebDriverScreenshot.prototype.getSubScreenshot = function (region, coordinatesType, throwIfClipped) {
         this._logger.verbose("getSubScreenshot(", region, ", ", coordinatesType, ", ", throwIfClipped, ")");
 
         ArgumentGuard.notNull(region, "region");
@@ -330,7 +329,7 @@
     /**
      * @param {{x: number, y: number}} location
      * @param {CoordinatesType} coordinatesType
-     * @returns {{x: number, y: number}}
+     * @return {{x: number, y: number}}
      */
     EyesWebDriverScreenshot.prototype.getLocationInScreenshot = function (location, coordinatesType) {
         this._location = this.convertLocationFromLocation(location, coordinatesType, CoordinatesType.SCREENSHOT_AS_IS);
@@ -348,7 +347,7 @@
      * @param {{left: number, top: number, width: number, height: number}} region
      * @param {CoordinatesType} originalCoordinatesType
      * @param {CoordinatesType} resultCoordinatesType
-     * @returns {{left: number, top: number, width: number, height: number}}
+     * @return {{left: number, top: number, width: number, height: number}}
      */
     EyesWebDriverScreenshot.prototype.getIntersectedRegion = function (region, originalCoordinatesType, resultCoordinatesType) {
         if (GeometryUtils.isRegionEmpty(region)) {
@@ -391,7 +390,7 @@
      * Gets the elements region in the screenshot.
      *
      * @param {WebElement} element The element which region we want to intersect.
-     * @return {Promise.<{left: number, top: number, width: number, height: number}>} The intersected region, in {@code SCREENSHOT_AS_IS} coordinates
+     * @return {Promise<{left: number, top: number, width: number, height: number}>} The intersected region, in {@code SCREENSHOT_AS_IS} coordinates
      * type.
      */
     EyesWebDriverScreenshot.prototype.getIntersectedRegionFromElement = function (element) {
@@ -415,5 +414,5 @@
         });
     };
 
-    module.exports = EyesWebDriverScreenshot;
+    exports.EyesWebDriverScreenshot = EyesWebDriverScreenshot;
 }());

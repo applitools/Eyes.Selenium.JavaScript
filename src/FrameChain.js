@@ -2,13 +2,13 @@
     'use strict';
 
     var EyesUtils = require('eyes.utils'),
-        Frame = require('./Frame');
+        Frame = require('./Frame').Frame;
     var ArgumentGuard = EyesUtils.ArgumentGuard,
         GeometryUtils = EyesUtils.GeometryUtils;
 
     /**
      * Creates a new frame chain.
-     * @param {Object} logger A Logger instance.
+     * @param {Logger} logger A Logger instance.
      * @param {FrameChain} other A frame chain from which the current frame chain will be created.
      */
     function FrameChain(logger, other) {
@@ -45,12 +45,12 @@
         var lc2 = c2.size();
 
         // different chains size means different frames
-        if (lc1 != lc2) {
+        if (lc1 !== lc2) {
             return false;
         }
 
         for (var i = 0; i < lc1; ++i) {
-            if (c1.getFrames()[i].getId() != c1.getFrames()[i].getId()) {
+            if (c1.getFrames()[i].getId() !== c1.getFrames()[i].getId()) {
                 return false;
             }
         }
@@ -59,14 +59,14 @@
     };
 
     /**
-     * @return {Array.<Frame>} frames stored in chain
+     * @return {Frame[]} frames stored in chain
      */
     FrameChain.prototype.getFrames = function () {
         return this._frames;
     };
 
     /**
-     * @param {int} index Index of needed frame
+     * @param {number} index Index of needed frame
      * @return {Frame} frame by index in array
      */
     FrameChain.prototype.getFrame = function (index) {
@@ -79,7 +79,7 @@
 
     /**
      *
-     * @return {int} The number of frames in the chain.
+     * @return {number} The number of frames in the chain.
      */
     FrameChain.prototype.size = function () {
         return this._frames.length;
@@ -125,7 +125,7 @@
      * @return {{x: number, y: number}} The outermost frame's location, or NoFramesException.
      */
     FrameChain.prototype.getDefaultContentScrollPosition = function () {
-        if (this._frames.length == 0) {
+        if (this._frames.length === 0) {
             throw new Error("No frames in frame chain");
         }
         return this._frames[0].getParentScrollPosition();
@@ -141,5 +141,5 @@
         return result;
     };
 
-    module.exports = FrameChain;
+    exports.FrameChain = FrameChain;
 }());

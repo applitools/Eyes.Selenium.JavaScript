@@ -1,15 +1,5 @@
-/*
- ---
-
- name: EyesRemoteWebElement
-
- description: Wraps a Remote Web Element.
-
- ---
- */
-
 (function () {
-    "use strict";
+    'use strict';
 
     var EyesSDK = require('eyes.sdk'),
         EyesUtils = require('eyes.utils');
@@ -45,8 +35,8 @@
     };
 
     /**
-     * @param {int} scrollLeft
-     * @param {int} scrollTop
+     * @param {number} scrollLeft
+     * @param {number} scrollTop
      * @return {string}
      */
     var JS_SCROLL_TO_FORMATTED_STR = function (scrollLeft, scrollTop) {
@@ -63,8 +53,7 @@
     };
 
     /**
-     *
-     * C'tor = initializes the module settings
+     * Wraps a Remote Web Element.
      *
      * @constructor
      * @param {WebElement} remoteWebElement
@@ -173,14 +162,14 @@
     /**
      * Returns the computed value of the style property for the current element.
      * @param {string} propStyle The style property which value we would like to extract.
-     * @return {promise.Promise.<string>} The value of the style property of the element, or {@code null}.
+     * @return {promise.Promise<string>} The value of the style property of the element, or {@code null}.
      */
     EyesRemoteWebElement.prototype.getComputedStyle = function (propStyle) {
         return this._eyesDriver.executeScript(JS_GET_COMPUTED_STYLE_FORMATTED_STR(propStyle), this.getRemoteWebElement());
     };
 
     /**
-     * @return {promise.Promise.<int>} The integer value of a computed style.
+     * @return {promise.Promise<number>} The integer value of a computed style.
      */
     EyesRemoteWebElement.prototype.getComputedStyleInteger = function (propStyle) {
         return this.getComputedStyle(propStyle).then(function (value) {
@@ -189,7 +178,7 @@
     };
 
     /**
-     * @return {promise.Promise.<int>} The value of the scrollLeft property of the element.
+     * @return {promise.Promise<number>} The value of the scrollLeft property of the element.
      */
     EyesRemoteWebElement.prototype.getScrollLeft  = function () {
         return this._eyesDriver.executeScript(JS_GET_SCROLL_LEFT, this.getRemoteWebElement()).then(function (value) {
@@ -198,7 +187,7 @@
     };
 
     /**
-     * @return {promise.Promise.<int>} The value of the scrollTop property of the element.
+     * @return {promise.Promise<number>} The value of the scrollTop property of the element.
      */
     EyesRemoteWebElement.prototype.getScrollTop  = function () {
         return this._eyesDriver.executeScript(JS_GET_SCROLL_TOP, this.getRemoteWebElement()).then(function (value) {
@@ -207,7 +196,7 @@
     };
 
     /**
-     * @return {promise.Promise.<int>} The value of the scrollWidth property of the element.
+     * @return {promise.Promise<number>} The value of the scrollWidth property of the element.
      */
     EyesRemoteWebElement.prototype.getScrollWidth  = function () {
         return this._eyesDriver.executeScript(JS_GET_SCROLL_WIDTH, this.getRemoteWebElement()).then(function (value) {
@@ -216,7 +205,7 @@
     };
 
     /**
-     * @return {promise.Promise.<int>} The value of the scrollHeight property of the element.
+     * @return {promise.Promise<number>} The value of the scrollHeight property of the element.
      */
     EyesRemoteWebElement.prototype.getScrollHeight  = function () {
         return this._eyesDriver.executeScript(JS_GET_SCROLL_HEIGHT, this.getRemoteWebElement()).then(function (value) {
@@ -225,28 +214,28 @@
     };
 
     /**
-     * @return {promise.Promise.<int>} The width of the left border.
+     * @return {promise.Promise<number>} The width of the left border.
      */
     EyesRemoteWebElement.prototype.getBorderLeftWidth = function () {
         return this.getComputedStyleInteger("border-left-width");
     };
 
     /**
-     * @return {promise.Promise.<int>} The width of the right border.
+     * @return {promise.Promise<number>} The width of the right border.
      */
     EyesRemoteWebElement.prototype.getBorderRightWidth = function () {
         return this.getComputedStyleInteger("border-right-width");
     };
 
     /**
-     * @return {promise.Promise.<int>} The width of the top border.
+     * @return {promise.Promise<number>} The width of the top border.
      */
     EyesRemoteWebElement.prototype.getBorderTopWidth = function () {
         return this.getComputedStyleInteger("border-top-width");
     };
 
     /**
-     * @return {promise.Promise.<int>} The width of the bottom border.
+     * @return {promise.Promise<number>} The width of the bottom border.
      */
     EyesRemoteWebElement.prototype.getBorderBottomWidth = function () {
         return this.getComputedStyleInteger("border-bottom-width");
@@ -281,14 +270,14 @@
     /**
      * Scrolls to the specified location inside the element.
      * @param {{x: number, y: number}} location The location to scroll to.
-     * @return {promise.Promise.<void>}
+     * @return {promise.Promise<void>}
      */
     EyesRemoteWebElement.prototype.scrollTo = function (location) {
         return this._eyesDriver.executeScript(JS_SCROLL_TO_FORMATTED_STR(location.x, location.y), this.getRemoteWebElement());
     };
 
     /**
-     * @return {promise.Promise.<string>} The overflow of the element.
+     * @return {promise.Promise<string>} The overflow of the element.
      */
     EyesRemoteWebElement.prototype.getOverflow = function () {
         return this._eyesDriver.executeScript(JS_GET_OVERFLOW, this.getRemoteWebElement());
@@ -296,7 +285,7 @@
 
     /**
      * @param {string} overflow The overflow to set
-     * @return {promise.Promise.<void>} The overflow of the element.
+     * @return {promise.Promise<void>} The overflow of the element.
      */
     EyesRemoteWebElement.prototype.setOverflow = function (overflow) {
         return this._eyesDriver.executeScript(JS_SET_OVERFLOW_FORMATTED_STR(overflow), this.getRemoteWebElement());
@@ -313,5 +302,5 @@
         return this._element;
     };
 
-    module.exports = EyesRemoteWebElement;
+    exports.EyesRemoteWebElement = EyesRemoteWebElement;
 }());
