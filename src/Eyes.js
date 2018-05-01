@@ -95,7 +95,7 @@
      * @param {WebDriver} driver - The web driver that controls the browser hosting the application under test.
      * @param {string} appName - The name of the application under test.
      * @param {string} testName - The test name.
-     * @param {{width: number, height: number}} viewportSize - The required browser's
+     * @param {{width: number, height: number}} [viewportSize] - The required browser's
      * viewport size (i.e., the visible part of the document's body) or to use the current window's viewport.
      * @return {Promise<WebDriver>} A wrapped WebDriver which enables Eyes trigger recording and
      * frame handling.
@@ -183,8 +183,8 @@
     //noinspection JSUnusedGlobalSymbols
     /**
      * Ends the test.
-     * @param throwEx - If true, an exception will be thrown for failed/new tests.
-     * @return {*} The test results.
+     * @param [throwEx=true] - If true, an exception will be thrown for failed/new tests.
+     * @return {Promise<TestResults|undefined>} The test results.
      */
     Eyes.prototype.close = function (throwEx) {
         var that = this;
@@ -508,8 +508,8 @@
     /**
      * Takes a snapshot of the application under test and matches it with
      * the expected output.
-     * @param {string} tag - An optional tag to be associated with the snapshot.
-     * @param {number} matchTimeout - The amount of time to retry matching (Milliseconds).
+     * @param {string} [tag=] - An optional tag to be associated with the snapshot.
+     * @param {number} [matchTimeout=-1] - The amount of time to retry matching (Milliseconds).
      * @return {Promise<{asExpected: boolean}>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkWindow = function (tag, matchTimeout) {
@@ -520,10 +520,10 @@
     /**
      * Matches the frame given as parameter, by switching into the frame and
      * using stitching to get an image of the frame.
-     * @param {EyesRemoteWebElement} - element The element which is the frame to switch to. (as
+     * @param {EyesRemoteWebElement} element - The element which is the frame to switch to. (as
      * would be used in a call to driver.switchTo().frame() ).
      * @param {number} matchTimeout - The amount of time to retry matching (milliseconds).
-     * @param {string} tag - An optional tag to be associated with the match.
+     * @param {string} [tag=] - An optional tag to be associated with the match.
      * @return {Promise<{asExpected: boolean}>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkFrame = function (element, matchTimeout, tag) {
@@ -535,8 +535,8 @@
      * Takes a snapshot of the application under test and matches a specific
      * element with the expected region output.
      * @param {webdriver.WebElement|EyesRemoteWebElement} element - The element to check.
-     * @param {int|null} matchTimeout - The amount of time to retry matching (milliseconds).
-     * @param {string} tag - An optional tag to be associated with the match.
+     * @param {number} [matchTimeout=-1] - The amount of time to retry matching (milliseconds).
+     * @param {string} [tag=] - An optional tag to be associated with the match.
      * @return {Promise<{asExpected: boolean}>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkElement = function (element, matchTimeout, tag) {
@@ -548,8 +548,8 @@
      * Takes a snapshot of the application under test and matches a specific
      * element with the expected region output.
      * @param {webdriver.By} locator - The element to check.
-     * @param {int|null} matchTimeout - The amount of time to retry matching (milliseconds).
-     * @param {string} tag - An optional tag to be associated with the match.
+     * @param {number} [matchTimeout=-1] - The amount of time to retry matching (milliseconds).
+     * @param {string} [tag=] - An optional tag to be associated with the match.
      * @return {Promise<{asExpected: boolean}>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkElementBy = function (locator, matchTimeout, tag) {
@@ -561,8 +561,8 @@
      * Visually validates a region in the screenshot.
      * @param {{left: number, top: number, width: number, height: number}} region - The region to
      * validate (in screenshot coordinates).
-     * @param {string} tag - An optional tag to be associated with the screenshot.
-     * @param {number} matchTimeout - The amount of time to retry matching.
+     * @param {string} [tag=] - An optional tag to be associated with the screenshot.
+     * @param {number} [matchTimeout=-1] - The amount of time to retry matching.
      * @return {Promise<{asExpected: boolean}>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkRegion = function (region, tag, matchTimeout) {
@@ -573,8 +573,8 @@
     /**
      * Visually validates a region in the screenshot.
      * @param {webdriver.WebElement|EyesRemoteWebElement} element - The element defining the region to validate.
-     * @param {string} tag - An optional tag to be associated with the screenshot.
-     * @param {number} matchTimeout - The amount of time to retry matching.
+     * @param {string} [tag=] - An optional tag to be associated with the screenshot.
+     * @param {number} [matchTimeout=-1] - The amount of time to retry matching.
      * @return {Promise<{asExpected: boolean}>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkRegionByElement = function (element, tag, matchTimeout) {
@@ -585,8 +585,8 @@
     /**
      * Visually validates a region in the screenshot.
      * @param {webdriver.By} by - The WebDriver selector used for finding the region to validate.
-     * @param {string} tag - An optional tag to be associated with the screenshot.
-     * @param {number} matchTimeout - The amount of time to retry matching.
+     * @param {string} [tag=] - An optional tag to be associated with the screenshot.
+     * @param {number} [matchTimeout=-1] - The amount of time to retry matching.
      * @return {Promise<{asExpected: boolean}>} A promise which is resolved when the validation is finished.
      */
     Eyes.prototype.checkRegionBy = function (by, tag, matchTimeout) {
@@ -599,9 +599,9 @@
      * test and matches a region specified by the given selector.
      * @param {string} frameNameOrId - The name or id of the frame to switch to. (as would be used in a call to driver.switchTo().frame()).
      * @param {webdriver.By} locator - A Selector specifying the region to check.
-     * @param {int|null} matchTimeout - The amount of time to retry matching. (Milliseconds)
-     * @param {string} tag - An optional tag to be associated with the snapshot.
-     * @param {boolean} stitchContent - If {@code true}, stitch the internal content of the region (i.e., perform
+     * @param {number} [matchTimeout=-1] - The amount of time to retry matching. (Milliseconds)
+     * @param {string} [tag=] - An optional tag to be associated with the snapshot.
+     * @param {boolean} [stitchContent=true] - If {@code true}, stitch the internal content of the region (i.e., perform
      *                  {@link #checkElement(By, int, string)} on the region.
      * @return {Promise<{asExpected: boolean}>} A promise which is resolved when the validation is finished.
      */
