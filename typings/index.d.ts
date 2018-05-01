@@ -10,17 +10,21 @@ import { WebDriver, WebElement, By, TargetLocator, WebElementPromise, AlertPromi
 import { ElementFinder, ElementArrayFinder, ProtractorBy } from 'protractor';
 
 import { PromiseFactory, Location, Region, RectangleSize } from 'eyes.utils';
-import { PositionProvider, RegionProvider, Logger, CutProvider, ScaleProviderFactory, MatchSettings, CoordinatesType, EyesScreenshot, EyesBase, MutableImage } from 'eyes.sdk';
+import { PositionProvider, RegionProvider, Logger, CutProvider, ScaleProviderFactory, MatchSettings, CoordinatesType,
+    EyesScreenshot, EyesBase, MutableImage, TestResults } from 'eyes.sdk';
 
-export { ArgumentGuard, GeneralUtils, GeometryUtils, ImageDeltaCompressor, ImageUtils, PromiseFactory,
-    PropertyHandler, SimplePropertyHandler, ReadOnlyPropertyHandler, StreamUtils } from 'eyes.utils';
+
+export { ArgumentGuard, GeneralUtils, GeometryUtils, ImageDeltaCompressor, ImageUtils, PromiseFactory, StreamUtils,
+    PropertyHandler, SimplePropertyHandler, ReadOnlyPropertyHandler, Location, Region, RectangleSize } from 'eyes.utils';
 
 export { ConsoleLogHandler, ContextBasedScaleProvider, ContextBasedScaleProviderFactory, CoordinatesType, CutProvider,
     EyesScreenshot, FileLogHandler, FixedCutProvider, FixedScaleProvider, FixedScaleProviderFactory, Logger, LogHandler,
     MatchSettings, MutableImage, NullCutProvider, NullLogHandler, NullScaleProvider, PositionProvider, RegionProvider,
-    ScaleProvider, ScaleProviderFactory, ScaleProviderIdentityFactory, ServerConnector, TestResultsFormatter, Triggers } from 'eyes.sdk';
+    ScaleProvider, ScaleProviderFactory, ScaleProviderIdentityFactory, ServerConnector, TestResultsFormatter, Triggers,
+    Trigger, RunningSession, BatchInfo, AppEnvironment, SessionStartInfo, TestResults} from 'eyes.sdk';
 
-interface FloatingRegion {
+
+export interface FloatingRegion {
     left: number;
     top: number;
     width: number;
@@ -31,7 +35,8 @@ interface FloatingRegion {
     maxDownOffset: number;
 }
 
-interface FloatingElement {
+
+export interface FloatingElement {
     element: WebElement|EyesRemoteWebElement|By;
     maxLeftOffset: number;
     maxRightOffset: number;
@@ -103,13 +108,13 @@ export declare class Eyes extends EyesBase {
      * @param viewportSize The required browser's viewport size (i.e., the visible part of the document's body) or to use the current window's viewport.
      * @return A wrapped WebDriver which enables Eyes trigger recording and frame handling.
      */
-    open(driver: WebDriver, appName: string, testName: string, viewportSize: RectangleSize): Promise<WebDriver>;
+    open(driver: WebDriver, appName: string, testName: string, viewportSize?: RectangleSize): Promise<WebDriver>;
     /**
      * Ends the test.
-     * @param [throwEx] If true, an exception will be thrown for failed/new tests.
+     * @param [throwEx=true] If true, an exception will be thrown for failed/new tests.
      * @return The test results.
      */
-    close(throwEx?: boolean): any;
+    close(throwEx?: boolean): Promise<TestResults|undefined>;
     /**
      * Preform visual validation
      * @param name A name to be associated with the match
@@ -119,69 +124,69 @@ export declare class Eyes extends EyesBase {
     check(name: string, target: Target): Promise<void>;
     /**
      * Takes a snapshot of the application under test and matches it with the expected output.
-     * @param tag An optional tag to be associated with the snapshot.
-     * @param matchTimeout The amount of time to retry matching (Milliseconds).
+     * @param [tag=] An optional tag to be associated with the snapshot.
+     * @param [matchTimeout=-1] The amount of time to retry matching (Milliseconds).
      * @return A promise which is resolved when the validation is finished.
      */
-    checkWindow(tag: string, matchTimeout: number): Promise<void>;
+    checkWindow(tag?: string, matchTimeout?: number): Promise<void>;
     /**
      * Matches the frame given as parameter, by switching into the frame and using stitching to get an image of the frame.
      * @param element The element which is the frame to switch to. (as would be used in a call to driver.switchTo().frame()).
-     * @param matchTimeout The amount of time to retry matching (milliseconds).
-     * @param tag An optional tag to be associated with the match.
+     * @param [matchTimeout=-1] The amount of time to retry matching (milliseconds).
+     * @param [tag=] An optional tag to be associated with the match.
      * @return A promise which is resolved when the validation is finished.
      */
-    checkFrame(element: EyesRemoteWebElement, matchTimeout: number, tag: string): Promise<void>;
+    checkFrame(element: EyesRemoteWebElement, matchTimeout?: number, tag?: string): Promise<void>;
     /**
      * Takes a snapshot of the application under test and matches a specific element with the expected region output.
      * @param element The element to check.
-     * @param matchTimeout The amount of time to retry matching (milliseconds).
-     * @param tag An optional tag to be associated with the match.
+     * @param [matchTimeout=-1] The amount of time to retry matching (milliseconds).
+     * @param [tag=] An optional tag to be associated with the match.
      * @return A promise which is resolved when the validation is finished.
      */
-    checkElement(element: WebElement|EyesRemoteWebElement, matchTimeout: number|null, tag: string): Promise<void>;
+    checkElement(element: WebElement|EyesRemoteWebElement, matchTimeout?: number, tag?: string): Promise<void>;
     /**
      * Takes a snapshot of the application under test and matches a specific element with the expected region output.
      * @param locator The element to check.
-     * @param matchTimeout The amount of time to retry matching (milliseconds).
-     * @param tag An optional tag to be associated with the match.
+     * @param [matchTimeout=-1] The amount of time to retry matching (milliseconds).
+     * @param [tag=] An optional tag to be associated with the match.
      * @return A promise which is resolved when the validation is finished.
      */
-    checkElementBy(locator: By, matchTimeout: number|null, tag: string): Promise<void>;
+    checkElementBy(locator: By, matchTimeout?: number, tag?: string): Promise<void>;
     /**
      * Visually validates a region in the screenshot.
      * @param region The region to validate (in screenshot coordinates).
-     * @param tag An optional tag to be associated with the screenshot.
-     * @param matchTimeout - The amount of time to retry matching.
+     * @param [tag=] An optional tag to be associated with the screenshot.
+     * @param [matchTimeout=-1] The amount of time to retry matching.
      * @return A promise which is resolved when the validation is finished.
      */
-    checkRegion(region: Region, matchTimeout: number|null, tag: string): Promise<void>;
+    checkRegion(region: Region, matchTimeout?: number, tag?: string): Promise<void>;
     /**
      * Visually validates a region in the screenshot.
      * @param element The element defining the region to validate.
-     * @param tag An optional tag to be associated with the screenshot.
-     * @param matchTimeout The amount of time to retry matching.
+     * @param [tag=] An optional tag to be associated with the screenshot.
+     * @param [matchTimeout=-1] The amount of time to retry matching.
      * @return A promise which is resolved when the validation is finished.
      */
-    checkRegionByElement(element: WebElement|EyesRemoteWebElement, tag: string, matchTimeout: number|null): Promise<void>;
+    checkRegionByElement(element: WebElement|EyesRemoteWebElement, tag?: string, matchTimeout?: number): Promise<void>;
     /**
      * Visually validates a region in the screenshot.
      * @param by The WebDriver selector used for finding the region to validate.
-     * @param tag An optional tag to be associated with the screenshot.
-     * @param matchTimeout The amount of time to retry matching.
+     * @param [tag=] An optional tag to be associated with the screenshot.
+     * @param [matchTimeout=-1] The amount of time to retry matching.
      * @return A promise which is resolved when the validation is finished.
      */
-    checkRegionBy(by: By, tag: string, matchTimeout: number|null): Promise<void>;
+    checkRegionBy(by: By, tag?: string, matchTimeout?: number): Promise<void>;
     /**
      * Switches into the given frame, takes a snapshot of the application under test and matches a region specified by the given selector.
      * @param frameNameOrId The name or id of the frame to switch to. (as would be used in a call to driver.switchTo().frame()).
      * @param locator A Selector specifying the region to check.
-     * @param matchTimeout The amount of time to retry matching (Milliseconds).
-     * @param tag An optional tag to be associated with the snapshot.
-     * @param stitchContent If {@code true}, stitch the internal content of the region (i.e., perform {@link #checkElement(By, number, String)} on the region.
+     * @param [matchTimeout=-1] The amount of time to retry matching (Milliseconds).
+     * @param [tag=] An optional tag to be associated with the snapshot.
+     * @param [stitchContent=true] If {@code true}, stitch the internal content of the region (i.e., perform {@link #checkElement(By, number, String)} on the region.
      * @return A promise which is resolved when the validation is finished.
      */
-    checkRegionInFrame(frameNameOrId: string, locator: By, matchTimeout: number|null, tag: string, stitchContent: boolean): Promise<void>;
+    checkRegionInFrame(frameNameOrId: string, locator: By, matchTimeout?: number, tag?: string, stitchContent?: boolean): Promise<void>;
     /**
      * Get an updated screenshot.
      * @return The image of the new screenshot.
@@ -193,7 +198,7 @@ export declare class Eyes extends EyesBase {
      * Set the failure report.
      * @param mode Use one of the values in EyesBase.FailureReport.
      */
-    setFailureReport(mode: any): void;
+    setFailureReport(mode: EyesBase.FailureReport): void;
     /**
      * Get the viewport size.
      * @return The viewport size.
@@ -297,7 +302,7 @@ export declare class ElementArrayFinderWrapper extends ElementArrayFinder {
 
 
 export declare class EyesRegionProvider extends RegionProvider {
-    constructor(logger: Logger, driver: any, region: Region, coordinatesType: CoordinatesType);
+    constructor(logger: Logger, driver: EyesWebDriver, region: Region, coordinatesType: CoordinatesType);
     /**
      * @return A region with "as is" viewport coordinates.
      */
@@ -315,12 +320,12 @@ export declare class EyesRegionProvider extends RegionProvider {
 
 export declare class EyesRemoteWebElement extends WebElementPromise {
     constructor(remoteWebElement: WebElement, eyesDriver: EyesWebDriver, logger: Logger);
-    static registerSendKeys(element: any, eyesDriver: any, logger: any, args: any): Promise<void>;
-    static registerClick(element: any, eyesDriver: any, logger: any): Promise<void>;
+    static registerSendKeys(element: EyesRemoteWebElement, eyesDriver: EyesWebDriver, logger: Logger, args: any[]): Promise<void>;
+    static registerClick(element: EyesRemoteWebElement, eyesDriver: EyesWebDriver, logger: Logger): Promise<void>;
     sendKeys(...var_args: any[]): promise.Promise<void>;
     click(): promise.Promise<void>;
-    findElement(locator: any): EyesRemoteWebElement;
-    findElements(locator: any): promise.Promise<EyesRemoteWebElement[]>;
+    findElement(locator: By|ProtractorBy): EyesRemoteWebElement;
+    findElements(locator: By|ProtractorBy): promise.Promise<EyesRemoteWebElement[]>;
     /**
      * Returns the computed value of the style property for the current element.
      * @param propStyle The style property which value we would like to extract.
@@ -479,7 +484,7 @@ export declare class EyesWebDriverScreenshot extends EyesScreenshot {
      * @param image The actual screenshot image.
      * @param promiseFactory
      */
-    constructor(logger: Logger, driver: EyesWebDriver, image: any, promiseFactory: PromiseFactory);
+    constructor(logger: Logger, driver: EyesWebDriver, image: MutableImage, promiseFactory: PromiseFactory);
     /**
      * @param screenshotType The screenshot's type (e.g., viewport/full page).
      * @param frameLocationInScreenshot The current frame's location in the screenshot.
@@ -618,7 +623,7 @@ export declare class ScrollPositionProvider extends PositionProvider {
 
 
 export declare class Target {
-    constructor(region: any, frame: any);
+    constructor(region: Region|WebElement|EyesRemoteWebElement|By, frame: WebElement|EyesRemoteWebElement|String);
     /**
      * @param ms Milliseconds to wait
      */

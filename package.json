@@ -45,7 +45,7 @@
   "main": "./index.js",
   "types": "./typings/index.d.ts",
   "dependencies": {
-    "@types/node": "^9.6.6",
+    "@types/node": "*",
     "eyes.utils": "0.0.27",
     "eyes.sdk": "0.0.69",
     "q": "^1.4.1"
