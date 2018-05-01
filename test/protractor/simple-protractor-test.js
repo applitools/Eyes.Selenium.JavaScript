@@ -10,6 +10,7 @@ describe("Eyes.Selenium.JavaScript - Protractor", function() {
         eyes = new Eyes();
         eyes.setApiKey(process.env.APPLITOOLS_API_KEY);
         eyes.setLogHandler(new ConsoleLogHandler(true));
+        eyes.getLogHandler().setPrintSessionId(true);
     });
 
     beforeEach(function(done){
