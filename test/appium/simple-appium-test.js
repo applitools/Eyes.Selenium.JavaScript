@@ -16,7 +16,7 @@ describe('Eyes.Selenium.JavaScript - Appium', function () {
             .withCapabilities({
                 'platformName': 'Android',
                 'deviceName': 'android-24-google_apis-x86_64-v24.4.1-wd-manager',
-                'platformVersion': '7.0',
+                'platformVersion': '6.0',
                 'app': 'http://saucelabs.com/example_files/ContactManager.apk',
                 'browserName': '',
                 'clearSystemFiles': 'true',

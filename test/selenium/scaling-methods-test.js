@@ -23,6 +23,7 @@ describe('Eyes.Selenium.JavaScript - Selenium', function () {
         eyes = new Eyes();
         eyes.setApiKey(process.env.APPLITOOLS_API_KEY);
         eyes.setLogHandler(new ConsoleLogHandler(true));
+        eyes.getLogHandler().setPrintSessionId(true);
         eyes.setForceFullPageScreenshot(true);
     });
 
