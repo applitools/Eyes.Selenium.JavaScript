@@ -1,6 +1,6 @@
 {
   "name": "eyes.selenium",
-  "version": "0.0.79",
+  "version": "0.0.80",
   "description": "Applitools Eyes SDK For Selenium JavaScript WebDriver",
   "keywords": [
     "eyes.selenium",
@@ -46,8 +46,8 @@
   "types": "./typings/index.d.ts",
   "dependencies": {
     "@types/node": "*",
-    "eyes.utils": "0.0.27",
-    "eyes.sdk": "0.0.69",
+    "eyes.utils": "0.0.28",
+    "eyes.sdk": "0.0.70",
     "q": "^1.4.1"
   },
   "devDependencies": {
