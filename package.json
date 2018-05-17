@@ -47,8 +47,7 @@
   "dependencies": {
     "@types/node": "*",
     "eyes.utils": "0.0.28",
-    "eyes.sdk": "0.0.70",
-    "q": "^1.4.1"
+    "eyes.sdk": "0.0.70"
   },
   "devDependencies": {
     "mocha": "^5.0.1",
