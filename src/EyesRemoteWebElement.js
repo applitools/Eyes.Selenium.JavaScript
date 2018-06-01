@@ -56,10 +56,10 @@
      * Wraps a Remote Web Element.
      *
      * @constructor
-     * @param {WebElement} remoteWebElement
+     * @param {WebElement} webElement
      * @param {EyesWebDriver} eyesDriver
      * @param {Logger} logger
-     * @augments WebElement
+     * @mixin WebElement
      **/
     function EyesRemoteWebElement(remoteWebElement, eyesDriver, logger) {
         this._element = remoteWebElement;
@@ -118,7 +118,14 @@
         });
     };
 
-    EyesRemoteWebElement.prototype.sendKeys = function () {
+    // noinspection JSUnusedGlobalSymbols
+    /**
+     * Schedules a command to type a sequence on the DOM element represented by this instance.
+     * @param {...(number|string|!IThenable<(number|string)>)} var_args The sequence of keys to type. Number keys may
+     *  be referenced numerically or by string (1 or '1'). All arguments will be joined into a single sequence.
+     * @return {!Promise<void>} A promise that will be resolved when all keys have been typed.
+     */
+    EyesRemoteWebElement.prototype.sendKeys = function (var_args) {
         var that = this, args = Array.prototype.slice.call(arguments, 0);
         return EyesRemoteWebElement.registerSendKeys(that._element, that._eyesDriver, that._logger, args).then(function () {
             var element = that.getRemoteWebElement();
@@ -134,6 +141,11 @@
         });
     };
 
+    // noinspection JSUnusedGlobalSymbols
+    /**
+     * Schedules a command to click on this element.
+     * @return {!Promise<void>} A promise that will be resolved when the click command has completed.
+     */
     EyesRemoteWebElement.prototype.click = function () {
         var that = this;
         that._logger.verbose("click on element");
@@ -296,6 +308,7 @@
      */
     EyesRemoteWebElement.prototype.getRemoteWebElement = function () {
         if (this._element.getRemoteWebElement) {
+            this._logger.log('EyesRemoteWebElement.getRemoteWebElement - remote element contains another remote');
             return this._element.getRemoteWebElement();
         }
 

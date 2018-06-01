@@ -32,18 +32,27 @@
     }
 
     //noinspection JSUnusedGlobalSymbols
+    /**
+     * @return {Eyes}
+     */
     EyesWebDriver.prototype.getEyes = function () {
         return this._eyesDriver;
     };
 
     //noinspection JSUnusedGlobalSymbols
-    EyesWebDriver.prototype.setEyes = function (eyes) {
-        this._eyesDriver = eyes;
+    /**
+     * @return {PromiseFactory}
+     */
+    EyesWebDriver.prototype.getPromiseFactory = function () {
+        return this._eyes._promiseFactory;
     };
 
     //noinspection JSUnusedGlobalSymbols
+    /**
+     * @return {WebDriver}
+     */
     EyesWebDriver.prototype.getRemoteWebDriver = function () {
-        return this._driver;
+        return this._driver.driver || this._driver;
     };
 
     //noinspection JSUnusedGlobalSymbols

@@ -41,14 +41,14 @@
     }
 
     /**
-     * @constructor
      * Initialized a new EyesTargetLocator object.
+     * @constructor
      * @param {Logger} logger A Logger instance.
      * @param {EyesWebDriver} driver The WebDriver from which the targetLocator was received.
      * @param {TargetLocator} targetLocator The actual TargetLocator object.
-     * @param {OnWillSwitch} onWillSwitch A delegate to be called whenever a relevant switch
+     * @param {OnWillSwitch} onWillSwitch A delegate to be called whenever a relevant switch is about to be performed.
      * @param {PromiseFactory} promiseFactory
-     * is about to be performed.
+     * @mixin TargetLocator
      */
     function EyesTargetLocator(logger, driver, targetLocator, onWillSwitch, promiseFactory) {
         ArgumentGuard.notNull(logger, "logger");
@@ -62,6 +62,7 @@
         this._onWillSwitch = onWillSwitch;
         this._promiseFactory = promiseFactory;
         this._scrollPosition = new ScrollPositionProvider(this._logger, this._driver, this._promiseFactory);
+
         GeneralUtils.mixin(this, targetLocator);
     }
 

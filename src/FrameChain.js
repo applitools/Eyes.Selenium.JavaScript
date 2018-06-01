@@ -8,6 +8,7 @@
 
     /**
      * Creates a new frame chain.
+     * @constructor
      * @param {Logger} logger A Logger instance.
      * @param {FrameChain} other A frame chain from which the current frame chain will be created.
      */

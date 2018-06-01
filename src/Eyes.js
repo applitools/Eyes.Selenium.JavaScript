@@ -101,8 +101,7 @@
      * @param {string} testName - The test name.
      * @param {{width: number, height: number}} [viewportSize] - The required browser's
      * viewport size (i.e., the visible part of the document's body) or to use the current window's viewport.
-     * @return {Promise<WebDriver>} A wrapped WebDriver which enables Eyes trigger recording and
-     * frame handling.
+     * @return {Promise<WebDriver>} A wrapped WebDriver which enables Eyes trigger recording and frame handling.
      */
     Eyes.prototype.open = function (driver, appName, testName, viewportSize) {
         var that = this;
