@@ -136,50 +136,48 @@
         that.setStitchMode(that._stitchMode);
 
         if (this._isDisabled) {
-            return that._flow.execute(function () {
-                return driver;
-            });
+            return that._promiseFactory.resolve(driver);
         }
 
-        return that._flow.execute(function () {
-            return driver.getCapabilities().then(function (capabilities) {
-                var platformName, platformVersion, orientation;
-                if (capabilities.caps_) {
-                    platformName = capabilities.caps_.platformName;
-                    platformVersion = capabilities.caps_.platformVersion;
-                    orientation = capabilities.caps_.orientation || capabilities.caps_.deviceOrientation;
-                } else {
-                    platformName = capabilities.get('platform') || capabilities.get('platformName');
-                    platformVersion = capabilities.get('version') || capabilities.get('platformVersion');
-                    orientation = capabilities.get('orientation') || capabilities.get('deviceOrientation');
-                }
+        return that._promiseFactory.resolve().then(function () {
+            return driver.getCapabilities();
+        }).then(function (capabilities) {
+            var platformName, platformVersion, orientation;
+            if (capabilities.caps_) {
+                platformName = capabilities.caps_.platformName;
+                platformVersion = capabilities.caps_.platformVersion;
+                orientation = capabilities.caps_.orientation || capabilities.caps_.deviceOrientation;
+            } else {
+                platformName = capabilities.get('platform') || capabilities.get('platformName');
+                platformVersion = capabilities.get('version') || capabilities.get('platformVersion');
+                orientation = capabilities.get('orientation') || capabilities.get('deviceOrientation');
+            }
 
-                var majorVersion;
-                if (!platformVersion || platformVersion.length < 1) {
-                    return;
+            var majorVersion;
+            if (!platformVersion || platformVersion.length < 1) {
+                return;
+            }
+            majorVersion = platformVersion.split('.', 2)[0];
+            if (platformName.toUpperCase() === 'ANDROID') {
+                // We only automatically set the OS, if the user hadn't manually set it previously.
+                if (!that.getHostOS()) {
+                    that.setHostOS('Android ' + majorVersion);
                 }
-                majorVersion = platformVersion.split('.', 2)[0];
-                if (platformName.toUpperCase() === 'ANDROID') {
-                    // We only automatically set the OS, if the user hadn't manually set it previously.
-                    if (!that.getHostOS()) {
-                        that.setHostOS('Android ' + majorVersion);
-                    }
-                } else if (platformName.toUpperCase() === 'IOS') {
-                    if (!that.getHostOS()) {
-                        that.setHostOS('iOS ' + majorVersion);
-                    }
-                } else {
-                    return;
+            } else if (platformName.toUpperCase() === 'IOS') {
+                if (!that.getHostOS()) {
+                    that.setHostOS('iOS ' + majorVersion);
                 }
+            } else {
+                return;
+            }
 
-                if (orientation && orientation.toUpperCase() === 'LANDSCAPE') {
-                    that._isLandscape = true;
-                }
-            }).then(function () {
-                return EyesBase.prototype.open.call(that, appName, testName, viewportSize);
-            }).then(function () {
-                return that._driver;
-            });
+            if (orientation && orientation.toUpperCase() === 'LANDSCAPE') {
+                that._isLandscape = true;
+            }
+        }).then(function () {
+            return EyesBase.prototype.open.call(that, appName, testName, viewportSize);
+        }).then(function () {
+            return that._driver;
         });
     };
 
@@ -190,23 +188,18 @@
      * @return {Promise<TestResults|undefined>} The test results.
      */
     Eyes.prototype.close = function (throwEx) {
-        var that = this;
-
-        if (this._isDisabled) {
-            return that._flow.execute(function () {
-            });
-        }
         if (throwEx === undefined) {
             throwEx = true;
         }
 
-        return that._flow.execute(function () {
-            return EyesBase.prototype.close.call(that, throwEx)
-                .then(function (results) {
-                    return results;
-                }, function (err) {
-                    throw err;
-                });
+        var that = this;
+
+        if (this._isDisabled) {
+            return that._promiseFactory.resolve();
+        }
+
+        return that._promiseFactory.resolve().then(function () {
+            return EyesBase.prototype.close.call(that, throwEx);
         });
     };
 
