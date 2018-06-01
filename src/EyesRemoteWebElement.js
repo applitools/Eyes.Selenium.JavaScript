@@ -61,14 +61,12 @@
      * @param {Logger} logger
      * @mixin WebElement
      **/
-    function EyesRemoteWebElement(remoteWebElement, eyesDriver, logger) {
-        this._element = remoteWebElement;
+    function EyesRemoteWebElement(webElement, eyesDriver, logger) {
+        this._element = webElement;
         this._logger = logger;
         this._eyesDriver = eyesDriver;
-        GeneralUtils.mixin(this, remoteWebElement);
 
-        // remove then method, which comes from thenableWebElement (Selenium 3+)
-        delete this.then;
+        GeneralUtils.mixin(this, webElement);
     }
 
     function _getRectangle(location, size) {
@@ -156,10 +154,7 @@
     };
 
     EyesRemoteWebElement.prototype.findElement = function (locator) {
-        var that = this;
-        return this.getRemoteWebElement().findElement(locator).then(function (element) {
-            return new EyesRemoteWebElement(element, that._eyesDriver, that._logger);
-        });
+        return new EyesRemoteWebElement(this.getRemoteWebElement().findElement(locator), this._eyesDriver, this._logger);
     };
 
     EyesRemoteWebElement.prototype.findElements = function (locator) {

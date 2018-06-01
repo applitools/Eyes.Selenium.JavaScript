@@ -60,10 +60,13 @@
     //noinspection JSUnusedGlobalSymbols
     EyesWebDriver.prototype.setRemoteWebDriver = function (driver) {
         this._driver = driver;
+
         GeneralUtils.mixin(this, driver);
 
-        // remove then method, which comes from thenableWebDriver (Selenium 3+)
+        // TODO: is there a way to override bindings?
         delete this.then;
+        delete this.catch;
+        delete this.cancel;
     };
 
     //noinspection JSUnusedGlobalSymbols

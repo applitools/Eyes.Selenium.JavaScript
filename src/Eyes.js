@@ -228,8 +228,7 @@
         if (target.getIgnoreObjects().length) {
             target.getIgnoreObjects().forEach(function (obj) {
                 promise = promise.then(function() {
-                    return findElementByLocator(that, obj.element);
-                }).then(function (element) {
+                    var element = findElementByLocator(that, obj.element);
                     if (!isElementObject(element)) {
                         throw new Error("Unsupported ignore region type: " + typeof element);
                     }
@@ -244,8 +243,7 @@
         if (target.getFloatingObjects().length) {
             target.getFloatingObjects().forEach(function (obj) {
                 promise = promise.then(function() {
-                    return findElementByLocator(that, obj.element);
-                }).then(function (element) {
+                    var element = findElementByLocator(that, obj.element);
                     if (!isElementObject(element)) {
                         throw new Error("Unsupported floating region type: " + typeof element);
                     }
@@ -275,8 +273,7 @@
         // If frame specified
         if (target.isUsingFrame()) {
             promise = promise.then(function () {
-                return findElementByLocator(that, target.getFrame());
-            }).then(function (frame) {
+                var frame = findElementByLocator(that, target.getFrame());
                 that._logger.verbose("Switching to frame...");
                 return that._driver.switchTo().frame(frame);
             }).then(function () {
@@ -298,9 +295,7 @@
         // if region specified
         if (target.isUsingRegion()) {
             promise = promise.then(function () {
-                return findElementByLocator(that, target.getRegion());
-            }).then(function (region) {
-                regionObject = region;
+                regionObject = findElementByLocator(that, target.getRegion());
 
                 if (isElementObject(regionObject)) {
                     var regionPromise;
@@ -394,16 +389,14 @@
     };
 
     var findElementByLocator = function (that, elementObject) {
-        return that._promiseFactory.makePromise(function (resolve) {
-            if (isLocatorObject(elementObject)) {
-                that._logger.verbose("Trying to find element...", elementObject);
-                return resolve(that._driver.findElement(elementObject));
-            } else if (elementObject instanceof ElementFinderWrapper) {
-                return resolve(elementObject.getWebElement());
-            }
+        if (isLocatorObject(elementObject)) {
+            that._logger.verbose("Trying to find element...", elementObject);
+            return that._driver.findElement(elementObject);
+        } else if (elementObject instanceof ElementFinderWrapper) {
+            return elementObject.getWebElement();
+        }
 
-            resolve(elementObject);
-        });
+        return elementObject;
     };
 
     var isElementObject = function (o) {
