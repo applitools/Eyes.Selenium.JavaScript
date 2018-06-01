@@ -50,10 +50,10 @@
     "eyes.sdk": "0.0.70"
   },
   "devDependencies": {
-    "mocha": "^5.1.1",
     "chromedriver": "^2.38.3",
-    "selenium-webdriver": "^2.53.0 || ^3.6.0",
-    "protractor": "^4.0.0 || ^5.3.0"
+    "mocha": "^5.2.0",
+    "protractor": "^4.0.0 || ^5.3.0",
+    "selenium-webdriver": "^2.53.0 || ^3.6.0"
   },
   "scripts": {
     "test": "npm run test-selenium",
