@@ -25,6 +25,8 @@
         this._driver = undefined;
         this.setRemoteWebDriver(driver);
 
+        /** @deprecated */
+        this._promiseFactory = this._eyes._promiseFactory;
         /** @type {webdriver.By|ProtractorBy} */
         this._byFunctions = eyes._isProtractorLoaded ? global.by : webdriver.By;
 
