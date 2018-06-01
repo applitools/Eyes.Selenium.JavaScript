@@ -28,6 +28,8 @@
         SimplePropertyHandler = EyesUtils.SimplePropertyHandler,
         GeometryUtils = EyesUtils.GeometryUtils;
 
+    var VERSION = require('../package.json').version;
+
     var DEFAULT_WAIT_BEFORE_SCREENSHOTS = 100, // ms
         UNKNOWN_DEVICE_PIXEL_RATIO = 0,
         DEFAULT_DEVICE_PIXEL_RATIO = 1;
@@ -72,7 +74,7 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype._getBaseAgentId = function () {
-        return 'eyes.selenium/0.0.78';
+        return 'eyes.selenium/' + VERSION;
     };
 
     function _init(that, flow) {
