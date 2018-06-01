@@ -444,11 +444,11 @@ export declare enum TargetType {
 // EyesTargetLocator.TargetType = TargetType;
 
 export declare class EyesWebDriver extends WebDriver {
-    constructor(remoteWebDriver: WebDriver, eyes: Eyes, logger: Logger, promiseFactory: PromiseFactory);
-    getEyes(): Promise<Eyes>;
-    setEyes(eyes: Eyes): void;
-    getRemoteWebDriver(): Promise<WebDriver>;
-    setRemoteWebDriver(remoteWebDriver: WebDriver): void;
+    constructor(remoteWebDriver: WebDriver, eyes: Eyes, logger: Logger);
+    getEyes(): Eyes;
+    getPromiseFactory(): PromiseFactory;
+    getRemoteWebDriver(): WebDriver;
+    setRemoteWebDriver(driver: WebDriver): void;
     getUserAgent(): Promise<string>;
     findElement(locator: By|ProtractorBy): EyesRemoteWebElement;
     findElements(locator: By|ProtractorBy): promise.Promise<EyesRemoteWebElement[]>;

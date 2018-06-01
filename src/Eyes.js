@@ -132,7 +132,7 @@
         }
 
         that._devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
-        that._driver = new EyesWebDriver(driver, that, that._logger, that._promiseFactory);
+        that._driver = new EyesWebDriver(driver, that, that._logger);
         that.setStitchMode(that._stitchMode);
 
         if (this._isDisabled) {
