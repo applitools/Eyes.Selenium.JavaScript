@@ -1,8 +1,7 @@
 (function () {
     'use strict';
 
-    var promise = require('q'),
-        webdriver = require('selenium-webdriver'),
+    var webdriver = require('selenium-webdriver'),
         EyesSDK = require('eyes.sdk'),
         EyesUtils = require('eyes.utils'),
         EyesWebDriver = require('./EyesWebDriver').EyesWebDriver,
@@ -80,12 +79,15 @@
         // Set PromiseFactory to work with the protractor control flow and promises
         that._promiseFactory.setFactoryMethods(function (asyncAction) {
             return flow.execute(function () {
-                var deferred = promise.defer();
-                asyncAction(deferred.fulfill, deferred.reject);
-                return deferred.promise;
+                return new Promise(asyncAction);
             });
         }, function () {
-            return promise.defer();
+            var defer = {};
+            defer.promise = new Promise(function (resolve, reject) {
+                defer.resolve = resolve;
+                defer.reject = reject;
+            });
+            return defer;
         });
     }
 
@@ -740,14 +742,9 @@
      * @return {Promise<void>} The viewport size of the browser.
      */
     Eyes.setViewportSize = function (driver, size) {
-        var promiseFactory = new PromiseFactory();
-        promiseFactory.setFactoryMethods(function (asyncAction) {
-            var deferred = promise.defer();
-            asyncAction(deferred.fulfill, deferred.reject);
-            return deferred.promise;
-        }, function () {
-            return promise.defer();
-        });
+        var promiseFactory = new PromiseFactory(function (asyncAction) {
+            return new Promise(asyncAction);
+        }, undefined);
 
         return EyesSeleniumUtils.setViewportSize(new Logger(), driver, size, promiseFactory);
     };
