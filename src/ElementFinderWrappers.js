@@ -18,6 +18,7 @@
      * @param {ElementFinder} finder
      * @param {EyesWebDriver} eyesDriver
      * @param {Logger} logger
+     * @mixin ElementFinder
      * @constructor
      **/
     function ElementFinderWrapper(finder, eyesDriver, logger) {
@@ -52,9 +53,8 @@
     };
 
     /**
-     * Wrap the click function
-     *
-     * @return {Promise<EyesRemoteWebElement>}
+     * Schedules a command to click on this element.
+     * @return {!Promise<void>} A promise that will be resolved when the click command has completed.
      */
     ElementFinderWrapper.prototype.click = function () {
         this._logger.verbose("ElementFinderWrapper:click - called");
@@ -63,11 +63,12 @@
     };
 
     /**
-     * Wrap the functions that return objects that require pre-wrapping
-     *
-     * @return {Promise<EyesRemoteWebElement>}
+     * Schedules a command to type a sequence on the DOM element represented by this instance.
+     * @param {...(number|string|!IThenable<(number|string)>)} var_args The sequence of keys to type. Number keys may
+     *  be referenced numerically or by string (1 or '1'). All arguments will be joined into a single sequence.
+     * @return {!Promise<void>} A promise that will be resolved when all keys have been typed.
      */
-    ElementFinderWrapper.prototype.sendKeys = function () {
+    ElementFinderWrapper.prototype.sendKeys = function (var_args) {
         this._logger.verbose("ElementFinderWrapper:sendKeys - called");
         var element = this.getWebElement();
         return element.sendKeys.apply(element, arguments);
@@ -79,6 +80,7 @@
      * @param {ElementArrayFinder} arrayFinder
      * @param {EyesWebDriver} eyesDriver
      * @param {Logger} logger
+     * @mixin ElementArrayFinder
      * @constructor
      **/
     function ElementArrayFinderWrapper(arrayFinder, eyesDriver, logger) {

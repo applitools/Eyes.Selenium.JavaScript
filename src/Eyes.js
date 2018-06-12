@@ -28,6 +28,8 @@
         SimplePropertyHandler = EyesUtils.SimplePropertyHandler,
         GeometryUtils = EyesUtils.GeometryUtils;
 
+    var VERSION = require('../package.json').version;
+
     var DEFAULT_WAIT_BEFORE_SCREENSHOTS = 100, // ms
         UNKNOWN_DEVICE_PIXEL_RATIO = 0,
         DEFAULT_DEVICE_PIXEL_RATIO = 1;
@@ -72,7 +74,7 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype._getBaseAgentId = function () {
-        return 'eyes.selenium/0.0.78';
+        return 'eyes.selenium/' + VERSION;
     };
 
     function _init(that, flow) {
@@ -99,8 +101,7 @@
      * @param {string} testName - The test name.
      * @param {{width: number, height: number}} [viewportSize] - The required browser's
      * viewport size (i.e., the visible part of the document's body) or to use the current window's viewport.
-     * @return {Promise<WebDriver>} A wrapped WebDriver which enables Eyes trigger recording and
-     * frame handling.
+     * @return {Promise<WebDriver>} A wrapped WebDriver which enables Eyes trigger recording and frame handling.
      */
     Eyes.prototype.open = function (driver, appName, testName, viewportSize) {
         var that = this;
@@ -131,54 +132,52 @@
         }
 
         that._devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
-        that._driver = new EyesWebDriver(driver, that, that._logger, that._promiseFactory);
+        that._driver = new EyesWebDriver(driver, that, that._logger);
         that.setStitchMode(that._stitchMode);
 
         if (this._isDisabled) {
-            return that._flow.execute(function () {
-                return driver;
-            });
+            return that._promiseFactory.resolve(driver);
         }
 
-        return that._flow.execute(function () {
-            return driver.getCapabilities().then(function (capabilities) {
-                var platformName, platformVersion, orientation;
-                if (capabilities.caps_) {
-                    platformName = capabilities.caps_.platformName;
-                    platformVersion = capabilities.caps_.platformVersion;
-                    orientation = capabilities.caps_.orientation || capabilities.caps_.deviceOrientation;
-                } else {
-                    platformName = capabilities.get('platform') || capabilities.get('platformName');
-                    platformVersion = capabilities.get('version') || capabilities.get('platformVersion');
-                    orientation = capabilities.get('orientation') || capabilities.get('deviceOrientation');
-                }
+        return that._promiseFactory.resolve().then(function () {
+            return driver.getCapabilities();
+        }).then(function (capabilities) {
+            var platformName, platformVersion, orientation;
+            if (capabilities.caps_) {
+                platformName = capabilities.caps_.platformName;
+                platformVersion = capabilities.caps_.platformVersion;
+                orientation = capabilities.caps_.orientation || capabilities.caps_.deviceOrientation;
+            } else {
+                platformName = capabilities.get('platform') || capabilities.get('platformName');
+                platformVersion = capabilities.get('version') || capabilities.get('platformVersion');
+                orientation = capabilities.get('orientation') || capabilities.get('deviceOrientation');
+            }
 
-                var majorVersion;
-                if (!platformVersion || platformVersion.length < 1) {
-                    return;
+            var majorVersion;
+            if (!platformVersion || platformVersion.length < 1) {
+                return;
+            }
+            majorVersion = platformVersion.split('.', 2)[0];
+            if (platformName.toUpperCase() === 'ANDROID') {
+                // We only automatically set the OS, if the user hadn't manually set it previously.
+                if (!that.getHostOS()) {
+                    that.setHostOS('Android ' + majorVersion);
                 }
-                majorVersion = platformVersion.split('.', 2)[0];
-                if (platformName.toUpperCase() === 'ANDROID') {
-                    // We only automatically set the OS, if the user hadn't manually set it previously.
-                    if (!that.getHostOS()) {
-                        that.setHostOS('Android ' + majorVersion);
-                    }
-                } else if (platformName.toUpperCase() === 'IOS') {
-                    if (!that.getHostOS()) {
-                        that.setHostOS('iOS ' + majorVersion);
-                    }
-                } else {
-                    return;
+            } else if (platformName.toUpperCase() === 'IOS') {
+                if (!that.getHostOS()) {
+                    that.setHostOS('iOS ' + majorVersion);
                 }
+            } else {
+                return;
+            }
 
-                if (orientation && orientation.toUpperCase() === 'LANDSCAPE') {
-                    that._isLandscape = true;
-                }
-            }).then(function () {
-                return EyesBase.prototype.open.call(that, appName, testName, viewportSize);
-            }).then(function () {
-                return that._driver;
-            });
+            if (orientation && orientation.toUpperCase() === 'LANDSCAPE') {
+                that._isLandscape = true;
+            }
+        }).then(function () {
+            return EyesBase.prototype.open.call(that, appName, testName, viewportSize);
+        }).then(function () {
+            return that._driver;
         });
     };
 
@@ -189,23 +188,18 @@
      * @return {Promise<TestResults|undefined>} The test results.
      */
     Eyes.prototype.close = function (throwEx) {
-        var that = this;
-
-        if (this._isDisabled) {
-            return that._flow.execute(function () {
-            });
-        }
         if (throwEx === undefined) {
             throwEx = true;
         }
 
-        return that._flow.execute(function () {
-            return EyesBase.prototype.close.call(that, throwEx)
-                .then(function (results) {
-                    return results;
-                }, function (err) {
-                    throw err;
-                });
+        var that = this;
+
+        if (this._isDisabled) {
+            return that._promiseFactory.resolve();
+        }
+
+        return that._promiseFactory.resolve().then(function () {
+            return EyesBase.prototype.close.call(that, throwEx);
         });
     };
 
@@ -234,8 +228,7 @@
         if (target.getIgnoreObjects().length) {
             target.getIgnoreObjects().forEach(function (obj) {
                 promise = promise.then(function() {
-                    return findElementByLocator(that, obj.element);
-                }).then(function (element) {
+                    var element = findElementByLocator(that, obj.element);
                     if (!isElementObject(element)) {
                         throw new Error("Unsupported ignore region type: " + typeof element);
                     }
@@ -250,8 +243,7 @@
         if (target.getFloatingObjects().length) {
             target.getFloatingObjects().forEach(function (obj) {
                 promise = promise.then(function() {
-                    return findElementByLocator(that, obj.element);
-                }).then(function (element) {
+                    var element = findElementByLocator(that, obj.element);
                     if (!isElementObject(element)) {
                         throw new Error("Unsupported floating region type: " + typeof element);
                     }
@@ -281,8 +273,7 @@
         // If frame specified
         if (target.isUsingFrame()) {
             promise = promise.then(function () {
-                return findElementByLocator(that, target.getFrame());
-            }).then(function (frame) {
+                var frame = findElementByLocator(that, target.getFrame());
                 that._logger.verbose("Switching to frame...");
                 return that._driver.switchTo().frame(frame);
             }).then(function () {
@@ -304,9 +295,7 @@
         // if region specified
         if (target.isUsingRegion()) {
             promise = promise.then(function () {
-                return findElementByLocator(that, target.getRegion());
-            }).then(function (region) {
-                regionObject = region;
+                regionObject = findElementByLocator(that, target.getRegion());
 
                 if (isElementObject(regionObject)) {
                     var regionPromise;
@@ -400,16 +389,14 @@
     };
 
     var findElementByLocator = function (that, elementObject) {
-        return that._promiseFactory.makePromise(function (resolve) {
-            if (isLocatorObject(elementObject)) {
-                that._logger.verbose("Trying to find element...", elementObject);
-                return resolve(that._driver.findElement(elementObject));
-            } else if (elementObject instanceof ElementFinderWrapper) {
-                return resolve(elementObject.getWebElement());
-            }
+        if (isLocatorObject(elementObject)) {
+            that._logger.verbose("Trying to find element...", elementObject);
+            return that._driver.findElement(elementObject);
+        } else if (elementObject instanceof ElementFinderWrapper) {
+            return elementObject.getWebElement();
+        }
 
-            resolve(elementObject);
-        });
+        return elementObject;
     };
 
     var isElementObject = function (o) {

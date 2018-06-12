@@ -14,45 +14,61 @@
      * Wraps a Remote Web Driver.
      *
      * @constructor
-     * @param {WebDriver} remoteWebDriver
+     * @param {WebDriver} driver
      * @param {Eyes} eyes An instance of Eyes
      * @param {Logger} logger
-     * @param {PromiseFactory} promiseFactory
-     * @augments WebDriver
+     * @mixin WebDriver
      **/
-    function EyesWebDriver(remoteWebDriver, eyes, logger, promiseFactory) {
-        this._eyesDriver = eyes;
+    function EyesWebDriver(driver, eyes, logger) {
         this._logger = logger;
-        this._promiseFactory = promiseFactory;
-        this._defaultContentViewportSize = null;
-        this._frameChain = new FrameChain(this._logger, null);
-        /** @type webdriver.By|ProtractorBy */
+        this._eyes = eyes;
+        this._driver = undefined;
+        this.setRemoteWebDriver(driver);
+
+        /** @deprecated */
+        this._promiseFactory = this._eyes._promiseFactory;
+        /** @type {webdriver.By|ProtractorBy} */
         this._byFunctions = eyes._isProtractorLoaded ? global.by : webdriver.By;
-        this.setRemoteWebDriver(remoteWebDriver);
+
+        this._frameChain = new FrameChain(this._logger, null);
+
+        this._defaultContentViewportSize = null;
     }
 
     //noinspection JSUnusedGlobalSymbols
+    /**
+     * @return {Eyes}
+     */
     EyesWebDriver.prototype.getEyes = function () {
-        return this._eyesDriver;
+        return this._eyes;
     };
 
     //noinspection JSUnusedGlobalSymbols
-    EyesWebDriver.prototype.setEyes = function (eyes) {
-        this._eyesDriver = eyes;
+    /**
+     * @return {PromiseFactory}
+     */
+    EyesWebDriver.prototype.getPromiseFactory = function () {
+        return this._eyes._promiseFactory;
     };
 
     //noinspection JSUnusedGlobalSymbols
+    /**
+     * @return {WebDriver}
+     */
     EyesWebDriver.prototype.getRemoteWebDriver = function () {
-        return this._driver;
+        return this._driver.driver || this._driver;
     };
 
     //noinspection JSUnusedGlobalSymbols
-    EyesWebDriver.prototype.setRemoteWebDriver = function (remoteWebDriver) {
-        this._driver = remoteWebDriver;
-        GeneralUtils.mixin(this, remoteWebDriver);
+    EyesWebDriver.prototype.setRemoteWebDriver = function (driver) {
+        this._driver = driver;
 
-        // remove then method, which comes from thenableWebDriver (Selenium 3+)
+        GeneralUtils.mixin(this, driver);
+
+        // TODO: is there a way to override bindings?
         delete this.then;
+        delete this.catch;
+        delete this.cancel;
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -66,8 +82,7 @@
      * @return {EyesRemoteWebElement}
      */
     EyesWebDriver.prototype.findElement = function (locator) {
-        var that = this;
-        return new EyesRemoteWebElement(that._driver.findElement(locator), that, that._logger);
+        return new EyesRemoteWebElement(this._driver.findElement(locator), this, this._logger);
     };
 
     //noinspection JSCheckFunctionSignatures
@@ -170,15 +185,11 @@
                 case EyesTargetLocator.TargetType.DEFAULT_CONTENT:
                     that._logger.verbose("Default content.");
                     that._frameChain.clear();
-                    return that._promiseFactory.makePromise(function (resolve) {
-                        resolve();
-                    });
+                    return that.getPromiseFactory().resolve();
                 case EyesTargetLocator.TargetType.PARENT_FRAME:
                     that._logger.verbose("Parent frame.");
                     that._frameChain.pop();
-                    return that._promiseFactory.makePromise(function (resolve) {
-                        resolve();
-                    });
+                    return that.getPromiseFactory().resolve();
                 default: // Switching into a frame
                     that._logger.verbose("Frame");
 
@@ -194,13 +205,13 @@
                         })
                         .then(function (_size) {
                             size = _size;
-                            return new ScrollPositionProvider(that._logger, that._driver, that._promiseFactory).getCurrentPosition();
+                            return new ScrollPositionProvider(that._logger, that._driver, that.getPromiseFactory()).getCurrentPosition();
                         })
                         .then(function (_scrollPosition) {
                             sp = _scrollPosition;
 
                             // Get the frame's content location.
-                            return EyesSeleniumUtils.getLocationWithBordersAddition(that._logger, targetFrame, pl, that._promiseFactory);
+                            return EyesSeleniumUtils.getLocationWithBordersAddition(that._logger, targetFrame, pl, that.getPromiseFactory());
                         }).then(function (contentLocation) {
                             that._frameChain.push(new Frame(that._logger, targetFrame, frameId, contentLocation, size, sp));
                             that._logger.verbose("Done!");
@@ -213,12 +224,10 @@
             that._logger.verbose("willSwitchToWindow()");
             that._frameChain.clear();
             that._logger.verbose("Done!");
-            return that._promiseFactory.makePromise(function (resolve) {
-                resolve();
-            });
+            return that.getPromiseFactory().resolve();
         };
 
-        return new EyesTargetLocator(this._logger, this, this._driver.switchTo(), OnWillSwitch, this._promiseFactory);
+        return new EyesTargetLocator(this._logger, this, this._driver.switchTo(), OnWillSwitch, this.getPromiseFactory());
     };
 
     /**
@@ -227,7 +236,7 @@
      */
     EyesWebDriver.prototype.getDefaultContentViewportSize = function (forceQuery) {
         var that = this;
-        return this._promiseFactory.makePromise(function (resolve) {
+        return this.getPromiseFactory().makePromise(function (resolve) {
             that._logger.verbose("getDefaultContentViewportSize()");
 
             if (that._defaultContentViewportSize !== null && !forceQuery) {
@@ -237,9 +246,7 @@
             }
 
             var currentFrames = that.getFrameChain();
-            var promise = that._promiseFactory.makePromise(function (resolve) {
-                resolve();
-            });
+            var promise = that.getPromiseFactory().resolve();
 
             // Optimization
             if (currentFrames.size() > 0) {
@@ -250,7 +257,7 @@
 
             promise.then(function () {
                 that._logger.verbose("Extracting viewport size...");
-                return EyesSeleniumUtils.getViewportSizeOrDisplaySize(that._logger, that._driver, that._promiseFactory);
+                return EyesSeleniumUtils.getViewportSizeOrDisplaySize(that._logger, that._driver, that.getPromiseFactory());
             }).then(function (viewportSize) {
                 that._defaultContentViewportSize = viewportSize;
                 that._logger.verbose("Done! Viewport size: ", that._defaultContentViewportSize);
