@@ -360,16 +360,16 @@
      *
      * @param {WebDriver} browser The driver used to update the web page.
      * @param {string} overflowValue The values of the overflow to set.
-     * @param {WebElement} scrollbarsRoot
+     * @param {WebElement} scrollRootElement
      * @param {PromiseFactory} promiseFactory
      * @return {Promise<string>} A promise which resolves to the original overflow of the document.
      */
-    EyesSeleniumUtils.setOverflow = function setOverflow(browser, overflowValue, scrollbarsRoot, promiseFactory) {
+    EyesSeleniumUtils.setOverflow = function setOverflow(browser, overflowValue, scrollRootElement, promiseFactory) {
         var script = JS_GET_SET_OVERFLOW_STR(
-            scrollbarsRoot ? "arguments[0]" : "document.documentElement",
+            scrollRootElement ? "arguments[0]" : "document.documentElement",
             overflowValue === null ? "undefined" : overflowValue
         );
-        return EyesSeleniumUtils.executeScript(browser, script, promiseFactory, 100, scrollbarsRoot);
+        return EyesSeleniumUtils.executeScript(browser, script, promiseFactory, 100, scrollRootElement);
     };
 
     /**
@@ -876,7 +876,7 @@
      * @param {CutProvider} cutProvider
      * @param {boolean} fullPage
      * @param {boolean} hideScrollbars
-     * @param {?WebElement} scrollbarsRoot
+     * @param {?WebElement} scrollRootElement
      * @param {boolean} useCssTransition
      * @param {number} rotationDegrees
      * @param {boolean} automaticRotation
@@ -898,7 +898,7 @@
         cutProvider,
         fullPage,
         hideScrollbars,
-        scrollbarsRoot,
+        scrollRootElement,
         useCssTransition,
         rotationDegrees,
         automaticRotation,
@@ -940,7 +940,7 @@
         }).then(function () {
             // step #3 - hide the scrollbars if instructed
             if (hideScrollbars) {
-                return EyesSeleniumUtils.setOverflow(browser, "hidden", scrollbarsRoot, promiseFactory).then(function (originalVal) {
+                return EyesSeleniumUtils.setOverflow(browser, "hidden", scrollRootElement, promiseFactory).then(function (originalVal) {
                     originalOverflow = originalVal;
 
                     if (useCssTransition) {
@@ -1032,7 +1032,7 @@
             });
         }).then(function () {
             if (hideScrollbars) {
-                return EyesSeleniumUtils.setOverflow(browser, originalOverflow, scrollbarsRoot, promiseFactory);
+                return EyesSeleniumUtils.setOverflow(browser, originalOverflow, scrollRootElement, promiseFactory);
             }
         }).then(function () {
             if (originalBodyOverflow) {

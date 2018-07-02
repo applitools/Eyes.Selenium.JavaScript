@@ -35,7 +35,7 @@ describe('Eyes.Selenium.JavaScript - Selenium', function () {
         driver.get('https://astappev.github.io/test-html-pages/');
 
         eyes.setHideScrollbars(true);
-        eyes.setScrollbarsRoot(webdriver.By.id("overflowing-div-image"));
+        eyes.setScrollRootElement(webdriver.By.id("overflowing-div-image"));
         eyes.check("Entire window", Target.window().fully(true));
 
         return eyes.close();

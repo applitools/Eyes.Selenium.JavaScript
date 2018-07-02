@@ -61,7 +61,7 @@
         this._automaticRotation = true;
         this._isLandscape = false;
         this._hideScrollbars = undefined;
-        this._scrollbarsRoot = undefined;
+        this._scrollRootElement = undefined;
         this._checkFrameOrElement = false;
         this._stitchMode = StitchMode.Scroll;
         this._promiseFactory = new PromiseFactory();
@@ -658,7 +658,7 @@
                 that._cutProviderHandler.get(),
                 that._forceFullPage,
                 that._hideScrollbars,
-                that._scrollbarsRoot,
+                that._scrollRootElement,
                 that._stitchMode === StitchMode.CSS,
                 that._imageRotationDegrees,
                 that._automaticRotation,
@@ -802,8 +802,8 @@
      * Receives a selector and when doing hideScrollbars, it will set the overflow to hidden on that element.
      * @param {webdriver.WebElement|webdriver.By|EyesRemoteWebElement} element - The element to hide scrollbars.
      */
-    Eyes.prototype.setScrollbarsRoot = function (element) {
-        this._scrollbarsRoot = findElementByLocator(this, element);
+    Eyes.prototype.setScrollRootElement = function (element) {
+        this._scrollRootElement = findElementByLocator(this, element);
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -811,8 +811,8 @@
      * Receives a selector and when doing hideScrollbars, it will set the overflow to hidden on that element.
      * @return {webdriver.WebElement} - The element to hide scrollbars.
      */
-    Eyes.prototype.getScrollbarsRoot = function () {
-        return this._scrollbarsRoot;
+    Eyes.prototype.getScrollRootElement = function () {
+        return this._scrollRootElement;
     };
 
     //noinspection JSUnusedGlobalSymbols
