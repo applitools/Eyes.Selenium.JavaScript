@@ -25,7 +25,7 @@ describe("Eyes.Selenium.JavaScript - Protractor", function() {
     });
 
     it("check interface", function(done) {
-        browser.get("https://astappev.github.io/test-html-pages/");
+        browser.get("https://astappiev.github.io/test-html-pages/");
 
         // Entire window, equivalent to eyes.checkWindow()
         eyes.check("Entire window", Target.window()

@@ -46,7 +46,7 @@ describe('Eyes.Selenium.JavaScript - Appium', function () {
     });
 
     it("simple sause", function () {
-        driver.get('https://astappev.github.io/test-html-pages/');
+        driver.get('https://astappiev.github.io/test-html-pages/');
 
         eyes.checkWindow("Entire window");
 

@@ -37,7 +37,7 @@ describe('Eyes.Selenium.JavaScript - Selenium', function () {
     });
 
     it("scaling methods", function () {
-        driver.get("https://astappev.github.io/test-html-pages/");
+        driver.get("https://astappiev.github.io/test-html-pages/");
 
         eyes.checkWindow("Initial");
 
