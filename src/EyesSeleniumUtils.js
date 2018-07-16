@@ -73,6 +73,17 @@
     /**
      * @return {string}
      */
+    var JS_GET_SET_OVERFLOW_STR = function (elementName, overflowValue) {
+        return "var element = " + elementName + ";" +
+            "var overflowValue = \"" + overflowValue + "\";" +
+            "var origOverflow = element.style.overflow;" +
+            "element.style.overflow = overflowValue;" +
+            "return origOverflow;";
+    };
+
+    /**
+     * @return {string}
+     */
     var JS_GET_IS_BODY_OVERFLOW_HIDDEN =
         "var styles = window.getComputedStyle(document.body, null);" +
         "var overflow = styles.getPropertyValue('overflow');" +
@@ -94,10 +105,11 @@
      * @param {PromiseFactory} promiseFactory
      * @param {number|undefined} [stabilizationTimeMs] The amount of time to wait after script execution to
      *        let the browser a chance to stabilize (e.g., finish rendering).
+     * @param {WebElement} element
      * @return {Promise<void>} A promise which resolves to the result of the script's execution on the tab.
      */
-    EyesSeleniumUtils.executeScript = function executeScript(browser, script, promiseFactory, stabilizationTimeMs) {
-        return browser.executeScript(script).then(function (result) {
+    EyesSeleniumUtils.executeScript = function executeScript(browser, script, promiseFactory, stabilizationTimeMs, element) {
+        return browser.executeScript(script, element).then(function (result) {
             if (stabilizationTimeMs) {
                 return GeneralUtils.sleep(stabilizationTimeMs, promiseFactory)
                     .then(function () {
@@ -348,24 +360,16 @@
      *
      * @param {WebDriver} browser The driver used to update the web page.
      * @param {string} overflowValue The values of the overflow to set.
+     * @param {WebElement} scrollRootElement
      * @param {PromiseFactory} promiseFactory
      * @return {Promise<string>} A promise which resolves to the original overflow of the document.
      */
-    EyesSeleniumUtils.setOverflow = function setOverflow(browser, overflowValue, promiseFactory) {
-        var script;
-        if (overflowValue === null) {
-            script =
-                "var origOverflow = document.documentElement.style.overflow; " +
-                "document.documentElement.style.overflow = undefined; " +
-                "return origOverflow";
-        } else {
-            script =
-                "var origOverflow = document.documentElement.style.overflow; " +
-                "document.documentElement.style.overflow = \"" + overflowValue + "\"; " +
-                "return origOverflow";
-        }
-
-        return EyesSeleniumUtils.executeScript(browser, script, promiseFactory, 100);
+    EyesSeleniumUtils.setOverflow = function setOverflow(browser, overflowValue, scrollRootElement, promiseFactory) {
+        var script = JS_GET_SET_OVERFLOW_STR(
+            scrollRootElement ? "arguments[0]" : "document.documentElement",
+            overflowValue === null ? "undefined" : overflowValue
+        );
+        return EyesSeleniumUtils.executeScript(browser, script, promiseFactory, 100, scrollRootElement);
     };
 
     /**
@@ -376,20 +380,8 @@
      * @param {PromiseFactory} promiseFactory
      * @return {Promise<string>} A promise which resolves to the original overflow of the document.
      */
-    EyesSeleniumUtils.setBodyOverflow = function setOverflow(browser, overflowValue, promiseFactory) {
-        var script;
-        if (overflowValue === null) {
-            script =
-                "var origOverflow = document.body.style.overflow; " +
-                "document.body.style.overflow = undefined; " +
-                "return origOverflow";
-        } else {
-            script =
-                "var origOverflow = document.body.style.overflow; " +
-                "document.body.style.overflow = \"" + overflowValue + "\"; " +
-                "return origOverflow";
-        }
-
+    EyesSeleniumUtils.setBodyOverflow = function setBodyOverflow(browser, overflowValue, promiseFactory) {
+        var script = JS_GET_SET_OVERFLOW_STR("document.body", overflowValue === null ? "undefined" : overflowValue);
         return EyesSeleniumUtils.executeScript(browser, script, promiseFactory, 100);
     };
 
@@ -401,7 +393,7 @@
      * @return {Promise<string>} The previous value of the overflow property (could be {@code null}).
      */
     EyesSeleniumUtils.hideScrollbars = function (browser, promiseFactory) {
-        return EyesSeleniumUtils.setOverflow(browser, "hidden", promiseFactory);
+        return EyesSeleniumUtils.setOverflow(browser, "hidden", undefined, promiseFactory);
     };
 
     /**
@@ -884,6 +876,7 @@
      * @param {CutProvider} cutProvider
      * @param {boolean} fullPage
      * @param {boolean} hideScrollbars
+     * @param {?WebElement} scrollRootElement
      * @param {boolean} useCssTransition
      * @param {number} rotationDegrees
      * @param {boolean} automaticRotation
@@ -891,9 +884,9 @@
      * @param {boolean} isLandscape
      * @param {number} waitBeforeScreenshots
      * @param {boolean} checkFrameOrElement
-     * @param {RegionProvider} [regionProvider]
-     * @param {boolean} [saveDebugScreenshots=false]
-     * @param {string} [debugScreenshotsPath=null]
+     * @param {?RegionProvider} [regionProvider]
+     * @param {?boolean} [saveDebugScreenshots=false]
+     * @param {?string} [debugScreenshotsPath]
      * @return {Promise<MutableImage>}
      */
     EyesSeleniumUtils.getScreenshot = function getScreenshot(
@@ -905,6 +898,7 @@
         cutProvider,
         fullPage,
         hideScrollbars,
+        scrollRootElement,
         useCssTransition,
         rotationDegrees,
         automaticRotation,
@@ -946,7 +940,7 @@
         }).then(function () {
             // step #3 - hide the scrollbars if instructed
             if (hideScrollbars) {
-                return EyesSeleniumUtils.setOverflow(browser, "hidden", promiseFactory).then(function (originalVal) {
+                return EyesSeleniumUtils.setOverflow(browser, "hidden", scrollRootElement, promiseFactory).then(function (originalVal) {
                     originalOverflow = originalVal;
 
                     if (useCssTransition) {
@@ -1038,7 +1032,7 @@
             });
         }).then(function () {
             if (hideScrollbars) {
-                return EyesSeleniumUtils.setOverflow(browser, originalOverflow, promiseFactory);
+                return EyesSeleniumUtils.setOverflow(browser, originalOverflow, scrollRootElement, promiseFactory);
             }
         }).then(function () {
             if (originalBodyOverflow) {

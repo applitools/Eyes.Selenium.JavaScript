@@ -60,7 +60,8 @@
         this._imageRotationDegrees = 0;
         this._automaticRotation = true;
         this._isLandscape = false;
-        this._hideScrollbars = null;
+        this._hideScrollbars = undefined;
+        this._scrollRootElement = undefined;
         this._checkFrameOrElement = false;
         this._stitchMode = StitchMode.Scroll;
         this._promiseFactory = new PromiseFactory();
@@ -657,6 +658,7 @@
                 that._cutProviderHandler.get(),
                 that._forceFullPage,
                 that._hideScrollbars,
+                that._scrollRootElement,
                 that._stitchMode === StitchMode.CSS,
                 that._imageRotationDegrees,
                 that._automaticRotation,
@@ -793,6 +795,24 @@
      */
     Eyes.prototype.getHideScrollbars = function () {
         return this._hideScrollbars;
+    };
+
+    //noinspection JSUnusedGlobalSymbols
+    /**
+     * Receives a selector and when doing hideScrollbars, it will set the overflow to hidden on that element.
+     * @param {webdriver.WebElement|webdriver.By|EyesRemoteWebElement} element - The element to hide scrollbars.
+     */
+    Eyes.prototype.setScrollRootElement = function (element) {
+        this._scrollRootElement = findElementByLocator(this, element);
+    };
+
+    //noinspection JSUnusedGlobalSymbols
+    /**
+     * Receives a selector and when doing hideScrollbars, it will set the overflow to hidden on that element.
+     * @return {webdriver.WebElement} - The element to hide scrollbars.
+     */
+    Eyes.prototype.getScrollRootElement = function () {
+        return this._scrollRootElement;
     };
 
     //noinspection JSUnusedGlobalSymbols

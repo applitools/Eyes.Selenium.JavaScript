@@ -243,6 +243,16 @@ export declare class Eyes extends EyesBase {
      */
     getHideScrollbars(): boolean;
     /**
+     * Receives a selector and when doing hideScrollbars, it will set the overflow to hidden on that element.
+     * @param element The element to hide scrollbars.
+     */
+    setScrollRootElement(element: WebElement|By|EyesRemoteWebElement): void;
+    /**
+     * Receives a selector and when doing hideScrollbars, it will set the overflow to hidden on that element.
+     * @return The element to hide scrollbars.
+     */
+    getScrollRootElement(): WebElement;
+    /**
      * Set the stitch mode.
      * @param mode The desired stitch mode settings.
      */
@@ -755,10 +765,11 @@ export declare class EyesSeleniumUtils {
      * Updates the document's documentElement "overflow" value (mainly used to remove/allow scrollbars).
      * @param browser The driver used to update the web page.
      * @param overflowValue The values of the overflow to set.
+     * @param scrollRootElement
      * @param promiseFactory
      * @return A promise which resolves to the original overflow of the document.
      */
-    static setOverflow(browser: WebDriver, overflowValue: string, promiseFactory: PromiseFactory): Promise<string>;
+    static setOverflow(browser: WebDriver, overflowValue: string, scrollRootElement: WebElement, promiseFactory: PromiseFactory): Promise<string>;
     /**
      * Updates the document's body "overflow" value
      * @param browser The driver used to update the web page.
@@ -814,7 +825,7 @@ export declare class EyesSeleniumUtils {
     /**
      * Capture screenshot from given driver
      */
-    static setViewportSize(
+    static getScreenshot(
         browser: WebDriver,
         promiseFactory: PromiseFactory,
         viewportSize: RectangleSize,
@@ -823,6 +834,7 @@ export declare class EyesSeleniumUtils {
         cutProvider: CutProvider,
         fullPage: boolean,
         hideScrollbars: boolean,
+        scrollRootElement: WebElement,
         useCssTransition: boolean,
         rotationDegrees: number,
         automaticRotation: boolean,
