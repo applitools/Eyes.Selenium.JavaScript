@@ -1,4 +1,3 @@
-require('chromedriver');
 var webdriver = require('selenium-webdriver');
 var Builder = webdriver.Builder;
 
@@ -6,23 +5,30 @@ var SeleniumSDK = require('../../index');
 var Eyes = SeleniumSDK.Eyes;
 var ConsoleLogHandler = SeleniumSDK.ConsoleLogHandler;
 
+var serverUrl = "http://" + process.env.SAUCE_USERNAME + ":" + process.env.SAUCE_ACCESS_KEY + "@ondemand.saucelabs.com:80/wd/hub";
+
 var driver = null, eyes = null;
-describe('Eyes.Selenium.JavaScript - Appium', function () {
+describe('Eyes.Selenium.JavaScript - IOS Simple Appium via SauseLab', function () {
 
     this.timeout(5 * 60 * 1000);
 
     before(function () {
         driver = new Builder()
+        /*.withCapabilities({
+            'screenResolution': '1600x1200',
+            'version': '10.0',
+            'platform': 'macOS 10.12',
+            'browserName': 'Safari'
+        })*/
             .withCapabilities({
-                'platformName': 'Android',
-                'deviceName': 'android-24-google_apis-x86_64-v24.4.1-wd-manager',
-                'platformVersion': '6.0',
-                'app': 'http://saucelabs.com/example_files/ContactManager.apk',
-                'browserName': '',
-                'clearSystemFiles': 'true',
-                'noReset': 'true'
+                'appiumVersion': '1.6.4',
+                'deviceName': 'iPhone SE Simulator',
+                'deviceOrientation': 'landscape',
+                'platformVersion': '10.3',
+                'platformName': 'iOS',
+                'browserName': 'Safari'
             })
-            .usingServer('http://localhost:4723/wd/hub')
+            .usingServer(serverUrl)
             .build();
 
         eyes = new Eyes();
@@ -39,9 +45,10 @@ describe('Eyes.Selenium.JavaScript - Appium', function () {
         });
     });
 
-    it("simple appium", function () {
+    it("check window base", function () {
+        driver.get('https://astappiev.github.io/test-html-pages/');
 
-        eyes.checkWindow("Contact list!");
+        eyes.checkWindow("Entire window");
 
         return eyes.close();
     });
