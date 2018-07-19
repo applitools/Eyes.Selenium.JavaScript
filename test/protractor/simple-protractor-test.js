@@ -21,7 +21,7 @@ describe("Eyes.Selenium.JavaScript - Protractor", function() {
     });
 
     it("simple protractor", function(done) {
-        browser.get("https://astappev.github.io/test-html-pages/");
+        browser.get("https://astappiev.github.io/test-html-pages/");
 
         eyes.addProperty("MyProp", "I'm correct!");
 

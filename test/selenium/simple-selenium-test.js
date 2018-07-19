@@ -33,7 +33,7 @@ describe('Eyes.Selenium.JavaScript - Selenium', function () {
     });
 
     it("simple selenium", function () {
-        driver.get('https://astappev.github.io/test-html-pages/');
+        driver.get('https://astappiev.github.io/test-html-pages/');
 
         eyes.addProperty("MyProp", "I'm correct!");
 

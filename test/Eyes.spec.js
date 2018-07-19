@@ -1,8 +1,8 @@
 'use strict';
 
+var assert = require('assert');
 var webdriver = require('selenium-webdriver');
 var EyesSDK = require('../index');
-var assert = require('assert');
 
 var driver, eyes;
 describe('Eyes', function () {
@@ -27,33 +27,33 @@ describe('Eyes', function () {
                 width: 800,
                 height: 560
             }).then(function (driver) {
-                assert.equal(driver instanceof EyesSDK.EyesWebDriver, true);
+                assert.strictEqual(driver instanceof EyesSDK.EyesWebDriver, true);
                 return eyes.close();
             });
         });
 
         it('should throw IllegalState: Eyes not open', function () {
             return eyes.check('test', EyesSDK.Target.window()).catch(function (error) {
-                assert.equal(error.message, 'checkWindow called with Eyes not open');
+                assert.strictEqual(error.message, 'checkWindow called with Eyes not open');
             });
         });
     });
 
     describe('#WebDriver', function () {
         it('type should be return thenableWebDriverProxy', function () {
-            assert.equal(driver.constructor.name, "thenableWebDriverProxy");
+            assert.strictEqual(driver.constructor.name, "thenableWebDriverProxy");
 
             return eyes._promiseFactory.resolve(driver).then(function (value) {
-                assert.equal(value.constructor.name, "Driver");
+                assert.strictEqual(value.constructor.name, "Driver");
             });
         });
 
         it('type should be return EyesWebDriver', function () {
             var eyesDriver = new EyesSDK.EyesWebDriver(driver, eyes, eyes._logger);
-            assert.equal(eyesDriver.constructor.name, "EyesWebDriver");
+            assert.strictEqual(eyesDriver.constructor.name, "EyesWebDriver");
 
             return eyes._promiseFactory.resolve(eyesDriver).then(function (value) {
-                assert.equal(value.constructor.name, "EyesWebDriver");
+                assert.strictEqual(value.constructor.name, "EyesWebDriver");
             });
         });
     });
@@ -74,20 +74,20 @@ describe('Eyes', function () {
         });
 
         it('type should be return WebElement', function () {
-            driver.get('https://astappev.github.io/test-html-pages/');
+            driver.get('https://astappiev.github.io/test-html-pages/');
 
             var element = driver.findElement(webdriver.By.css("body > h1"));
             return element.then(function (value) {
-                assert.equal(value.constructor.name, "WebElement");
+                assert.strictEqual(value.constructor.name, "WebElement");
             })
         });
 
         it('type should be return WebElement (due to WebElementPromise)', function () {
-            eyesDriver.get('https://astappev.github.io/test-html-pages/');
+            eyesDriver.get('https://astappiev.github.io/test-html-pages/');
 
             var element = eyesDriver.findElementByCssSelector("body > h1");
             return element.then(function (value) {
-                assert.equal(value.constructor.name, "WebElement");
+                assert.strictEqual(value.constructor.name, "WebElement");
             })
         });
     });

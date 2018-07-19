@@ -38,7 +38,7 @@ describe('Eyes.Selenium.JavaScript - Selenium', function () {
     });
 
     it("check interface", function () {
-        driver.get("https://astappev.github.io/test-html-pages/");
+        driver.get("https://astappiev.github.io/test-html-pages/");
 
         // Entire window, equivalent to eyes.checkWindow()
         eyes.check("Entire window", Target.window()

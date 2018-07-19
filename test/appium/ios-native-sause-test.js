@@ -8,25 +8,20 @@ var ConsoleLogHandler = SeleniumSDK.ConsoleLogHandler;
 var serverUrl = "http://" + process.env.SAUCE_USERNAME + ":" + process.env.SAUCE_ACCESS_KEY + "@ondemand.saucelabs.com:80/wd/hub";
 
 var driver = null, eyes = null;
-describe('Eyes.Selenium.JavaScript - Appium', function () {
+describe('Eyes.Selenium.JavaScript - IOS Native Appium via SauseLab', function () {
 
     this.timeout(5 * 60 * 1000);
 
     before(function () {
         driver = new Builder()
-        /*.withCapabilities({
-            'screenResolution': '1600x1200',
-            'version': '10.0',
-            'platform': 'macOS 10.12',
-            'browserName': 'Safari'
-        })*/
             .withCapabilities({
-                'appiumVersion': '1.6.4',
-                'deviceName': 'iPhone SE Simulator',
-                'deviceOrientation': 'landscape',
-                'platformVersion': '10.3',
                 'platformName': 'iOS',
-                'browserName': 'Safari'
+                'deviceName': 'iPhone 7 Simulator',
+                'platformVersion': '10.0',
+                'app': 'https://store.applitools.com/download/iOS.TestApp.app.zip',
+                'browserName': '',
+                'clearSystemFiles': 'true',
+                'noReset': 'true'
             })
             .usingServer(serverUrl)
             .build();
@@ -45,8 +40,7 @@ describe('Eyes.Selenium.JavaScript - Appium', function () {
         });
     });
 
-    it("simple sause", function () {
-        driver.get('https://astappev.github.io/test-html-pages/');
+    it("check window base", function () {
 
         eyes.checkWindow("Entire window");
 

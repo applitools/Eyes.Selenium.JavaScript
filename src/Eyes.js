@@ -149,8 +149,8 @@
                 platformVersion = capabilities.caps_.platformVersion;
                 orientation = capabilities.caps_.orientation || capabilities.caps_.deviceOrientation;
             } else {
-                platformName = capabilities.get('platform') || capabilities.get('platformName');
-                platformVersion = capabilities.get('version') || capabilities.get('platformVersion');
+                platformName = capabilities.get('platformName') || capabilities.get('platform');
+                platformVersion = capabilities.get('platformVersion') || capabilities.get('version');
                 orientation = capabilities.get('orientation') || capabilities.get('deviceOrientation');
             }
 
@@ -685,13 +685,11 @@
 
     //noinspection JSUnusedGlobalSymbols
     Eyes.prototype.getInferredEnvironment = function () {
-        var res = 'useragent:';
-        return this._driver.executeScript('return navigator.userAgent')
-            .then(function (userAgent) {
-                return res + userAgent;
-            }, function () {
-                return res;
-            });
+        return this._driver.executeScript('return navigator.userAgent').then(function (userAgent) {
+            return 'useragent:' + userAgent;
+        }, function () {
+            return undefined;
+        });
     };
 
     //noinspection JSUnusedGlobalSymbols
