@@ -57,12 +57,12 @@
   },
   "scripts": {
     "test": "npm run test-selenium",
-    "test-appium": "mocha ./test/appium/**/*.js",
-    "test-selenium": "mocha ./test/selenium/**/*.js",
+    "test-appium": "mocha \"./test/appium/**/*.js\"",
+    "test-selenium": "mocha \"./test/selenium/**/*.js\"",
     "test-protractor": "protractor protractor.conf.js"
   },
   "license": "SEE LICENSE IN LICENSE",
   "engines": {
-    "node": ">= 4.2.0"
+    "node": ">= 6.9.0"
   }
 }
