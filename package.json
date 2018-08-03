@@ -46,8 +46,8 @@
   "types": "./typings/index.d.ts",
   "dependencies": {
     "@types/node": "*",
-    "eyes.sdk": "0.0.73",
-    "eyes.utils": "0.0.29"
+    "eyes.sdk": "astappiev/eyes.sdk.javascript#development",
+    "eyes.utils": "astappiev/eyes.utils#development"
   },
   "devDependencies": {
     "chromedriver": "^2.38.3",
