@@ -3,8 +3,8 @@
 
     var EyesSDK = require('eyes.sdk'),
         EyesUtils = require('eyes.utils'),
-        ScrollPositionProvider = require('./ScrollPositionProvider').ScrollPositionProvider,
-        FrameChain = require('./FrameChain').FrameChain;
+        ScrollPositionProvider = require('../ScrollPositionProvider').ScrollPositionProvider,
+        FrameChain = require('../FrameChain').FrameChain;
     var EyesScreenshot = EyesSDK.EyesScreenshot,
         CoordinatesType = EyesSDK.CoordinatesType,
         ArgumentGuard = EyesUtils.ArgumentGuard,

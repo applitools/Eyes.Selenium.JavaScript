@@ -1,13 +1,15 @@
 (function () {
     'use strict';
 
-    var webdriver = require('selenium-webdriver'),
-        EyesSDK = require('eyes.sdk'),
-        EyesUtils = require('eyes.utils'),
-        EyesWebDriver = require('./EyesWebDriver').EyesWebDriver,
+    var webdriver = require('selenium-webdriver');
+    var { EyesBase, ContextBasedScaleProviderFactory, FixedScaleProviderFactory, NullScaleProvider, Logger,
+        CoordinatesType, MutableImage, ScaleProviderIdentityFactory } = require('eyes.sdk');
+    var { PromiseFactory, ArgumentGuard, SimplePropertyHandler, GeometryUtils, UserAgent } = require('eyes.utils');
+    var EyesWebDriver = require('./EyesWebDriver').EyesWebDriver,
+        ImageProviderFactory = require('./capture/ImageProviderFactory').ImageProviderFactory,
         EyesSeleniumUtils = require('./EyesSeleniumUtils').EyesSeleniumUtils,
         EyesRemoteWebElement = require('./EyesRemoteWebElement').EyesRemoteWebElement,
-        EyesWebDriverScreenshot = require('./EyesWebDriverScreenshot').EyesWebDriverScreenshot,
+        EyesWebDriverScreenshot = require('./capture/EyesWebDriverScreenshot').EyesWebDriverScreenshot,
         ElementFinderWrapper = require('./ElementFinderWrappers').ElementFinderWrapper,
         ElementArrayFinderWrapper = require('./ElementFinderWrappers').ElementArrayFinderWrapper,
         ScrollPositionProvider = require('./ScrollPositionProvider').ScrollPositionProvider,
@@ -15,18 +17,6 @@
         ElementPositionProvider = require('./ElementPositionProvider').ElementPositionProvider,
         EyesRegionProvider = require('./EyesRegionProvider').EyesRegionProvider,
         Target = require('./Target').Target;
-    var EyesBase = EyesSDK.EyesBase,
-        ContextBasedScaleProviderFactory = EyesSDK.ContextBasedScaleProviderFactory,
-        FixedScaleProviderFactory = EyesSDK.FixedScaleProviderFactory,
-        NullScaleProvider = EyesSDK.NullScaleProvider,
-        Logger = EyesSDK.Logger,
-        CoordinatesType = EyesSDK.CoordinatesType,
-        MutableImage = EyesSDK.MutableImage,
-        ScaleProviderIdentityFactory = EyesSDK.ScaleProviderIdentityFactory,
-        PromiseFactory = EyesUtils.PromiseFactory,
-        ArgumentGuard = EyesUtils.ArgumentGuard,
-        SimplePropertyHandler = EyesUtils.SimplePropertyHandler,
-        GeometryUtils = EyesUtils.GeometryUtils;
 
     var VERSION = require('../package.json').version;
 
@@ -175,6 +165,14 @@
             if (orientation && orientation.toUpperCase() === 'LANDSCAPE') {
                 that._isLandscape = true;
             }
+        }).then(function () {
+            return that._driver.getUserAgent().then(function (uaString) {
+                if (uaString) {
+                    that._userAgent = UserAgent.parseUserAgentString(uaString, true);
+                }
+
+                that._imageProvider = ImageProviderFactory.getImageProvider(that._userAgent, that, that._logger, that._driver);
+            });
         }).then(function () {
             return EyesBase.prototype.open.call(that, appName, testName, viewportSize);
         }).then(function () {
@@ -652,6 +650,7 @@
             return EyesSeleniumUtils.getScreenshot(
                 that._driver,
                 that._promiseFactory,
+                that._imageProvider,
                 that._viewportSize,
                 that._positionProvider,
                 scaleProviderFactory,
@@ -709,7 +708,7 @@
     //noinspection JSUnusedGlobalSymbols
     /**
      * Get the viewport size.
-     * @return {*} The viewport size.
+     * @return {Promise<{width: number, height: number}>} The viewport size.
      */
     Eyes.prototype.getViewportSize = function () {
         return EyesSeleniumUtils.getViewportSizeOrDisplaySize(this._logger, this._driver, this._promiseFactory);
@@ -793,6 +792,15 @@
      */
     Eyes.prototype.getHideScrollbars = function () {
         return this._hideScrollbars;
+    };
+
+    //noinspection JSUnusedGlobalSymbols
+    /**
+     * @return {number} The device pixel ratio, or {@link #UNKNOWN_DEVICE_PIXEL_RATIO} if the DPR is not known yet or if
+     *   it wasn't possible to extract it.
+     */
+    Eyes.prototype.getDevicePixelRatio = function () {
+        return this._devicePixelRatio;
     };
 
     //noinspection JSUnusedGlobalSymbols
