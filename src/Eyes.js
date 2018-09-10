@@ -644,10 +644,11 @@
     //noinspection JSUnusedGlobalSymbols
     /**
      * Get an updated screenshot.
-     * @return {Promise<MutableImage>} - The image of the new screenshot.
+     * @return {Promise<EyesScreenshot>} - The image of the new screenshot.
      */
     Eyes.prototype.getScreenShot = function () {
         var that = this;
+        var result;
         return that.updateScalingParams().then(function (scaleProviderFactory) {
             return EyesSeleniumUtils.getScreenshot(
                 that._driver,
@@ -670,6 +671,12 @@
                 that._saveDebugScreenshots,
                 that._debugScreenshotsPath
             );
+        }).then(function (screenshot) {
+            var eyesWebDriverScreenshot = new EyesWebDriverScreenshot(that._logger, that._driver, screenshot, that._promiseFactory);
+            result = eyesWebDriverScreenshot;
+            return eyesWebDriverScreenshot.buildScreenshot();
+        }).then(function () {
+            return result;
         });
     };
 
