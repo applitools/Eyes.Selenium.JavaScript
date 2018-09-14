@@ -54,7 +54,9 @@
         this._scrollRootElement = undefined;
         this._checkFrameOrElement = false;
         this._stitchMode = StitchMode.Scroll;
-        this._promiseFactory = new PromiseFactory();
+        this._promiseFactory = new PromiseFactory(function (asyncAction) {
+            return new Promise(asyncAction);
+        }, undefined);
         this._waitBeforeScreenshots = DEFAULT_WAIT_BEFORE_SCREENSHOTS;
 
         EyesBase.call(this, this._promiseFactory, serverUrl || EyesBase.DEFAULT_EYES_SERVER, isDisabled);
