@@ -46,8 +46,8 @@
   "types": "./typings/index.d.ts",
   "dependencies": {
     "@types/node": "*",
-    "eyes.utils": "0.0.29",
-    "eyes.sdk": "0.0.73"
+    "eyes.sdk": "astappiev/eyes.sdk.javascript#development",
+    "eyes.utils": "astappiev/eyes.utils#development"
   },
   "devDependencies": {
     "chromedriver": "^2.38.3",
@@ -57,12 +57,12 @@
   },
   "scripts": {
     "test": "npm run test-selenium",
-    "test-appium": "mocha ./test/appium/**/*.js",
-    "test-selenium": "mocha ./test/selenium/**/*.js",
+    "test-appium": "mocha \"./test/appium/**/*.js\"",
+    "test-selenium": "mocha \"./test/selenium/**/*.js\"",
     "test-protractor": "protractor protractor.conf.js"
   },
   "license": "SEE LICENSE IN LICENSE",
   "engines": {
-    "node": ">= 4.2.0"
+    "node": ">= 6.9.0"
   }
 }

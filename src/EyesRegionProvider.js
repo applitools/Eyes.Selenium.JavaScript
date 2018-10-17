@@ -3,7 +3,7 @@
 
     var EyesUtils = require('eyes.utils'),
         EyesSDK = require('eyes.sdk'),
-        EyesWebDriverScreenshot = require('./EyesWebDriverScreenshot').EyesWebDriverScreenshot;
+        EyesWebDriverScreenshot = require('./capture/EyesWebDriverScreenshot').EyesWebDriverScreenshot;
     var RegionProvider = EyesSDK.RegionProvider,
         GeometryUtils = EyesUtils.GeometryUtils;
 

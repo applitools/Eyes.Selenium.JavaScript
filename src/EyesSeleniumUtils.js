@@ -686,6 +686,7 @@
      * @param {WebDriver} browser
      * @param {Promise<void>} promise
      * @param {PromiseFactory} promiseFactory
+     * @param {ImageProvider} imageProvider
      * @param {{width: number, height: number}} viewportSize
      * @param {PositionProvider} positionProvider
      * @param {ScaleProviderFactory} scaleProviderFactory
@@ -709,6 +710,7 @@
         browser,
         promise,
         promiseFactory,
+        imageProvider,
         viewportSize,
         positionProvider,
         scaleProviderFactory,
@@ -742,7 +744,7 @@
                 return positionProvider.setPosition(partPosition).then(function () {
                     return positionProvider.getCurrentPosition();
                 }).then(function (currentPosition) {
-                    return _captureViewport(browser, promiseFactory, viewportSize, scaleProviderFactory, cutProvider, entirePageSize,
+                    return _captureViewport(browser, promiseFactory, imageProvider, viewportSize, scaleProviderFactory, cutProvider, entirePageSize,
                         pixelRatio, rotationDegrees, automaticRotation, automaticRotationDegrees, isLandscape,
                         waitBeforeScreenshots, regionInScreenshot, saveDebugScreenshots, debugScreenshotsPath).then(function (partImage) {
                         return partImage.asObject();
@@ -764,6 +766,7 @@
      * @private
      * @param {WebDriver} browser
      * @param {PromiseFactory} promiseFactory
+     * @param {ImageProvider} imageProvider
      * @param {{width: number, height: number}} viewportSize
      * @param {ScaleProviderFactory} scaleProviderFactory
      * @param {CutProvider} cutProvider
@@ -782,6 +785,7 @@
     var _captureViewport = function (
         browser,
         promiseFactory,
+        imageProvider,
         viewportSize,
         scaleProviderFactory,
         cutProvider,
@@ -798,9 +802,7 @@
     ) {
         var mutableImage, scaleRatio = 1;
         return GeneralUtils.sleep(waitBeforeScreenshots, promiseFactory).then(function () {
-            return browser.takeScreenshot().then(function (screenshot64) {
-                return new MutableImage(new Buffer(screenshot64, 'base64'), promiseFactory);
-            }).then(function (image) {
+            return imageProvider.getImage().then(function (image) {
                 mutableImage = image;
                 if (saveDebugScreenshots) {
                     var filename = "screenshot " + (new Date()).getTime()+ " original.png";
@@ -870,6 +872,7 @@
      *
      * @param {WebDriver} browser
      * @param {PromiseFactory} promiseFactory
+     * @param {ImageProvider} imageProvider
      * @param {{width: number, height: number}} viewportSize
      * @param {PositionProvider} positionProvider
      * @param {ScaleProviderFactory} scaleProviderFactory
@@ -892,6 +895,7 @@
     EyesSeleniumUtils.getScreenshot = function getScreenshot(
         browser,
         promiseFactory,
+        imageProvider,
         viewportSize,
         positionProvider,
         scaleProviderFactory,
@@ -970,7 +974,7 @@
             }
         }).then(function () {
             if (regionProvider) {
-                return _captureViewport(browser, promiseFactory, viewportSize, scaleProviderFactory, cutProvider, entirePageSize, pixelRatio,
+                return _captureViewport(browser, promiseFactory, imageProvider, viewportSize, scaleProviderFactory, cutProvider, entirePageSize, pixelRatio,
                     rotationDegrees, automaticRotation, automaticRotationDegrees, isLandscape, waitBeforeScreenshots).then(function (image) {
                         return regionProvider.getRegionInLocation(image, CoordinatesType.SCREENSHOT_AS_IS, promiseFactory);
                     }).then(function (region) {
@@ -979,7 +983,7 @@
             }
         }).then(function () {
             // step #5 - Take screenshot of the 0,0 tile / current viewport
-            return _captureViewport(browser, promiseFactory, viewportSize, scaleProviderFactory, cutProvider, entirePageSize, pixelRatio, rotationDegrees,
+            return _captureViewport(browser, promiseFactory, imageProvider, viewportSize, scaleProviderFactory, cutProvider, entirePageSize, pixelRatio, rotationDegrees,
                 automaticRotation, automaticRotationDegrees, isLandscape, waitBeforeScreenshots,
                 checkFrameOrElement ? regionInScreenshot : null, saveDebugScreenshots, debugScreenshotsPath)
                 .then(function (image) {
@@ -1019,7 +1023,7 @@
                 });
 
                 screenshotParts.forEach(function (part) {
-                    promise = _processPart(part, parts, imageObject, browser, promise, promiseFactory,
+                    promise = _processPart(part, parts, imageObject, browser, promise, promiseFactory, imageProvider,
                         viewportSize, positionProvider, scaleProviderFactory, cutProvider, entirePageSize, pixelRatio, rotationDegrees, automaticRotation,
                         automaticRotationDegrees, isLandscape, waitBeforeScreenshots, checkFrameOrElement ? regionInScreenshot : null, saveDebugScreenshots, debugScreenshotsPath);
                 });

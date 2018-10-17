@@ -1,5 +1,10 @@
 'use strict';
 
+exports.EyesWebDriverScreenshot = require('./src/capture/EyesWebDriverScreenshot').EyesWebDriverScreenshot;
+exports.FirefoxScreenshotImageProvider = require('./src/capture/FirefoxScreenshotImageProvider').FirefoxScreenshotImageProvider;
+exports.ImageProviderFactory = require('./src/capture/ImageProviderFactory').ImageProviderFactory;
+exports.SafariScreenshotImageProvider = require('./src/capture/SafariScreenshotImageProvider').SafariScreenshotImageProvider;
+exports.TakesScreenshotImageProvider = require('./src/capture/TakesScreenshotImageProvider').TakesScreenshotImageProvider;
 exports.CssTranslatePositionProvider = require('./src/CssTranslatePositionProvider').CssTranslatePositionProvider;
 exports.ElementPositionProvider = require('./src/ElementPositionProvider').ElementPositionProvider;
 exports.Eyes = require('./src/Eyes').Eyes;
@@ -9,7 +14,6 @@ exports.EyesRemoteWebElement = require('./src/EyesRemoteWebElement').EyesRemoteW
 exports.EyesSeleniumUtils = require('./src/EyesSeleniumUtils').EyesSeleniumUtils;
 exports.EyesTargetLocator = require('./src/EyesTargetLocator').EyesTargetLocator;
 exports.EyesWebDriver = require('./src/EyesWebDriver').EyesWebDriver;
-exports.EyesWebDriverScreenshot = require('./src/EyesWebDriverScreenshot').EyesWebDriverScreenshot;
 exports.Frame = require('./src/Frame').Frame;
 exports.FrameChain = require('./src/FrameChain').FrameChain;
 exports.ScrollPositionProvider = require('./src/ScrollPositionProvider').ScrollPositionProvider;
@@ -29,6 +33,7 @@ exports.FileLogHandler = EyesSDK.FileLogHandler;
 exports.FixedCutProvider = EyesSDK.FixedCutProvider;
 exports.FixedScaleProvider = EyesSDK.FixedScaleProvider;
 exports.FixedScaleProviderFactory = EyesSDK.FixedScaleProviderFactory;
+exports.ImageProvider = EyesSDK.ImageProvider;
 exports.Logger = EyesSDK.Logger;
 exports.LogHandler = EyesSDK.LogHandler;
 exports.MatchSettings = EyesSDK.MatchSettings;
@@ -61,3 +66,6 @@ exports.PropertyHandler = EyesUtils.PropertyHandler;
 exports.SimplePropertyHandler = EyesUtils.SimplePropertyHandler;
 exports.ReadOnlyPropertyHandler = EyesUtils.ReadOnlyPropertyHandler;
 exports.StreamUtils = EyesUtils.StreamUtils;
+exports.UserAgent = EyesUtils.UserAgent;
+exports.OSNames = EyesUtils.OSNames;
+exports.BrowserNames = EyesUtils.BrowserNames;

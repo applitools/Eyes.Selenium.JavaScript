@@ -9,9 +9,9 @@
 import { WebDriver, WebElement, By, TargetLocator, WebElementPromise, AlertPromise, promise } from 'selenium-webdriver';
 import { ElementFinder, ElementArrayFinder, ProtractorBy } from 'protractor';
 
-import { PromiseFactory, Location, Region, RectangleSize } from 'eyes.utils';
+import {PromiseFactory, Location, Region, RectangleSize, UserAgent} from 'eyes.utils';
 import { PositionProvider, RegionProvider, Logger, CutProvider, ScaleProviderFactory, MatchSettings, CoordinatesType,
-    EyesScreenshot, EyesBase, MutableImage, TestResults } from 'eyes.sdk';
+    EyesScreenshot, EyesBase, MutableImage, TestResults, ImageProvider } from 'eyes.sdk';
 
 
 export { ArgumentGuard, GeneralUtils, GeometryUtils, ImageDeltaCompressor, ImageUtils, PromiseFactory, StreamUtils,
@@ -487,6 +487,29 @@ export declare enum ScreenshotType {
 }
 
 
+export declare class FirefoxScreenshotImageProvider implements ImageProvider {
+    constructor(eyes: Eyes, logger: Logger, tsInstance: EyesWebDriver);
+    getImage(): Promise<MutableImage>;
+}
+
+
+export declare class SafariScreenshotImageProvider implements ImageProvider {
+    constructor(eyes: Eyes, logger: Logger, tsInstance: EyesWebDriver, userAgent: UserAgent);
+    getImage(): Promise<MutableImage>;
+}
+
+
+export declare class TakesScreenshotImageProvider implements ImageProvider {
+    constructor(logger: Logger, tsInstance: EyesWebDriver);
+    getImage(): Promise<MutableImage>;
+}
+
+
+export declare class ImageProviderFactory {
+    static getImageProvider(userAgent: UserAgent, eyes: Eyes, logger: Logger, driver: EyesWebDriver): ImageProvider;
+}
+
+
 export declare class EyesWebDriverScreenshot extends EyesScreenshot {
     /**
      * @param logger A Logger instance.
@@ -828,6 +851,7 @@ export declare class EyesSeleniumUtils {
     static getScreenshot(
         browser: WebDriver,
         promiseFactory: PromiseFactory,
+        imageProvider: ImageProvider,
         viewportSize: RectangleSize,
         positionProvider: PositionProvider,
         scaleProviderFactory: ScaleProviderFactory,
