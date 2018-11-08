@@ -152,7 +152,7 @@
 
             that._logger.verbose("Calculating frame window..");
             that._frameWindow = GeometryUtils.createRegionFromLocationAndSize(frameLocationInScreenshot, frameSize);
-            GeometryUtils.intersect(that._frameWindow, GeometryUtils.createRegion(0, 0, imageSize.width, imageSize.height));
+            that._frameWindow = GeometryUtils.intersect(that._frameWindow, GeometryUtils.createRegion(0, 0, imageSize.width, imageSize.height));
             if (that._frameWindow.width <= 0 || that._frameWindow.height <= 0) {
                 throw new Error("Got empty frame window for screenshot!");
             }
@@ -187,6 +187,7 @@
      * @return {Promise<EyesWebDriverScreenshot>} A screenshot instance containing the given region.
      */
     EyesWebDriverScreenshot.prototype.getSubScreenshot = function (region, coordinatesType, throwIfClipped) {
+        var that = this;
         this._logger.verbose("getSubScreenshot(", region, ", ", coordinatesType, ", ", throwIfClipped, ")");
 
         ArgumentGuard.notNull(region, "region");
@@ -202,18 +203,18 @@
             throw new Error("Region ", region, ", (", coordinatesType, ") is out of screenshot bounds ", this._frameWindow);
         }
 
-        var subScreenshotImage = this._image.cropImage(asIsSubScreenshotRegion);
+        return this._image.cropImage(asIsSubScreenshotRegion).then(function (subScreenshotImage) {
+            // The frame location in the sub screenshot is the negative of the
+            // context-as-is location of the region.
+            var contextAsIsRegionLocation = that.convertLocationFromLocation(GeometryUtils.createLocationFromRegion(asIsSubScreenshotRegion), CoordinatesType.SCREENSHOT_AS_IS, CoordinatesType.CONTEXT_AS_IS);
 
-        // The frame location in the sub screenshot is the negative of the
-        // context-as-is location of the region.
-        var contextAsIsRegionLocation = this.convertLocationFromLocation(GeometryUtils.createLocationFromRegion(asIsSubScreenshotRegion), CoordinatesType.SCREENSHOT_AS_IS, CoordinatesType.CONTEXT_AS_IS);
+            var frameLocationInSubScreenshot = GeometryUtils.createLocation(-contextAsIsRegionLocation.x, -contextAsIsRegionLocation.y);
 
-        var frameLocationInSubScreenshot = GeometryUtils.createLocation(-contextAsIsRegionLocation.x, -contextAsIsRegionLocation.y);
-
-        var that = this, result = new EyesWebDriverScreenshot(this._logger, this._driver, subScreenshotImage, this._promiseFactory);
-        return result.buildScreenshot(this._screenshotType, frameLocationInSubScreenshot, null).then(function () {
-            that._logger.verbose("Done!");
-            return result;
+            var result = new EyesWebDriverScreenshot(that._logger, that._driver, subScreenshotImage, that._promiseFactory);
+            return result.buildScreenshot(that._screenshotType, frameLocationInSubScreenshot, null).then(function () {
+                that._logger.verbose("Done!");
+                return result;
+            });
         });
     };
 

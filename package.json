@@ -46,7 +46,7 @@
   "types": "./typings/index.d.ts",
   "dependencies": {
     "@types/node": "*",
-    "eyes.sdk": "astappiev/eyes.sdk.javascript#development",
+    "eyes.sdk": "applitools/eyes.sdk.javascript#master",
     "eyes.utils": "astappiev/eyes.utils#development"
   },
   "devDependencies": {
