@@ -152,7 +152,11 @@
 
             that._logger.verbose("Calculating frame window..");
             that._frameWindow = GeometryUtils.createRegionFromLocationAndSize(frameLocationInScreenshot, frameSize);
-            that._frameWindow = GeometryUtils.intersect(that._frameWindow, GeometryUtils.createRegion(0, 0, imageSize.width, imageSize.height));
+
+            if (GeometryUtils.isRegionsIntersected(that._frameWindow, GeometryUtils.createRegion(0, 0, imageSize.width, imageSize.height))) {
+                that._frameWindow = GeometryUtils.intersect(that._frameWindow, GeometryUtils.createRegion(0, 0, imageSize.width, imageSize.height));
+            }
+
             if (that._frameWindow.width <= 0 || that._frameWindow.height <= 0) {
                 throw new Error("Got empty frame window for screenshot!");
             }
